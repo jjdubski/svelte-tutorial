@@ -1,0 +1,135 @@
+:global(body) {
+  margin: 0;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #e8effb;
+  color: #1f2937;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  background: linear-gradient(145deg, #e2e8f0 0%, #f8fafc 100%);
+}
+
+.app-card {
+  width: min(100%, 560px);
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(31, 41, 55, 0.15);
+  border: 1px solid #dbe4f2;
+  padding: 1.25rem;
+}
+
+.app-title {
+  margin: 0 0 1rem;
+  color: #0f172a;
+  font-size: 1.8rem;
+  text-align: center;
+}
+
+.form-row input,
+.form-row textarea,
+.form-row button {
+  box-sizing: border-box;
+}
+
+.form-row input,
+.form-row textarea {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 0.75rem;
+  background: #f8fafc;
+  margin-bottom: 0.75rem;
+}
+
+.form-row textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.form-row button {
+  width: 100%;
+  border: 0;
+  border-radius: 10px;
+  padding: 0.75rem;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(90deg, #2563eb, #1d4ed8);
+  cursor: pointer;
+}
+
+.form-row button:hover {
+  background: linear-gradient(90deg, #1d4ed8, #1e40af);
+}
+
+.todo-card,
+.todo-edit {
+  border: 1px solid #dbe4f2;
+  border-radius: 12px;
+  padding: 0.95rem;
+  margin-top: 0.75rem;
+  background: #f8fafc;
+}
+
+.todo-title {
+  margin: 0 0 0.2rem;
+  color: #0f172a;
+  font-size: 1.06rem;
+}
+
+.todo-desc {
+  margin: 0 0 0.75rem;
+  color: #475569;
+}
+
+.todo-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.btn {
+  border: 0;
+  border-radius: 10px;
+  padding: 0.5rem 0.8rem;
+  font-weight: 600;
+  min-width: 72px;
+  cursor: pointer;
+  color: white;
+}
+
+.btn-edit {
+  background: #0ea5e9;
+}
+
+.btn-edit:hover {
+  background: #0369a1;
+}
+
+.btn-done {
+  background: #ef4444;
+}
+
+.btn-done:hover {
+  background: #b91c1c;
+}
+
+.btn-save {
+  background: #22c55e;
+}
+
+.btn-save:hover {
+  background: #15803d;
+}
+
+.btn-cancel {
+  background: #64748b;
+}
+
+.btn-cancel:hover {
+  background: #334155;
+}
