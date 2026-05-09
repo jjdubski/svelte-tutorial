@@ -541,8 +541,8 @@
 				Todo List
 			</h1>
 			<button
-				class="absolute right-0 flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl border"
-				style="background: var(--todo-bg); border-color: var(--border); color: var(--text-secondary); transition: all 0.2s;"
+				class="glow-btn absolute right-0 flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl border"
+				style="background: var(--todo-bg); border-color: var(--border); color: var(--text-secondary);"
 				data-btn="ghost"
 				onclick={() => (darkMode = !darkMode)}
 				aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
@@ -556,13 +556,16 @@
 		</div>
 
 		<!-- Stats Bar -->
-		<StatsBar {stats} />
+		<StatsBar {stats} {prefersReducedMotion} />
 
 		<!-- Add Form -->
 		{#if showForm}
 			<div
 				class="mb-6"
-				transition:slide={{ duration: prefersReducedMotion ? 0 : 300, easing: cubicOut }}
+				transition:fade={{
+					duration: prefersReducedMotion ? 0 : 250,
+					easing: cubicOut
+				}}
 			>
 				<!-- Templates Segmented Control -->
 				<span class="mb-2 block text-xs font-medium" style="color: var(--text-muted);"
@@ -574,7 +577,7 @@
 				>
 					{#each templates as template (template.name)}
 						<button
-							class="template-btn flex-1 cursor-pointer rounded-lg border-none px-3 py-2 text-sm font-medium"
+							class="glow-btn template-btn flex-1 cursor-pointer rounded-lg border-none px-3 py-2 text-sm font-medium"
 							class:active={selectedTemplate === template.name}
 							onclick={() => applyTemplate(template)}
 						>
@@ -647,8 +650,8 @@
 						<span class="text-xs font-medium" style="color: var(--text-muted);">Tags:</span>
 						{#each availableTags as tag (tag)}
 							<button
-								class="tag-btn cursor-pointer rounded-full border px-3 py-1.5 text-sm font-medium"
-								style="--tag-color: {tagColors[tag]}; transition: all 0.2s;"
+								class="glow-tag tag-btn cursor-pointer rounded-full border px-3 py-1.5 text-sm font-medium"
+								style="--tag-color: {tagColors[tag]};"
 								class:selected={newTags.includes(tag)}
 								onclick={() =>
 									(newTags = newTags.includes(tag)
@@ -702,8 +705,8 @@
 
 				<button
 					type="button"
-					class="flex w-full flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border-none px-4 py-3.5 text-base font-semibold"
-					style="background: var(--btn-primary); color: white; transition: all 0.2s;"
+					class="glow-btn flex w-full flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border-none px-4 py-3.5 text-base font-semibold"
+					style="background: var(--btn-primary); color: white;"
 					data-btn="primary"
 					onclick={add}
 				>
@@ -712,8 +715,8 @@
 			</div>
 		{:else}
 			<button
-				class="mb-6 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed p-4"
-				style="border-color: var(--border); color: var(--text-muted); transition: all 0.2s;"
+				class="glow-btn mb-6 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed p-4"
+				style="border-color: var(--border); color: var(--text-muted);"
 				data-btn="ghost"
 				onclick={() => (showForm = true)}
 			>
@@ -757,8 +760,8 @@
 			</select>
 			<div class="relative">
 				<button
-					class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border"
-					style="background: var(--input-bg); border-color: var(--border); color: var(--text-muted); transition: all 0.2s;"
+					class="glow-btn flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border"
+					style="background: var(--input-bg); border-color: var(--border); color: var(--text-muted);"
 					data-btn="ghost"
 					class:active={selectMode}
 					onclick={() => (selectMode = !selectMode)}
@@ -777,8 +780,8 @@
 						transition:slide={{ duration: prefersReducedMotion ? 0 : 150 }}
 					>
 						<button
-							class="flex cursor-pointer items-center gap-1 rounded-lg border-none px-2.5 py-2 text-xs font-medium"
-							style="background: var(--btn-save); color: white; transition: all 0.2s;"
+							class="glow-btn flex cursor-pointer items-center gap-1 rounded-lg border-none px-2.5 py-2 text-xs font-medium"
+							style="background: var(--btn-save); color: white;"
 							data-btn="save"
 							onclick={completeSelected}
 							disabled={selectedTodos.size === 0}
@@ -786,8 +789,8 @@
 							<CheckSquare size={14} /> Complete
 						</button>
 						<button
-							class="flex cursor-pointer items-center gap-1 rounded-lg border-none px-2.5 py-2 text-xs font-medium"
-							style="background: var(--btn-delete); color: white; transition: all 0.2s;"
+							class="glow-btn flex cursor-pointer items-center gap-1 rounded-lg border-none px-2.5 py-2 text-xs font-medium"
+							style="background: var(--btn-delete); color: white;"
 							data-btn="delete"
 							onclick={deleteSelected}
 							disabled={selectedTodos.size === 0}
@@ -795,8 +798,8 @@
 							<Trash2 size={14} /> Delete
 						</button>
 						<button
-							class="flex cursor-pointer items-center gap-1 rounded-lg border-none px-2.5 py-2 text-xs font-medium"
-							style="background: var(--btn-cancel); color: white; transition: all 0.2s;"
+							class="glow-btn flex cursor-pointer items-center gap-1 rounded-lg border-none px-2.5 py-2 text-xs font-medium"
+							style="background: var(--btn-cancel); color: white;"
 							data-btn="cancel"
 							onclick={() => {
 								selectMode = false;
@@ -816,18 +819,16 @@
 			style="background: var(--todo-bg); border-color: var(--border); transition: background 0.3s, border-color 0.3s;"
 		>
 			<button
-				class="cursor-pointer rounded-full border-transparent px-3 py-1.5 text-sm font-medium"
-				style="color: var(--text-secondary); transition: all 0.15s;"
+				class="glow-btn cursor-pointer rounded-full border-transparent px-3 py-1.5 text-sm font-medium"
+				style="color: var(--text-secondary);"
 				data-btn="ghost"
 				class:active={filterCategory === ''}
 				onclick={() => (filterCategory = '')}>All</button
 			>
 			{#each categories as cat (cat)}
 				<button
-					class="cursor-pointer rounded-full border-transparent px-3 py-1.5 text-sm font-medium"
-					style="color: var(--text-secondary); --cat-color: {categoryColors[
-						cat
-					]}; transition: all 0.15s;"
+					class="glow-btn cursor-pointer rounded-full border-transparent px-3 py-1.5 text-sm font-medium"
+					style="color: var(--text-secondary); --cat-color: {categoryColors[cat]};"
 					data-btn="ghost"
 					class:active={filterCategory === cat}
 					onclick={() => setFilterCategory(cat)}
@@ -875,8 +876,8 @@
 
 		<!-- Toggle form -->
 		<button
-			class="mb-3 flex w-full cursor-pointer items-center justify-center rounded-md border-none py-2"
-			style="background: transparent; color: var(--text-muted); transition: all 0.2s;"
+			class="glow-btn mb-3 flex w-full cursor-pointer items-center justify-center rounded-md border-none py-2"
+			style="background: transparent; color: var(--text-muted);"
 			data-btn="ghost"
 			onclick={() => (showForm = !showForm)}
 			aria-label="Toggle add form"
@@ -895,7 +896,7 @@
 			{:else if filteredTodos.length === 0}
 				<div
 					class="flex flex-col items-center px-4 py-12"
-					transition:fade={{ duration: prefersReducedMotion ? 0 : 300 }}
+					in:fade={{ duration: prefersReducedMotion ? 0 : 300 }}
 				>
 					<div
 						class="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl"
@@ -910,8 +911,8 @@
 						Add a task to get started
 					</p>
 					<button
-						class="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border-none px-4 py-3.5 text-base font-semibold"
-						style="background: var(--btn-primary); color: white; transition: all 0.2s; max-width: 280px;"
+						class="glow-btn flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border-none px-4 py-3.5 text-base font-semibold"
+						style="background: var(--btn-primary); color: white; max-width: 280px;"
 						data-btn="primary"
 						onclick={() => (showForm = true)}
 					>
@@ -919,10 +920,15 @@
 					</button>
 				</div>
 			{:else}
-				{#each filteredTodos as todo (todo.id)}
+				{#each filteredTodos as todo, i (todo.id)}
 					<div
 						animate:flip={{ duration: prefersReducedMotion ? 0 : 300, easing: cubicOut }}
-						transition:scale={{ duration: prefersReducedMotion ? 0 : 200, easing: elasticOut }}
+						in:scale={{
+							duration: prefersReducedMotion ? 0 : 220,
+							easing: elasticOut,
+							delay: prefersReducedMotion ? 0 : i * 40
+						}}
+						out:fade={{ duration: prefersReducedMotion ? 0 : 150 }}
 					>
 						<Todo
 							{todo}

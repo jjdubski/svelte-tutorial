@@ -193,7 +193,7 @@
 			{#each availableTags as tag (tag)}
 				<button
 					type="button"
-					class="tag-toggle cursor-pointer rounded-full border px-2 py-0.5 text-xs font-semibold"
+					class="glow-tag tag-toggle cursor-pointer rounded-full border px-2 py-0.5 text-xs font-semibold"
 					class:selected={editTags.includes(tag)}
 					style="--tag-color: {tagColors[tag]}"
 					onclick={() =>
@@ -243,13 +243,13 @@
 			<button
 				type="button"
 				onclick={cancel}
-				class="btn btn-cancel cursor-pointer rounded-md border-none px-4 py-2 font-medium"
+				class="glow-btn btn btn-cancel cursor-pointer rounded-md border-none px-4 py-2 font-medium"
 				>Cancel</button
 			>
 			<button
 				type="button"
 				onclick={save}
-				class="btn btn-save cursor-pointer rounded-md border-none px-4 py-2 font-medium"
+				class="glow-btn btn btn-save cursor-pointer rounded-md border-none px-4 py-2 font-medium"
 				>Save</button
 			>
 		</div>
@@ -257,7 +257,7 @@
 {:else}
 	<div
 		role="listitem"
-		class="todo-card flex items-start gap-2 rounded-xl border p-3"
+		class="glow-card todo-card flex items-start gap-2 rounded-xl border p-3"
 		class:completed={todo.completed}
 		class:dragging={draggedId === todo.id}
 		class:drag-over={dragOverId === todo.id}
@@ -386,7 +386,7 @@
 							{/if}
 							<button
 								onclick={startEdit}
-								class="flex cursor-pointer items-center justify-center rounded-md border-0 p-1"
+								class="glow-btn flex cursor-pointer items-center justify-center rounded-md border-0 p-1"
 								style="color: var(--text-muted);"
 								aria-label="Edit task"
 							>
@@ -394,7 +394,7 @@
 							</button>
 							<button
 								onclick={() => deleteTodo(todo.id)}
-								class="flex cursor-pointer items-center justify-center rounded-md border-0 p-1"
+								class="glow-btn flex cursor-pointer items-center justify-center rounded-md border-0 p-1"
 								style="color: var(--text-muted);"
 								aria-label="Delete task"
 							>
@@ -474,12 +474,16 @@
 	.todo-card {
 		border: 1px solid var(--border);
 		background: var(--todo-bg);
-		transition: all 0.2s;
+		transition:
+			transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+			box-shadow 0.3s ease,
+			border-color 0.3s ease;
 	}
 
 	.todo-card:hover {
-		border-color: var(--text-muted);
-		box-shadow: 0 2px 8px var(--shadow);
+		transform: translateY(-2px);
+		border-color: var(--btn-primary);
+		box-shadow: 0 8px 30px rgba(37, 99, 235, 0.12);
 	}
 
 	.todo-card.dragging {

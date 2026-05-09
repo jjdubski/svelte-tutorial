@@ -1,5 +1,4 @@
 <script>
-	import { slide } from 'svelte/transition';
 	import { RotateCcw, CheckCircle, Info, AlertTriangle } from 'lucide-svelte';
 
 	let { message, type = 'info', undoDelete } = $props();
@@ -7,12 +6,11 @@
 
 <div class="fixed bottom-6 left-1/2 z-[1000] w-[min(90%,400px)] -translate-x-1/2">
 	<div
-		class="flex items-center gap-3 rounded-xl border px-4 py-3.5 shadow-lg"
+		class="animate-toast-in flex items-center gap-3 rounded-xl border px-4 py-3.5 shadow-lg"
 		style="background: var(--card-bg); border-color: var(--border); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);"
 		class:success={type === 'success'}
 		class:info={type === 'info'}
 		class:warning={type === 'warning'}
-		transition:slide={{ duration: 200 }}
 	>
 		<div
 			class="shrink-0"

@@ -1,0 +1,319 @@
+<h2>🎬 Animation Concepts for the Todo App</h2>
+<p class="subtitle">Svelte motion + transitions — cool, clean, modern</p>
+
+<div class="section">
+	<h3>1. Glow Effects on Hover</h3>
+	<p>
+		Buttons and cards glow subtly on hover using <code>svelte/motion</code> spring + CSS box-shadow
+		transitions
+	</p>
+	<div class="cards" style="grid-template-columns: repeat(3, 1fr)">
+		<div class="card" data-choice="glow-btn" onclick="toggleSelect(this)" style="cursor: default">
+			<div class="card-body" style="text-align: center">
+				<div
+					style="
+						background: #2563eb;
+						color: white;
+						padding: 12px 24px;
+						border-radius: 12px;
+						display: inline-block;
+						box-shadow: 0 0 0 rgba(37, 99, 235, 0);
+						transition:
+							box-shadow 0.3s,
+							transform 0.3s;
+					"
+					onmouseenter="
+						this.style.boxShadow = '0 0 25px rgba(37,99,235,0.5)';
+						this.style.transform = 'translateY(-2px)';
+					"
+					onmouseleave="
+						this.style.boxShadow = '0 0 0 rgba(37,99,235,0)';
+						this.style.transform = 'translateY(0)';
+					"
+				>
+					Primary Button
+				</div>
+				<p style="margin-top: 12px; font-size: 13px; color: var(--text-muted)">
+					Blue glow on hover
+				</p>
+			</div>
+		</div>
+		<div class="card" data-choice="glow-card" onclick="toggleSelect(this)" style="cursor: default">
+			<div class="card-body" style="text-align: center">
+				<div
+					style="
+						border: 1px solid var(--border);
+						border-radius: 12px;
+						padding: 16px;
+						background: var(--card-bg);
+						transition:
+							box-shadow 0.3s,
+							transform 0.3s,
+							border-color 0.3s;
+					"
+					onmouseenter="
+						this.style.boxShadow = '0 8px 30px rgba(37,99,235,0.15)';
+						this.style.transform = 'translateY(-3px)';
+						this.style.borderColor = '#2563eb';
+					"
+					onmouseleave="
+						this.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)';
+						this.style.transform = 'translateY(0)';
+						this.style.borderColor = 'var(--border)';
+					"
+				>
+					<div style="font-weight: 600; margin-bottom: 4px">Todo Card</div>
+					<div style="font-size: 12px; color: var(--text-muted)">Elevates + glows on hover</div>
+				</div>
+			</div>
+		</div>
+		<div class="card" data-choice="glow-tag" onclick="toggleSelect(this)" style="cursor: default">
+			<div class="card-body" style="text-align: center">
+				<div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: center">
+					<span
+						style="
+							padding: 6px 14px;
+							border-radius: 20px;
+							font-size: 13px;
+							background: #ef4444;
+							color: white;
+							display: inline-block;
+							transition:
+								box-shadow 0.3s,
+								transform 0.3s;
+						"
+						onmouseenter="
+							this.style.boxShadow = '0 0 20px rgba(239,68,68,0.5)';
+							this.style.transform = 'scale(1.08)';
+						"
+						onmouseleave="
+							this.style.boxShadow = 'none';
+							this.style.transform = 'scale(1)';
+						"
+						>urgent</span
+					>
+					<span
+						style="
+							padding: 6px 14px;
+							border-radius: 20px;
+							font-size: 13px;
+							background: #06b6d4;
+							color: white;
+							display: inline-block;
+							transition:
+								box-shadow 0.3s,
+								transform 0.3s;
+						"
+						onmouseenter="
+							this.style.boxShadow = '0 0 20px rgba(6,182,212,0.5)';
+							this.style.transform = 'scale(1.08)';
+						"
+						onmouseleave="
+							this.style.boxShadow = 'none';
+							this.style.transform = 'scale(1)';
+						"
+						>home</span
+					>
+				</div>
+				<p style="margin-top: 12px; font-size: 13px; color: var(--text-muted)">
+					Tags glow + pop on hover
+				</p>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="section">
+	<h3>2. Spring-Animated Stats Bar</h3>
+	<p>Numbers smoothly spring to new values when todos change</p>
+	<div class="mockup">
+		<div class="mockup-body" style="padding: 20px">
+			<div
+				style="
+					display: flex;
+					gap: 0;
+					border: 1px solid var(--border);
+					border-radius: 12px;
+					overflow: hidden;
+				"
+			>
+				<div style="flex: 1; text-align: center; padding: 16px">
+					<div style="font-size: 28px; font-weight: 700; color: var(--text-heading)">3</div>
+					<div style="font-size: 13px; color: var(--text-muted)">Active</div>
+				</div>
+				<div style="width: 1px; background: var(--border)"></div>
+				<div style="flex: 1; text-align: center; padding: 16px">
+					<div style="font-size: 28px; font-weight: 700; color: var(--text-heading)">7</div>
+					<div style="font-size: 13px; color: var(--text-muted)">Completed</div>
+				</div>
+				<div style="width: 1px; background: var(--border)"></div>
+				<div style="flex: 1; text-align: center; padding: 16px">
+					<div style="font-size: 28px; font-weight: 700; color: #ef4444">1</div>
+					<div style="font-size: 13px; color: var(--text-muted)">Overdue</div>
+				</div>
+			</div>
+			<p style="font-size: 12px; color: var(--text-muted); text-align: center; margin-top: 12px">
+				Numbers will spring-animate between values using <code>svelte/motion</code> spring()
+			</p>
+		</div>
+	</div>
+</div>
+
+<div class="section">
+	<h3>3. Smooth List Transitions</h3>
+	<p>Todo items animate in/out with elegant scale + slide, staggered for rhythm</p>
+	<div class="cards" style="grid-template-columns: repeat(2, 1fr)">
+		<div class="card" style="cursor: default">
+			<div class="card-body">
+				<h4>Enter Animation</h4>
+				<p style="font-size: 13px; color: var(--text-muted)">
+					New items scale in from center with a gentle spring <code>scale + fade</code>
+				</p>
+				<div style="display: flex; gap: 8px; margin-top: 8px">
+					<div
+						style="
+							flex: 1;
+							height: 4px;
+							background: var(--btn-primary);
+							border-radius: 4px;
+							animation: pulseWidth 1.5s ease infinite;
+						"
+					></div>
+					<div style="flex: 1; height: 4px; background: var(--border); border-radius: 4px"></div>
+					<div style="flex: 1; height: 4px; background: var(--border); border-radius: 4px"></div>
+				</div>
+			</div>
+		</div>
+		<div class="card" style="cursor: default">
+			<div class="card-body">
+				<h4>Exit Animation</h4>
+				<p style="font-size: 13px; color: var(--text-muted)">
+					Deleted items scale down + fade out, then the list uses <code>flip</code> to reflow
+				</p>
+				<div style="display: flex; gap: 8px; margin-top: 8px">
+					<div style="flex: 1; height: 4px; background: var(--border); border-radius: 4px"></div>
+					<div
+						style="
+							flex: 1;
+							height: 4px;
+							background: var(--btn-delete);
+							border-radius: 4px;
+							animation: pulseWidth 1.5s ease infinite;
+						"
+					></div>
+					<div style="flex: 1; height: 4px; background: var(--border); border-radius: 4px"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="section">
+	<h3>4. Toast Slide + Spring Bounce</h3>
+	<p>Toast notifications slide up from the bottom with a spring bounce, then ease out</p>
+	<div class="mockup">
+		<div class="mockup-body" style="padding: 20px; display: flex; justify-content: center">
+			<div
+				style="
+					background: var(--card-bg);
+					border: 1px solid var(--border);
+					border-radius: 12px;
+					padding: 12px 20px;
+					display: flex;
+					align-items: center;
+					gap: 12px;
+					max-width: 360px;
+					width: 100%;
+					box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+					animation: slideUpBounce 0.5s ease;
+				"
+			>
+				<div
+					style="
+						width: 18px;
+						height: 18px;
+						border-radius: 50%;
+						background: #22c55e;
+						display: flex;
+						align-items: center;
+						justify-content: center;
+						color: white;
+						font-size: 12px;
+					"
+				>
+					✓
+				</div>
+				<span style="flex: 1; font-size: 14px">Task completed!</span>
+				<div style="font-size: 12px; color: var(--btn-primary); font-weight: 600; cursor: pointer">
+					Undo
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="section">
+	<h3>5. Page & Section Reveals</h3>
+	<p>
+		Subtle entrance animations when sections appear — staggered fade-in with gentle upward motion
+	</p>
+	<div class="options" data-multiselect>
+		<div class="option" data-choice="stagger" onclick="toggleSelect(this)" style="cursor: default">
+			<div class="letter">1</div>
+			<div class="content">
+				<h3>Staggered List Items</h3>
+				<p>Each todo card fades in with a slight delay from the previous one</p>
+			</div>
+		</div>
+		<div
+			class="option"
+			data-choice="crossfade"
+			onclick="toggleSelect(this)"
+			style="cursor: default"
+		>
+			<div class="letter">2</div>
+			<div class="content">
+				<h3>Crossfade Views</h3>
+				<p>Form show/hide crossfades instead of abrupt slide</p>
+			</div>
+		</div>
+		<div class="option" data-choice="checkbox" onclick="toggleSelect(this)" style="cursor: default">
+			<div class="letter">3</div>
+			<div class="content">
+				<h3>Checkbox Bounce</h3>
+				<p>Checkboxes spring-animate when toggled</p>
+			</div>
+		</div>
+	</div>
+</div>
+
+<style>
+	@keyframes pulseWidth {
+		0%,
+		100% {
+			width: 30%;
+			opacity: 0.3;
+		}
+		50% {
+			width: 80%;
+			opacity: 1;
+		}
+	}
+	@keyframes slideUpBounce {
+		0% {
+			transform: translateY(30px);
+			opacity: 0;
+		}
+		60% {
+			transform: translateY(-5px);
+			opacity: 1;
+		}
+		100% {
+			transform: translateY(0);
+			opacity: 1;
+		}
+	}
+	.section {
+		margin-bottom: 28px;
+	}
+</style>

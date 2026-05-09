@@ -105,3 +105,154 @@
 			color 0.3s;
 	}
 }
+
+/* ── Glow & Hover Effects ── */
+
+/* Card glow — elevated on hover with subtle colored shadow */
+.glow-card {
+	transition:
+		transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+		box-shadow 0.3s ease,
+		border-color 0.3s ease;
+}
+
+.glow-card:hover {
+	transform: translateY(-3px);
+	box-shadow: 0 8px 30px rgba(37, 99, 235, 0.15);
+	border-color: var(--btn-primary) !important;
+}
+
+/* Button glow — colored shadow on primary/save/delete buttons */
+.glow-btn {
+	transition:
+		transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+		box-shadow 0.25s ease,
+		filter 0.2s ease;
+}
+
+.glow-btn:hover {
+	transform: translateY(-1px);
+}
+
+[data-btn='primary'].glow-btn:hover {
+	box-shadow: 0 4px 20px rgba(37, 99, 235, 0.4);
+}
+
+[data-btn='save'].glow-btn:hover {
+	box-shadow: 0 4px 20px rgba(34, 197, 94, 0.4);
+}
+
+[data-btn='delete'].glow-btn:hover {
+	box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
+}
+
+[data-btn='cancel'].glow-btn:hover {
+	box-shadow: 0 4px 20px rgba(100, 116, 139, 0.3);
+}
+
+/* Tag glow — scale + colored glow on hover */
+.glow-tag {
+	transition:
+		transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+		box-shadow 0.2s ease,
+		filter 0.2s ease;
+}
+
+.glow-tag:hover {
+	transform: scale(1.08);
+	box-shadow: 0 0 20px var(--tag-color, rgba(99, 102, 241, 0.4));
+}
+
+/* ── Entrance Animations ── */
+
+@keyframes fadeSlideUp {
+	from {
+		opacity: 0;
+		transform: translateY(12px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.animate-fade-slide-up {
+	animation: fadeSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes scaleIn {
+	from {
+		opacity: 0;
+		transform: scale(0.95);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+.animate-scale-in {
+	animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ── Toast bounce entrance ── */
+@keyframes toastBounceIn {
+	0% {
+		opacity: 0;
+		transform: translateY(30px) scale(0.95);
+	}
+	50% {
+		opacity: 1;
+		transform: translateY(-4px) scale(1.01);
+	}
+	100% {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+	}
+}
+
+.animate-toast-in {
+	animation: toastBounceIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ── Checkbox spring bounce ── */
+.todo-check {
+	accent-color: var(--btn-save);
+	cursor: pointer;
+	transition:
+		transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+		box-shadow 0.2s ease;
+}
+
+.todo-check:active {
+	transform: scale(0.9);
+}
+
+.todo-check:checked {
+	box-shadow: 0 0 10px rgba(34, 197, 94, 0.4);
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+	.glow-card,
+	.glow-btn,
+	.glow-tag,
+	.todo-check {
+		transition-duration: 0.01ms !important;
+		animation-duration: 0.01ms !important;
+	}
+
+	.glow-card:hover,
+	.glow-btn:hover,
+	.glow-tag:hover {
+		transform: none !important;
+		box-shadow: none !important;
+	}
+
+	.animate-fade-slide-up,
+	.animate-scale-in,
+	.animate-toast-in {
+		animation: none !important;
+		opacity: 1 !important;
+	}
+}
