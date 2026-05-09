@@ -114,4 +114,29 @@ describe('storage', () => {
 			expect(result).toBe(false);
 		});
 	});
+
+	describe('SSR safety (no localStorage)', () => {
+		beforeEach(() => {
+			vi.unstubAllGlobals();
+		});
+
+		it('storageGet returns null when localStorage is undefined (SSR)', () => {
+			// Ensure localStorage is truly not defined
+			const result = storageGet('anykey');
+			expect(result).toBeNull();
+		});
+
+		it('storageSet does not throw when localStorage is undefined (SSR)', () => {
+			expect(() => storageSet('key', 'value')).not.toThrow();
+		});
+
+		it('storageRemove does not throw when localStorage is undefined (SSR)', () => {
+			expect(() => storageRemove('key')).not.toThrow();
+		});
+
+		it('storageAvailable returns false when localStorage is undefined (SSR)', () => {
+			const result = storageAvailable();
+			expect(result).toBe(false);
+		});
+	});
 });

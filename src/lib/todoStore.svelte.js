@@ -232,6 +232,11 @@ class TodoStore {
 			this.stats = this._computeStats(t);
 			this.filteredTodos = this._computeFiltered(t);
 			this.upcomingDueTasks = this._computeUpcomingDue(t);
+			this.streak = this._computeStreak(t);
+			this.completionsByDay = this._computeCompletionsByDay(t);
+			this.priorityDistribution = this._computePriorityDistribution(t);
+			this.categoryBreakdown = this._computeCategoryBreakdown(t);
+			this.overdueTasks = this._computeOverdueTasks(t);
 			storageSet('todos', t);
 		});
 
@@ -933,7 +938,6 @@ class TodoStore {
 	handleDrop(e, targetId) {
 		e.preventDefault();
 		const draggedId = this.draggedId;
-		const indicatorPos = this.dragIndicatorPos;
 		this.dragOverId = null;
 		this.dragIndicatorPos = null;
 		if (draggedId === null || draggedId === targetId) return;
@@ -944,8 +948,7 @@ class TodoStore {
 		const [item] = this.todos.splice(fromIdx, 1);
 		// Adjust toIdx if removal shifted it
 		if (fromIdx < toIdx) toIdx--;
-		// Place based on indicator position
-		if (indicatorPos === 'after') toIdx++;
+		// Insert at target position — always place before the target (swap)
 		this.todos.splice(toIdx, 0, item);
 		this.draggedId = null;
 	}

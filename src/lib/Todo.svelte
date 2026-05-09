@@ -464,7 +464,7 @@
 								class="flex-1 rounded-md px-2 py-1 text-sm"
 								style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text);"
 								bind:value={newSubtaskText}
-								placeholder="Add a subtask\u2026"
+								placeholder="Add a subtask…"
 								onkeydown={(e) => {
 									if (e.key === 'Enter') {
 										e.preventDefault();

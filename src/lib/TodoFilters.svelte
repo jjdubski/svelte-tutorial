@@ -20,7 +20,7 @@
 			class="m-0 flex-1 rounded-sm border-none bg-transparent p-0 text-sm focus-visible:ring-2 focus-visible:ring-[var(--btn-primary)] focus-visible:outline-none focus-visible:ring-inset"
 			style="color: var(--text);"
 			bind:value={store.filterText}
-			placeholder="Search\u2026"
+			placeholder="Search…"
 			aria-label="Search tasks"
 			type="search"
 		/>

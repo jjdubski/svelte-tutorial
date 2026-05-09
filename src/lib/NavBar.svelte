@@ -20,7 +20,6 @@
 				data-sveltekit-preload-data
 				class="nav-link rounded-lg px-3 py-1.5 text-sm font-medium no-underline transition-all"
 				class:active={$page.url.pathname === link.href}
-				style="color: var(--text-secondary);"
 			>
 				{link.label}
 			</a>

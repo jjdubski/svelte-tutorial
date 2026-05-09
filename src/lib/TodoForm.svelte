@@ -80,7 +80,7 @@
 			class="mb-3 min-h-[70px] w-full resize-y rounded-xl p-3 text-sm"
 			style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text); transition: border 0.2s, box-shadow 0.2s;"
 			bind:value={store.newDescription}
-			placeholder="Add details\u2026"
+			placeholder="Add details…"
 			rows="2"
 			name="description"
 			aria-label="Task description"
@@ -163,7 +163,7 @@
 					type="text"
 					class="tag-input-field flex-1 rounded-l-lg px-3 py-2 text-sm outline-none"
 					style="border: 1px dashed var(--border); border-right: none; background: transparent; color: var(--text);"
-					placeholder="Add custom tag\u2026"
+					placeholder="Add custom tag…"
 					bind:value={store.newCustomTag}
 					onkeydown={(e) => {
 						if (e.key === 'Enter') {

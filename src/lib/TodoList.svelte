@@ -98,7 +98,7 @@
 					<Search size={40} />
 				</div>
 				<h3 class="m-0 mb-2 text-lg font-semibold" style="color: var(--text-heading);">
-					No results for \u201C{store.filterText}\u201D
+					No results for “{store.filterText}”
 				</h3>
 				<p class="m-0 mb-6 text-sm" style="color: var(--text-muted);">
 					Try different keywords or check your spelling

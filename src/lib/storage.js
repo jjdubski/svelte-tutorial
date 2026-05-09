@@ -24,6 +24,7 @@ export function storageAvailable() {
  * @returns {any|null}
  */
 export function storageGet(key) {
+	if (typeof localStorage === 'undefined') return null;
 	try {
 		const raw = localStorage.getItem(key);
 		if (raw === null) return null;
@@ -40,6 +41,7 @@ export function storageGet(key) {
  * @param {any} value
  */
 export function storageSet(key, value) {
+	if (typeof localStorage === 'undefined') return;
 	try {
 		localStorage.setItem(key, JSON.stringify(value));
 	} catch (e) {
@@ -52,6 +54,7 @@ export function storageSet(key, value) {
  * @param {string} key
  */
 export function storageRemove(key) {
+	if (typeof localStorage === 'undefined') return;
 	try {
 		localStorage.removeItem(key);
 	} catch (e) {
