@@ -37,7 +37,7 @@
 			if (saved) {
 				const parsed = JSON.parse(saved);
 				if (parsed.length > 0) {
-					nextId = Math.max(...parsed.map(t => t.id)) + 1;
+					nextId = Math.max(...parsed.map((t) => t.id)) + 1;
 				}
 				return parsed;
 			}
@@ -81,11 +81,51 @@
 
 	// Task templates with None option
 	let templates = $state([
-		{ name: 'None', title: '', description: '', dueDate: '', priority: 'medium', category: '', tags: [] },
-		{ name: 'Meeting', title: 'Meeting with ', description: 'Discuss ', dueDate: '', priority: 'medium', category: 'Work', tags: ['meeting'] },
-		{ name: 'Errand', title: '', description: 'Buy ', dueDate: '', priority: 'low', category: 'Personal', tags: ['shopping'] },
-		{ name: 'Urgent', title: 'URGENT: ', description: '', dueDate: '', priority: 'high', category: 'Work', tags: ['urgent'] },
-		{ name: 'Health', title: 'Workout: ', description: '', dueDate: '', priority: 'medium', category: 'Personal', tags: ['health'] }
+		{
+			name: 'None',
+			title: '',
+			description: '',
+			dueDate: '',
+			priority: 'medium',
+			category: '',
+			tags: []
+		},
+		{
+			name: 'Meeting',
+			title: 'Meeting with ',
+			description: 'Discuss ',
+			dueDate: '',
+			priority: 'medium',
+			category: 'Work',
+			tags: ['meeting']
+		},
+		{
+			name: 'Errand',
+			title: '',
+			description: 'Buy ',
+			dueDate: '',
+			priority: 'low',
+			category: 'Personal',
+			tags: ['shopping']
+		},
+		{
+			name: 'Urgent',
+			title: 'URGENT: ',
+			description: '',
+			dueDate: '',
+			priority: 'high',
+			category: 'Work',
+			tags: ['urgent']
+		},
+		{
+			name: 'Health',
+			title: 'Workout: ',
+			description: '',
+			dueDate: '',
+			priority: 'medium',
+			category: 'Personal',
+			tags: ['health']
+		}
 	]);
 
 	// Form state
@@ -141,9 +181,9 @@
 	// Stats
 	let stats = $derived.by(() => {
 		const today = new Date().toISOString().split('T')[0];
-		const active = todos.filter(t => !t.completed).length;
-		const completed = todos.filter(t => t.completed).length;
-		const overdue = todos.filter(t => !t.completed && t.dueDate && t.dueDate < today).length;
+		const active = todos.filter((t) => !t.completed).length;
+		const completed = todos.filter((t) => t.completed).length;
+		const overdue = todos.filter((t) => !t.completed && t.dueDate && t.dueDate < today).length;
 		return { active, completed, overdue, total: todos.length };
 	});
 
@@ -158,7 +198,7 @@
 			category,
 			tags: tags || [],
 			recurring,
-			subtasks: subtasks?.filter(s => s.text.trim()) || [],
+			subtasks: subtasks?.filter((s) => s.text.trim()) || [],
 			completed: false,
 			createdAt: new Date().toISOString()
 		});
@@ -166,7 +206,16 @@
 
 	function add() {
 		if (newTitle.trim()) {
-			addTodo(newTitle.trim(), newDescription.trim(), newDueDate, newPriority, newCategory, newTags, newRecurring, newSubtasks);
+			addTodo(
+				newTitle.trim(),
+				newDescription.trim(),
+				newDueDate,
+				newPriority,
+				newCategory,
+				newTags,
+				newRecurring,
+				newSubtasks
+			);
 			resetForm();
 		}
 	}
@@ -197,7 +246,7 @@
 
 	$effect(() => {
 		if (selectedTemplate !== 'None') {
-			const t = templates.find(t => t.name === selectedTemplate);
+			const t = templates.find((t) => t.name === selectedTemplate);
 			if (t) {
 				const hasChanges =
 					newTitle !== t.title ||
@@ -207,7 +256,7 @@
 					newCategory !== t.category ||
 					JSON.stringify(newTags) !== JSON.stringify(t.tags) ||
 					newRecurring !== '' ||
-					newSubtasks.some(s => s.text);
+					newSubtasks.some((s) => s.text);
 				if (hasChanges) {
 					selectedTemplate = 'None';
 				}
@@ -228,25 +277,37 @@
 	}
 
 	function getRandomTagColor() {
-		const colors = ['#ef4444', '#f59e0b', '#06b6d4', '#ec4899', '#84cc16', '#14b8a6', '#f97316', '#8b5cf6', '#6366f1'];
+		const colors = [
+			'#ef4444',
+			'#f59e0b',
+			'#06b6d4',
+			'#ec4899',
+			'#84cc16',
+			'#14b8a6',
+			'#f97316',
+			'#8b5cf6',
+			'#6366f1'
+		];
 		return colors[Math.floor(Math.random() * colors.length)];
 	}
 
 	function updateTodo(id, updates) {
-		const todo = todos.find(t => t.id === id);
+		const todo = todos.find((t) => t.id === id);
 		if (todo) {
 			Object.assign(todo, updates);
 		}
 	}
 
 	function deleteTodo(id) {
-		const index = todos.findIndex(t => t.id === id);
+		const index = todos.findIndex((t) => t.id === id);
 		if (index !== -1) {
 			const { id: _id, ...rest } = todos[index];
 			lastDeletedTodo = { todo: { ...rest, id: _id }, index };
-			todos = todos.filter(t => t.id !== id);
+			todos = todos.filter((t) => t.id !== id);
 			toast = { show: true, message: 'Task deleted', type: 'info' };
-			setTimeout(() => { toast = { ...toast, show: false }; }, 4000);
+			setTimeout(() => {
+				toast = { ...toast, show: false };
+			}, 4000);
 		}
 	}
 
@@ -256,12 +317,14 @@
 			todos = [...todos];
 			lastDeletedTodo = null;
 			toast = { show: true, message: 'Task restored', type: 'success' };
-			setTimeout(() => { toast = { ...toast, show: false }; }, 2000);
+			setTimeout(() => {
+				toast = { ...toast, show: false };
+			}, 2000);
 		}
 	}
 
 	function toggleTodo(id) {
-		const todo = todos.find(t => t.id === id);
+		const todo = todos.find((t) => t.id === id);
 		if (todo) {
 			const wasCompleted = todo.completed;
 			todo.completed = !todo.completed;
@@ -292,7 +355,7 @@
 	}
 
 	function selectAll() {
-		selectedTodos = new SvelteSet(filteredTodos.map(t => t.id));
+		selectedTodos = new SvelteSet(filteredTodos.map((t) => t.id));
 	}
 
 	function deselectAll() {
@@ -300,17 +363,21 @@
 	}
 
 	function deleteSelected() {
-		todos = todos.filter(t => !selectedTodos.has(t.id));
+		todos = todos.filter((t) => !selectedTodos.has(t.id));
 		toast = { show: true, message: `${selectedTodos.size} tasks deleted`, type: 'info' };
-		setTimeout(() => { toast = { ...toast, show: false }; }, 3000);
+		setTimeout(() => {
+			toast = { ...toast, show: false };
+		}, 3000);
 		selectedTodos = new SvelteSet();
 		selectMode = false;
 	}
 
 	function completeSelected() {
-		todos = todos.map(t => selectedTodos.has(t.id) ? { ...t, completed: true } : t);
+		todos = todos.map((t) => (selectedTodos.has(t.id) ? { ...t, completed: true } : t));
 		toast = { show: true, message: `${selectedTodos.size} tasks completed`, type: 'success' };
-		setTimeout(() => { toast = { ...toast, show: false }; }, 2000);
+		setTimeout(() => {
+			toast = { ...toast, show: false };
+		}, 2000);
 		selectedTodos = new SvelteSet();
 		selectMode = false;
 	}
@@ -324,9 +391,18 @@
 		const name = newCategoryName.trim();
 		if (name && !categories.includes(name)) {
 			categories = [...categories, name];
-			const colors = ['#ef4444', '#f59e0b', '#06b6d4', '#ec4899', '#84cc16', '#14b8a6', '#f97316', '#8b5cf6'];
+			const colors = [
+				'#ef4444',
+				'#f59e0b',
+				'#06b6d4',
+				'#ec4899',
+				'#84cc16',
+				'#14b8a6',
+				'#f97316',
+				'#8b5cf6'
+			];
 			const used = Object.values(categoryColors);
-			const avail = colors.find(c => !used.includes(c));
+			const avail = colors.find((c) => !used.includes(c));
 			categoryColors = { ...categoryColors, [name]: avail || '#64748b' };
 			newCategoryName = '';
 			showAddCategory = false;
@@ -364,8 +440,8 @@
 		e.preventDefault();
 		dragOverId = null;
 		if (draggedId === null || draggedId === targetId) return;
-		const fromIdx = todos.findIndex(t => t.id === draggedId);
-		const toIdx = todos.findIndex(t => t.id === targetId);
+		const fromIdx = todos.findIndex((t) => t.id === draggedId);
+		const toIdx = todos.findIndex((t) => t.id === targetId);
 		if (fromIdx === -1 || toIdx === -1) return;
 		const item = todos.splice(fromIdx, 1)[0];
 		todos.splice(toIdx, 0, item);
@@ -377,9 +453,15 @@
 		if (!currentDate || !recurring) return '';
 		const date = new Date(currentDate + 'T00:00:00');
 		switch (recurring) {
-			case 'daily': date.setDate(date.getDate() + 1); break;
-			case 'weekly': date.setDate(date.getDate() + 7); break;
-			case 'monthly': date.setMonth(date.getMonth() + 1); break;
+			case 'daily':
+				date.setDate(date.getDate() + 1);
+				break;
+			case 'weekly':
+				date.setDate(date.getDate() + 7);
+				break;
+			case 'monthly':
+				date.setMonth(date.getMonth() + 1);
+				break;
 		}
 		return date.toISOString().split('T')[0];
 	}
@@ -413,15 +495,17 @@
 		let result = todos;
 		if (filterText.trim()) {
 			const q = filterText.toLowerCase();
-			result = result.filter(t => t.title.toLowerCase().includes(q) || t.description?.toLowerCase().includes(q));
+			result = result.filter(
+				(t) => t.title.toLowerCase().includes(q) || t.description?.toLowerCase().includes(q)
+			);
 		}
 		if (filterStatus === 'active') {
-			result = result.filter(t => !t.completed);
+			result = result.filter((t) => !t.completed);
 		} else if (filterStatus === 'done') {
-			result = result.filter(t => t.completed);
+			result = result.filter((t) => t.completed);
 		}
 		if (filterCategory) {
-			result = result.filter(t => t.category === filterCategory);
+			result = result.filter((t) => t.category === filterCategory);
 		}
 		if (sortBy === 'priority') {
 			const order = { high: 0, medium: 1, low: 2 };
@@ -440,15 +524,27 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-<div class="min-h-dvh flex justify-center p-8 sm:p-4" style="background: linear-gradient(145deg, var(--bg-gradient-1) 0%, var(--bg-gradient-2) 100%); transition: background 0.3s;">
-	<div class="w-full max-w-[900px] rounded-2xl border p-8 sm:p-5 sm:rounded-xl" style="background: var(--card-bg); box-shadow: 0 8px 32px var(--shadow); border-color: var(--border); transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;">
+<div
+	class="flex min-h-dvh justify-center p-8 sm:p-4"
+	style="background: linear-gradient(145deg, var(--bg-gradient-1) 0%, var(--bg-gradient-2) 100%); transition: background 0.3s;"
+>
+	<div
+		class="w-full max-w-[900px] rounded-2xl border p-8 sm:rounded-xl sm:p-5"
+		style="background: var(--card-bg); box-shadow: 0 8px 32px var(--shadow); border-color: var(--border); transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;"
+	>
 		<!-- Header -->
-		<div class="flex items-center justify-center mb-6 relative">
-			<h1 class="m-0 text-4xl font-light" style="color: var(--text-heading); font-family: 'Caveat', 'Brush Script MT', cursive; letter-spacing: 0.02em;">Todo List</h1>
+		<div class="relative mb-6 flex items-center justify-center">
+			<h1
+				class="m-0 text-4xl font-light"
+				style="color: var(--text-heading); font-family: 'Caveat', 'Brush Script MT', cursive; letter-spacing: 0.02em;"
+			>
+				Todo List
+			</h1>
 			<button
-				class="absolute right-0 flex items-center justify-center w-11 h-11 rounded-xl border cursor-pointer"
-				style="background: var(--todo-bg); border-color: var(--border); color: var(--text-secondary); transition: all 0.2s;" data-btn="ghost"
-				onclick={() => darkMode = !darkMode}
+				class="absolute right-0 flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl border"
+				style="background: var(--todo-bg); border-color: var(--border); color: var(--text-secondary); transition: all 0.2s;"
+				data-btn="ghost"
+				onclick={() => (darkMode = !darkMode)}
 				aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
 			>
 				{#if darkMode}
@@ -462,17 +558,23 @@
 		<!-- Stats Bar -->
 		<StatsBar {stats} />
 
-		
-
 		<!-- Add Form -->
 		{#if showForm}
-			<div class="mb-6" transition:slide={{ duration: prefersReducedMotion ? 0 : 300, easing: cubicOut }}>
+			<div
+				class="mb-6"
+				transition:slide={{ duration: prefersReducedMotion ? 0 : 300, easing: cubicOut }}
+			>
 				<!-- Templates Segmented Control -->
-				<span class="block text-xs font-medium mb-2" style="color: var(--text-muted);">Choose a template</span>
-				<div class="flex rounded-xl p-0.5 gap-0.5 mb-4" style="background: var(--input-bg); border: 1px solid var(--border);">
+				<span class="mb-2 block text-xs font-medium" style="color: var(--text-muted);"
+					>Choose a template</span
+				>
+				<div
+					class="mb-4 flex gap-0.5 rounded-xl p-0.5"
+					style="background: var(--input-bg); border: 1px solid var(--border);"
+				>
 					{#each templates as template (template.name)}
 						<button
-							class="template-btn flex-1 px-3 py-2 border-none rounded-lg text-sm font-medium cursor-pointer"
+							class="template-btn flex-1 cursor-pointer rounded-lg border-none px-3 py-2 text-sm font-medium"
 							class:active={selectedTemplate === template.name}
 							onclick={() => applyTemplate(template)}
 						>
@@ -483,7 +585,7 @@
 
 				<input
 					id="title-input"
-					class="w-full rounded-xl p-3 mb-3 text-sm"
+					class="mb-3 w-full rounded-xl p-3 text-sm"
 					style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text); transition: all 0.2s;"
 					bind:value={newTitle}
 					placeholder="What needs to be done?"
@@ -491,26 +593,47 @@
 					autocomplete="off"
 				/>
 				<textarea
-					class="w-full rounded-xl p-3 mb-3 text-sm min-h-[70px] resize-y"
+					class="mb-3 min-h-[70px] w-full resize-y rounded-xl p-3 text-sm"
 					style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text); transition: all 0.2s;"
 					bind:value={newDescription}
 					placeholder="Add details..."
 					rows="2"
 				></textarea>
-				<div class="flex gap-2 flex-wrap">
-					<input type="date" class="flex-1 min-w-[100px] rounded-xl p-3 mb-3 text-sm" style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text);" bind:value={newDueDate} aria-label="Due date" />
-					<select class="flex-1 min-w-[100px] rounded-xl p-3 mb-3 text-sm" style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text);" bind:value={newPriority} aria-label="Priority">
+				<div class="flex flex-wrap gap-2">
+					<input
+						type="date"
+						class="mb-3 min-w-[100px] flex-1 rounded-xl p-3 text-sm"
+						style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text);"
+						bind:value={newDueDate}
+						aria-label="Due date"
+					/>
+					<select
+						class="mb-3 min-w-[100px] flex-1 rounded-xl p-3 text-sm"
+						style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text);"
+						bind:value={newPriority}
+						aria-label="Priority"
+					>
 						<option value="high">High</option>
 						<option value="medium">Medium</option>
 						<option value="low">Low</option>
 					</select>
-					<select class="flex-1 min-w-[100px] rounded-xl p-3 mb-3 text-sm" style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text);" bind:value={newCategory} aria-label="Category">
+					<select
+						class="mb-3 min-w-[100px] flex-1 rounded-xl p-3 text-sm"
+						style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text);"
+						bind:value={newCategory}
+						aria-label="Category"
+					>
 						<option value="">Category</option>
 						{#each categories as cat (cat)}
 							<option value={cat}>{cat}</option>
 						{/each}
 					</select>
-					<select class="flex-1 min-w-[100px] rounded-xl p-3 mb-3 text-sm" style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text);" bind:value={newRecurring} aria-label="Recurring">
+					<select
+						class="mb-3 min-w-[100px] flex-1 rounded-xl p-3 text-sm"
+						style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text);"
+						bind:value={newRecurring}
+						aria-label="Recurring"
+					>
 						<option value="">Repeat</option>
 						<option value="daily">Daily</option>
 						<option value="weekly">Weekly</option>
@@ -520,25 +643,29 @@
 
 				<!-- Tags selector - below form fields -->
 				<div class="mb-3">
-					<div class="flex flex-wrap gap-2 items-center mb-2">
+					<div class="mb-2 flex flex-wrap items-center gap-2">
 						<span class="text-xs font-medium" style="color: var(--text-muted);">Tags:</span>
 						{#each availableTags as tag (tag)}
 							<button
-								class="tag-btn px-3 py-1.5 rounded-full text-sm font-medium border cursor-pointer"
-						style="--tag-color: {tagColors[tag]}; transition: all 0.2s;"
-							class:selected={newTags.includes(tag)}
-							onclick={() => newTags = newTags.includes(tag) ? newTags.filter(t => t !== tag) : [...newTags, tag]}
-							type="button"
-							data-btn="tag"
-						>
-							{tag}
-						</button>
+								class="tag-btn cursor-pointer rounded-full border px-3 py-1.5 text-sm font-medium"
+								style="--tag-color: {tagColors[tag]}; transition: all 0.2s;"
+								class:selected={newTags.includes(tag)}
+								onclick={() =>
+									(newTags = newTags.includes(tag)
+										? newTags.filter((t) => t !== tag)
+										: [...newTags, tag])}
+								type="button"
+								data-btn="tag"
+							>
+								{tag}
+							</button>
 						{/each}
-						{#each newTags.filter(t => !availableTags.includes(t)) as tag (tag)}
+						{#each newTags.filter((t) => !availableTags.includes(t)) as tag (tag)}
 							<button
-								class="tag-btn px-3 py-1.5 rounded-full text-sm font-medium border cursor-pointer"
-								style="background: #6366f1; color: white; border-color: #6366f1;" data-btn="tag"
-								onclick={() => newTags = newTags.filter(t => t !== tag)}
+								class="tag-btn cursor-pointer rounded-full border px-3 py-1.5 text-sm font-medium"
+								style="background: #6366f1; color: white; border-color: #6366f1;"
+								data-btn="tag"
+								onclick={() => (newTags = newTags.filter((t) => t !== tag))}
 								type="button"
 							>
 								{tag} ×
@@ -548,55 +675,93 @@
 					<div class="flex">
 						<input
 							type="text"
-							class="tag-input-field flex-1 px-3 py-2 text-sm rounded-l-lg outline-none"
+							class="tag-input-field flex-1 rounded-l-lg px-3 py-2 text-sm outline-none"
 							style="border: 1px dashed var(--border); border-right: none; background: transparent; color: var(--text);"
 							placeholder="Add custom tag..."
 							bind:value={newCustomTag}
-							onkeydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCustomTag(); } }}
+							onkeydown={(e) => {
+								if (e.key === 'Enter') {
+									e.preventDefault();
+									addCustomTag();
+								}
+							}}
 						/>
-						<div class="tag-add-btn flex items-center px-3 py-2 text-sm rounded-r-lg cursor-pointer"
-							style="border: 1px dashed var(--border); background: transparent; color: var(--text-muted); transition: all 0.2s;" data-btn="ghost"
-							onclick={addCustomTag} role="button" tabindex="0" onkeydown={(e) => e.key === 'Enter' && addCustomTag()}>+</div>
+						<div
+							class="tag-add-btn flex cursor-pointer items-center rounded-r-lg px-3 py-2 text-sm"
+							style="border: 1px dashed var(--border); background: transparent; color: var(--text-muted); transition: all 0.2s;"
+							data-btn="ghost"
+							onclick={addCustomTag}
+							role="button"
+							tabindex="0"
+							onkeydown={(e) => e.key === 'Enter' && addCustomTag()}
+						>
+							+
+						</div>
 					</div>
 				</div>
 
-
-				<button type="button" class="flex items-center w-full justify-center gap-1.5 flex-1 px-4 py-3.5 border-none rounded-xl font-semibold text-base cursor-pointer"
-					style="background: var(--btn-primary); color: white; transition: all 0.2s;" data-btn="primary"
-					onclick={add}>
+				<button
+					type="button"
+					class="flex w-full flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border-none px-4 py-3.5 text-base font-semibold"
+					style="background: var(--btn-primary); color: white; transition: all 0.2s;"
+					data-btn="primary"
+					onclick={add}
+				>
 					<Plus size={16} /> Add Task
 				</button>
 			</div>
 		{:else}
-			<button class="flex items-center justify-center gap-2 w-full p-4 rounded-xl border border-dashed cursor-pointer mb-6"
-				style="border-color: var(--border); color: var(--text-muted); transition: all 0.2s;" data-btn="ghost"
-				onclick={() => showForm = true}>
+			<button
+				class="mb-6 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed p-4"
+				style="border-color: var(--border); color: var(--text-muted); transition: all 0.2s;"
+				data-btn="ghost"
+				onclick={() => (showForm = true)}
+			>
 				<Plus size={18} /> Add a task
 			</button>
 		{/if}
 
 		<!-- Filter Bar -->
-		<div class="flex gap-2 mb-3 flex-wrap">
-			<div class="flex items-center gap-2 flex-1 min-w-[160px] px-3 py-2.5 rounded-xl border" style="background: var(--input-bg); border-color: var(--border);">
+		<div class="mb-3 flex flex-wrap gap-2">
+			<div
+				class="flex min-w-[160px] flex-1 items-center gap-2 rounded-xl border px-3 py-2.5"
+				style="background: var(--input-bg); border-color: var(--border);"
+			>
 				<Search size={16} style="color: var(--text-muted);" />
-				<input class="flex-1 border-none bg-transparent text-sm p-0 m-0 outline-none" style="color: var(--text);" bind:value={filterText} placeholder="Search..." />
+				<input
+					class="m-0 flex-1 border-none bg-transparent p-0 text-sm outline-none"
+					style="color: var(--text);"
+					bind:value={filterText}
+					placeholder="Search..."
+				/>
 			</div>
-			<select class="p-2.5 px-3 rounded-xl text-sm" style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text); cursor: pointer;" bind:value={filterStatus} aria-label="Filter by status">
+			<select
+				class="rounded-xl p-2.5 px-3 text-sm"
+				style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text); cursor: pointer;"
+				bind:value={filterStatus}
+				aria-label="Filter by status"
+			>
 				<option value="all">All</option>
 				<option value="active">Active</option>
 				<option value="done">Done</option>
 			</select>
-			<select class="p-2.5 px-3 rounded-xl text-sm" style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text); cursor: pointer;" bind:value={sortBy} aria-label="Sort by">
+			<select
+				class="rounded-xl p-2.5 px-3 text-sm"
+				style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text); cursor: pointer;"
+				bind:value={sortBy}
+				aria-label="Sort by"
+			>
 				<option value="manual">Sort</option>
 				<option value="priority">Priority</option>
 				<option value="date">Date</option>
 			</select>
 			<div class="relative">
 				<button
-					class="flex items-center justify-center w-10 h-10 rounded-xl border cursor-pointer"
-					style="background: var(--input-bg); border-color: var(--border); color: var(--text-muted); transition: all 0.2s;" data-btn="ghost"
+					class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border"
+					style="background: var(--input-bg); border-color: var(--border); color: var(--text-muted); transition: all 0.2s;"
+					data-btn="ghost"
 					class:active={selectMode}
-					onclick={() => selectMode = !selectMode}
+					onclick={() => (selectMode = !selectMode)}
 					aria-label="Toggle select mode"
 				>
 					{#if selectMode && selectedTodos.size > 0}
@@ -606,20 +771,38 @@
 					{/if}
 				</button>
 				{#if selectMode}
-					<div class="absolute top-full right-0 mt-2 flex gap-1.5 p-2 rounded-xl border shadow-lg z-50 whitespace-nowrap" style="background: var(--card-bg); border-color: var(--border);" transition:slide={{ duration: prefersReducedMotion ? 0 : 150 }}>
-						<button class="flex items-center gap-1 px-2.5 py-2 border-none rounded-lg text-xs font-medium cursor-pointer"
-							style="background: var(--btn-save); color: white; transition: all 0.2s;" data-btn="save"
-							onclick={completeSelected} disabled={selectedTodos.size === 0}>
+					<div
+						class="absolute top-full right-0 z-50 mt-2 flex gap-1.5 rounded-xl border p-2 whitespace-nowrap shadow-lg"
+						style="background: var(--card-bg); border-color: var(--border);"
+						transition:slide={{ duration: prefersReducedMotion ? 0 : 150 }}
+					>
+						<button
+							class="flex cursor-pointer items-center gap-1 rounded-lg border-none px-2.5 py-2 text-xs font-medium"
+							style="background: var(--btn-save); color: white; transition: all 0.2s;"
+							data-btn="save"
+							onclick={completeSelected}
+							disabled={selectedTodos.size === 0}
+						>
 							<CheckSquare size={14} /> Complete
 						</button>
-						<button class="flex items-center gap-1 px-2.5 py-2 border-none rounded-lg text-xs font-medium cursor-pointer"
-							style="background: var(--btn-delete); color: white; transition: all 0.2s;" data-btn="delete"
-							onclick={deleteSelected} disabled={selectedTodos.size === 0}>
+						<button
+							class="flex cursor-pointer items-center gap-1 rounded-lg border-none px-2.5 py-2 text-xs font-medium"
+							style="background: var(--btn-delete); color: white; transition: all 0.2s;"
+							data-btn="delete"
+							onclick={deleteSelected}
+							disabled={selectedTodos.size === 0}
+						>
 							<Trash2 size={14} /> Delete
 						</button>
-						<button class="flex items-center gap-1 px-2.5 py-2 border-none rounded-lg text-xs font-medium cursor-pointer"
-							style="background: var(--btn-cancel); color: white; transition: all 0.2s;" data-btn="cancel"
-							onclick={() => { selectMode = false; selectedTodos = new SvelteSet(); }}>
+						<button
+							class="flex cursor-pointer items-center gap-1 rounded-lg border-none px-2.5 py-2 text-xs font-medium"
+							style="background: var(--btn-cancel); color: white; transition: all 0.2s;"
+							data-btn="cancel"
+							onclick={() => {
+								selectMode = false;
+								selectedTodos = new SvelteSet();
+							}}
+						>
 							<X size={14} /> Cancel
 						</button>
 					</div>
@@ -628,17 +811,24 @@
 		</div>
 
 		<!-- Categories -->
-		<div class="flex gap-2 flex-wrap items-center mb-3 px-3 py-2.5 rounded-xl border" style="background: var(--todo-bg); border-color: var(--border); transition: background 0.3s, border-color 0.3s;">
+		<div
+			class="mb-3 flex flex-wrap items-center gap-2 rounded-xl border px-3 py-2.5"
+			style="background: var(--todo-bg); border-color: var(--border); transition: background 0.3s, border-color 0.3s;"
+		>
 			<button
-				class="px-3 py-1.5 rounded-full text-sm font-medium cursor-pointer border-transparent"
-				style="color: var(--text-secondary); transition: all 0.15s;" data-btn="ghost"
+				class="cursor-pointer rounded-full border-transparent px-3 py-1.5 text-sm font-medium"
+				style="color: var(--text-secondary); transition: all 0.15s;"
+				data-btn="ghost"
 				class:active={filterCategory === ''}
-				onclick={() => filterCategory = ''}
-			>All</button>
+				onclick={() => (filterCategory = '')}>All</button
+			>
 			{#each categories as cat (cat)}
 				<button
-					class="px-3 py-1.5 rounded-full text-sm font-medium cursor-pointer border-transparent"
-					style="color: var(--text-secondary); --cat-color: {categoryColors[cat]}; transition: all 0.15s;" data-btn="ghost"
+					class="cursor-pointer rounded-full border-transparent px-3 py-1.5 text-sm font-medium"
+					style="color: var(--text-secondary); --cat-color: {categoryColors[
+						cat
+					]}; transition: all 0.15s;"
+					data-btn="ghost"
 					class:active={filterCategory === cat}
 					onclick={() => setFilterCategory(cat)}
 				>
@@ -646,20 +836,51 @@
 				</button>
 			{/each}
 			{#if showAddCategory}
-				<form class="flex gap-1 items-center" onsubmit={(e) => { e.preventDefault(); addCategory(); }}>
-					<input class="w-[70px] px-2 py-1 text-xs rounded-md" style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text);" bind:value={newCategoryName} placeholder="New" />
-					<button type="submit" class="px-2 py-1 text-xs font-medium border-none rounded-md cursor-pointer" style="background: var(--btn-save); color: white;" data-btn="save">Add</button>
-					<button type="button" class="px-2 py-1 text-xs font-medium border-none rounded-md cursor-pointer" style="background: var(--btn-cancel); color: white;" data-btn="cancel" onclick={() => showAddCategory = false}>X</button>
+				<form
+					class="flex items-center gap-1"
+					onsubmit={(e) => {
+						e.preventDefault();
+						addCategory();
+					}}
+				>
+					<input
+						class="w-[70px] rounded-md px-2 py-1 text-xs"
+						style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text);"
+						bind:value={newCategoryName}
+						placeholder="New"
+					/>
+					<button
+						type="submit"
+						class="cursor-pointer rounded-md border-none px-2 py-1 text-xs font-medium"
+						style="background: var(--btn-save); color: white;"
+						data-btn="save">Add</button
+					>
+					<button
+						type="button"
+						class="cursor-pointer rounded-md border-none px-2 py-1 text-xs font-medium"
+						style="background: var(--btn-cancel); color: white;"
+						data-btn="cancel"
+						onclick={() => (showAddCategory = false)}>X</button
+					>
 				</form>
 			{:else}
-				<button class="px-2 py-1 bg-none rounded-full border border-dashed text-xs cursor-pointer" style="border-color: var(--border-input); color: var(--text-muted); transition: all 0.15s;" data-btn="ghost" onclick={() => showAddCategory = true}>+</button>
+				<button
+					class="cursor-pointer rounded-full border border-dashed bg-none px-2 py-1 text-xs"
+					style="border-color: var(--border-input); color: var(--text-muted); transition: all 0.15s;"
+					data-btn="ghost"
+					onclick={() => (showAddCategory = true)}>+</button
+				>
 			{/if}
 		</div>
 
 		<!-- Toggle form -->
-		<button class="flex items-center justify-center w-full py-2 mb-3 border-none rounded-md cursor-pointer"
-			style="background: transparent; color: var(--text-muted); transition: all 0.2s;" data-btn="ghost"
-			onclick={() => showForm = !showForm} aria-label="Toggle add form">
+		<button
+			class="mb-3 flex w-full cursor-pointer items-center justify-center rounded-md border-none py-2"
+			style="background: transparent; color: var(--text-muted); transition: all 0.2s;"
+			data-btn="ghost"
+			onclick={() => (showForm = !showForm)}
+			aria-label="Toggle add form"
+		>
 			{#if showForm}
 				<ChevronUp size={16} />
 			{:else}
@@ -672,15 +893,28 @@
 			{#if isLoading}
 				<SkeletonLoader />
 			{:else if filteredTodos.length === 0}
-				<div class="flex flex-col items-center py-12 px-4" transition:fade={{ duration: prefersReducedMotion ? 0 : 300 }}>
-					<div class="w-16 h-16 mb-4 flex items-center justify-center rounded-2xl" style="background: linear-gradient(135deg, var(--btn-primary) 0%, var(--btn-edit) 100%); color: white;">
+				<div
+					class="flex flex-col items-center px-4 py-12"
+					transition:fade={{ duration: prefersReducedMotion ? 0 : 300 }}
+				>
+					<div
+						class="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl"
+						style="background: linear-gradient(135deg, var(--btn-primary) 0%, var(--btn-edit) 100%); color: white;"
+					>
 						<Layers size={40} />
 					</div>
-					<h3 class="m-0 mb-2 text-lg font-semibold" style="color: var(--text-heading);">No tasks yet</h3>
-					<p class="m-0 mb-6 text-sm" style="color: var(--text-muted);">Add a task to get started</p>
-					<button class="flex items-center justify-center gap-1.5 flex-1 px-4 py-3.5 border-none rounded-xl font-semibold text-base cursor-pointer"
-						style="background: var(--btn-primary); color: white; transition: all 0.2s; max-width: 280px;" data-btn="primary"
-						onclick={() => showForm = true}>
+					<h3 class="m-0 mb-2 text-lg font-semibold" style="color: var(--text-heading);">
+						No tasks yet
+					</h3>
+					<p class="m-0 mb-6 text-sm" style="color: var(--text-muted);">
+						Add a task to get started
+					</p>
+					<button
+						class="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border-none px-4 py-3.5 text-base font-semibold"
+						style="background: var(--btn-primary); color: white; transition: all 0.2s; max-width: 280px;"
+						data-btn="primary"
+						onclick={() => (showForm = true)}
+					>
 						<Plus size={16} /> Add your first task
 					</button>
 				</div>
@@ -718,8 +952,16 @@
 		</div>
 
 		<!-- Shortcut hint -->
-		<div class="text-center mt-6 text-xs" style="color: var(--text-muted);">
-			<kbd class="inline-block px-1.5 py-0.5 rounded text-[11px]" style="background: var(--todo-bg); border: 1px solid var(--border); font-family: inherit; margin: 0 2px;">Ctrl</kbd>+<kbd class="inline-block px-1.5 py-0.5 rounded text-[11px]" style="background: var(--todo-bg); border: 1px solid var(--border); font-family: inherit; margin: 0 2px;">N</kbd> quick add
+		<div class="mt-6 text-center text-xs" style="color: var(--text-muted);">
+			<kbd
+				class="inline-block rounded px-1.5 py-0.5 text-[11px]"
+				style="background: var(--todo-bg); border: 1px solid var(--border); font-family: inherit; margin: 0 2px;"
+				>Ctrl</kbd
+			>+<kbd
+				class="inline-block rounded px-1.5 py-0.5 text-[11px]"
+				style="background: var(--todo-bg); border: 1px solid var(--border); font-family: inherit; margin: 0 2px;"
+				>N</kbd
+			> quick add
 		</div>
 	</div>
 </div>
@@ -769,14 +1011,14 @@
 		filter: brightness(1.1);
 	}
 
-	[data-btn="primary"]:hover,
-	[data-btn="save"]:hover,
-	[data-btn="delete"]:hover,
-	[data-btn="cancel"]:hover {
+	[data-btn='primary']:hover,
+	[data-btn='save']:hover,
+	[data-btn='delete']:hover,
+	[data-btn='cancel']:hover {
 		filter: brightness(1.15);
 	}
 
-	[data-btn="ghost"]:hover {
+	[data-btn='ghost']:hover {
 		background: var(--todo-bg) !important;
 		border-color: var(--text-muted) !important;
 	}
