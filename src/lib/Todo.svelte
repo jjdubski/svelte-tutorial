@@ -4,7 +4,7 @@
 	import { elasticOut } from 'svelte/easing';
 	import {
 		Edit2,
-		Trash2,
+		Archive,
 		X,
 		ChevronDown,
 		ChevronRight,
@@ -208,7 +208,7 @@
 			{#each store.availableTags as tag (tag)}
 				<button
 					type="button"
-					class="glow-tag tag-toggle cursor-pointer rounded-full border px-2 py-0.5 text-xs font-semibold"
+					class="glow-tag tag-toggle cursor-pointer rounded-full border px-2 py-0.5 text-sm font-semibold"
 					class:selected={editTags.includes(tag)}
 					style="--tag-color: {store.tagColors[tag]}"
 					onclick={() =>
@@ -224,7 +224,7 @@
 		<div class="subtasks-editor mt-1">
 			<button
 				type="button"
-				class="text-btn cursor-pointer border-none bg-none p-1 text-sm"
+				class="text-btn cursor-pointer border-none bg-none p-1 text-base"
 				onclick={addEditSubtask}
 			>
 				+ Add subtask
@@ -242,7 +242,7 @@
 						type="text"
 						bind:value={editSubtasks[i].text}
 						placeholder="Subtask {i + 1}"
-						class="flex-1 rounded-md border px-2 py-1.5 text-sm"
+						class="flex-1 rounded-md border px-2 py-1.5 text-base"
 						aria-label="Subtask {i + 1} text"
 					/>
 					<button
@@ -250,7 +250,7 @@
 						class="icon-btn tiny flex h-6 w-6 items-center justify-center rounded border-none p-0"
 						onclick={() => removeEditSubtask(i)}
 					>
-						<X size={12} />
+						<X size={14} />
 					</button>
 				</div>
 			{/each}
@@ -325,14 +325,14 @@
 						<h3 class="todo-title m-0 text-base leading-snug font-medium">{todo.title}</h3>
 						<span class="ml-auto flex shrink-0 items-center gap-1">
 							<span
-								class="priority-badge inline-block rounded px-1.5 py-0.5 text-xs font-bold tracking-wider text-white uppercase priority-{todo.priority ||
+								class="priority-badge inline-block rounded px-1.5 py-0.5 text-sm font-bold tracking-wider text-white uppercase priority-{todo.priority ||
 									'medium'}"
 							>
 								{todo.priority || 'medium'}
 							</span>
 							{#if todo.category && store.categories.includes(todo.category)}
 								<span
-									class="category-badge inline-block rounded-full px-1.5 py-0.5 text-xs font-semibold text-white"
+									class="category-badge inline-block rounded-full px-1.5 py-0.5 text-sm font-semibold text-white"
 									style="background: {store.categoryColors[todo.category]};"
 								>
 									{todo.category}
@@ -351,7 +351,7 @@
 					</div>
 
 					{#if todo.description}
-						<div class="markdown-content m-0 mt-0.5 text-sm leading-relaxed">
+						<div class="markdown-content m-0 mt-0.5 text-base leading-relaxed">
 							{@html renderMarkdown(todo.description)}
 						</div>
 					{/if}
@@ -360,7 +360,7 @@
 						<div class="mt-1 flex flex-wrap gap-1">
 							{#each todo.tags as tag (tag)}
 								<span
-									class="inline-block rounded-full px-1.5 py-0.5 text-xs font-semibold text-white"
+									class="inline-block rounded-full px-1.5 py-0.5 text-sm font-semibold text-white"
 									style="background: {store.tagColors[tag]};"
 								>
 									{tag}
@@ -372,19 +372,19 @@
 					<div class="mt-1 flex flex-wrap items-center gap-2">
 						{#if totalSubtasks > 0}
 							<button
-								class="subtasks-preview inline-flex cursor-pointer items-center gap-0.5 border-none bg-none p-0.5 text-sm"
+								class="subtasks-preview inline-flex cursor-pointer items-center gap-0.5 border-none bg-none p-0.5 text-base"
 								onclick={toggleSubtasksView}
 							>
 								{#if showSubtasks}
-									<ChevronDown size={12} />
+									<ChevronDown size={14} />
 								{:else}
-									<ChevronRight size={12} />
+									<ChevronRight size={14} />
 								{/if}
 								<span>{completedSubtasks}/{totalSubtasks}</span>
 							</button>
 						{/if}
 						<button
-							class="inline-flex cursor-pointer items-center gap-0.5 border-none bg-none p-0.5 text-sm"
+							class="inline-flex cursor-pointer items-center gap-0.5 border-none bg-none p-0.5 text-base"
 							style="color: var(--text-muted);"
 							onclick={() => (showAddSubtask = !showAddSubtask)}
 						>
@@ -393,7 +393,7 @@
 						<span class="ml-auto flex items-center gap-1">
 							{#if todo.dueDate}
 								<span
-									class="text-sm font-medium"
+									class="text-base font-medium"
 									style="color: {isOverdue(todo.dueDate)
 										? 'var(--priority-high)'
 										: 'var(--text-muted)'};"
@@ -407,7 +407,7 @@
 								style="color: var(--text-muted);"
 								aria-label="Share task"
 							>
-								<Share2 size={13} />
+								<Share2 size={16} />
 							</button>
 							<button
 								onclick={startEdit}
@@ -415,15 +415,15 @@
 								style="color: var(--text-muted);"
 								aria-label="Edit task"
 							>
-								<Edit2 size={13} />
+								<Edit2 size={16} />
 							</button>
 							<button
 								onclick={() => store.deleteTodo(todo.id)}
 								class="glow-btn flex cursor-pointer items-center justify-center rounded-md border-0 p-1"
 								style="color: var(--text-muted);"
-								aria-label="Delete task"
+								aria-label="Archive task"
 							>
-								<Trash2 size={13} />
+								<Archive size={16} />
 							</button>
 						</span>
 					</div>
@@ -436,7 +436,7 @@
 						>
 							{#each todo.subtasks as subtask, i (i)}
 								<div
-									class="subtask-item flex items-center gap-1.5 py-0.5 text-sm"
+									class="subtask-item flex items-center gap-1.5 py-0.5 text-base"
 									class:done={subtask.done}
 								>
 									<input
@@ -461,7 +461,7 @@
 						>
 							<input
 								type="text"
-								class="flex-1 rounded-md px-2 py-1 text-sm"
+								class="flex-1 rounded-md px-2 py-1 text-base"
 								style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text);"
 								bind:value={newSubtaskText}
 								placeholder="Add a subtask…"
@@ -474,19 +474,19 @@
 								aria-label="New subtask text"
 							/>
 							<button
-								class="cursor-pointer rounded-md border-none px-2 py-1 text-sm font-medium text-white"
+								class="cursor-pointer rounded-md border-none px-2 py-1 text-base font-medium text-white"
 								style="background: var(--btn-save);"
 								onclick={addInlineSubtask}>Add</button
 							>
 							<button
-								class="cursor-pointer rounded-md border-none px-2 py-1 text-xs font-medium text-white"
+								class="cursor-pointer rounded-md border-none px-2 py-1 text-sm font-medium text-white"
 								style="background: var(--btn-cancel);"
 								onclick={() => {
 									showAddSubtask = false;
 									newSubtaskText = '';
 								}}
 							>
-								<X size={12} />
+								<X size={14} />
 							</button>
 						</div>
 					{/if}
@@ -654,7 +654,7 @@
 	}
 
 	.todo-card [aria-label='Edit task']:hover,
-	.todo-card [aria-label='Delete task']:hover {
+	.todo-card [aria-label='Archive task']:hover {
 		background: var(--todo-bg);
 		color: var(--text-heading) !important;
 	}

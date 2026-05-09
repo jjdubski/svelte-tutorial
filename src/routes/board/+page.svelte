@@ -1,7 +1,7 @@
 <script>
 	import { getTodoStore } from '$lib/todoStore.svelte.js';
 	import StatsBar from '$lib/StatsBar.svelte';
-	import { Check, Clock, ArrowLeft } from 'lucide-svelte';
+	import { Check, Clock, ArrowLeft, Archive } from 'lucide-svelte';
 
 	const store = getTodoStore();
 
@@ -117,7 +117,7 @@
 			<h2 class="m-0 text-2xl font-semibold" style="color: var(--text-heading);">Kanban Board</h2>
 			<a
 				href="/"
-				class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium no-underline transition-all hover:opacity-80"
+				class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-base font-medium no-underline transition-all hover:opacity-80"
 				style="color: var(--btn-primary); background: var(--input-bg);"
 			>
 				<ArrowLeft size={14} /> Back to Tasks
@@ -155,12 +155,12 @@
 					>
 						<div class="flex items-center gap-2">
 							<col.icon size={16} style="color: {col.color};" />
-							<h3 class="m-0 text-sm font-semibold" style="color: var(--text-heading);">
+							<h3 class="m-0 text-base font-semibold" style="color: var(--text-heading);">
 								{col.label}
 							</h3>
 						</div>
 						<span
-							class="inline-flex h-6 min-w-6 items-center justify-center rounded-full px-1.5 text-xs font-bold text-white"
+							class="inline-flex h-6 min-w-6 items-center justify-center rounded-full px-1.5 text-sm font-bold text-white"
 							style="background: {col.color};"
 						>
 							{col.todos.length}
@@ -171,7 +171,7 @@
 					<div class="flex flex-col gap-2 p-3">
 						{#if col.todos.length === 0}
 							<div class="flex flex-col items-center px-2 py-8 text-center">
-								<p class="m-0 text-sm" style="color: var(--text-muted);">No tasks</p>
+								<p class="m-0 text-base" style="color: var(--text-muted);">No tasks</p>
 							</div>
 						{:else}
 							{#each col.todos as todo (todo.id)}
@@ -203,7 +203,7 @@
 									<div class="min-w-0 flex-1">
 										<div class="flex items-start gap-1.5">
 											<h4
-												class="m-0 text-sm leading-snug font-medium"
+												class="m-0 text-base leading-snug font-medium"
 												style="color: var(--text-heading);"
 												class:line-through={todo.completed}
 												class:opacity-60={todo.completed}
@@ -215,7 +215,7 @@
 										<div class="mt-1 flex flex-wrap items-center gap-1.5">
 											<!-- Priority badge -->
 											<span
-												class="inline-block rounded px-1.5 py-0.5 text-[10px] font-bold tracking-wider text-white uppercase"
+												class="inline-block rounded px-1.5 py-0.5 text-xs font-bold tracking-wider text-white uppercase"
 												class:priority-high={todo.priority === 'high'}
 												class:priority-medium={todo.priority === 'medium' || !todo.priority}
 												class:priority-low={todo.priority === 'low'}
@@ -227,14 +227,14 @@
 											{#if todo.tags && todo.tags.length > 0}
 												{#each todo.tags.slice(0, 2) as tag (tag)}
 													<span
-														class="inline-block rounded-full px-1.5 py-0.5 text-[10px] font-semibold text-white"
+														class="inline-block rounded-full px-1.5 py-0.5 text-xs font-semibold text-white"
 														style="background: {store.tagColors[tag]};"
 													>
 														{tag}
 													</span>
 												{/each}
 												{#if todo.tags.length > 2}
-													<span class="text-[10px]" style="color: var(--text-muted);"
+													<span class="text-xs" style="color: var(--text-muted);"
 														>+{todo.tags.length - 2}</span
 													>
 												{/if}
@@ -244,7 +244,7 @@
 										<!-- Due date -->
 										{#if todo.dueDate}
 											<p
-												class="m-0 mt-1 text-xs font-medium"
+												class="m-0 mt-1 text-sm font-medium"
 												style="color: {isOverdue(todo.dueDate)
 													? 'var(--priority-high)'
 													: 'var(--text-muted)'};"
@@ -252,6 +252,14 @@
 												{formatDate(todo.dueDate)}
 											</p>
 										{/if}
+										<button
+											onclick={() => store.deleteTodo(todo.id)}
+											class="mt-1 flex cursor-pointer items-center gap-0.5 rounded border-none p-0.5 text-xs"
+											style="color: var(--text-muted);"
+											aria-label="Archive task"
+										>
+											<Archive size={12} />
+										</button>
 									</div>
 								</div>
 							{/each}

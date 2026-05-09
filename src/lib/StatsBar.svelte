@@ -35,20 +35,20 @@
 			style="color: var(--text-heading); line-height: 1; font-variant-numeric: tabular-nums;"
 			>{store.prefersReducedMotion ? store.stats.active : Math.round($activeSpring)}</span
 		>
-		<span class="mt-1 text-sm" style="color: var(--text-muted);">Active</span>
+		<span class="mt-1 text-base" style="color: var(--text-muted);">Active</span>
 	</div>
 	<div class="w-px self-stretch" style="background: var(--border);"></div>
 	<div class="flex flex-1 flex-col items-center p-4">
 		<span class="text-2xl font-bold" style="color: var(--text-heading); line-height: 1;"
 			>{store.prefersReducedMotion ? store.stats.completed : Math.round($completedSpring)}</span
 		>
-		<span class="mt-1 text-sm" style="color: var(--text-muted);">Completed</span>
+		<span class="mt-1 text-base" style="color: var(--text-muted);">Completed</span>
 	</div>
 	<div class="w-px self-stretch" style="background: var(--border);"></div>
 	<div class="flex flex-1 flex-col items-center p-4">
 		<span class="text-2xl font-bold" style="color: var(--priority-high); line-height: 1;"
 			>{store.prefersReducedMotion ? store.stats.overdue : Math.round($overdueSpring)}</span
 		>
-		<span class="mt-1 text-sm" style="color: var(--text-muted);">Overdue</span>
+		<span class="mt-1 text-base" style="color: var(--text-muted);">Overdue</span>
 	</div>
 </div>

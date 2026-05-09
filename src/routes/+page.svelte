@@ -67,19 +67,19 @@
 		<TodoHeader />
 		{#if !store.requestedNotification && typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default'}
 			<div
-				class="notif-banner mb-4 flex items-center gap-3 rounded-lg border px-4 py-2.5 text-sm"
+				class="notif-banner mb-4 flex items-center gap-3 rounded-lg border px-4 py-2.5 text-base"
 				style="background: var(--input-bg); border-color: var(--border); color: var(--text-secondary);"
 			>
 				<span class="flex-1">Enable notifications for due date reminders</span>
 				<button
-					class="glow-btn cursor-pointer rounded-md border-none px-3 py-1.5 text-xs font-semibold text-white"
+					class="glow-btn cursor-pointer rounded-md border-none px-3 py-1.5 text-sm font-semibold text-white"
 					style="background: var(--btn-primary);"
 					onclick={() => store.requestNotificationPermission()}
 				>
 					Enable
 				</button>
 				<button
-					class="flex cursor-pointer items-center justify-center rounded border-none p-1 text-sm leading-none"
+					class="flex cursor-pointer items-center justify-center rounded border-none p-1 text-base leading-none"
 					style="color: var(--text-muted); background: transparent;"
 					onclick={() => (store.requestedNotification = true)}
 					aria-label="Dismiss notification banner"

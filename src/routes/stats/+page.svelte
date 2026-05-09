@@ -51,7 +51,7 @@
 			<h2 class="m-0 text-2xl font-semibold" style="color: var(--text-heading);">Analytics</h2>
 			<a
 				href="/"
-				class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium no-underline transition-all hover:opacity-80"
+				class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-base font-medium no-underline transition-all hover:opacity-80"
 				style="color: var(--btn-primary); background: var(--input-bg);"
 			>
 				<ArrowLeft size={14} /> Back to Tasks
@@ -75,16 +75,16 @@
 						<Target size={18} style="color: #22c55e;" />
 					</div>
 					<div>
-						<h3 class="m-0 text-sm font-semibold" style="color: var(--text-heading);">
+						<h3 class="m-0 text-base font-semibold" style="color: var(--text-heading);">
 							Completion Rate
 						</h3>
-						<p class="m-0 text-xs" style="color: var(--text-muted);">
+						<p class="m-0 text-sm" style="color: var(--text-muted);">
 							{store.stats.total} total tasks
 						</p>
 					</div>
 				</div>
 
-				<div class="mb-2 flex items-center justify-between text-sm">
+				<div class="mb-2 flex items-center justify-between text-base">
 					<span style="color: var(--text-secondary);"
 						>Completed: <strong>{completedPct}%</strong></span
 					>
@@ -101,7 +101,7 @@
 				</div>
 
 				<div
-					class="mt-2 flex items-center justify-between text-xs"
+					class="mt-2 flex items-center justify-between text-sm"
 					style="color: var(--text-muted);"
 				>
 					<span>{store.stats.completed} done</span>
@@ -121,7 +121,7 @@
 					>
 						<Flame size={18} style="color: #f97316;" />
 					</div>
-					<h3 class="m-0 text-sm font-semibold" style="color: var(--text-heading);">
+					<h3 class="m-0 text-base font-semibold" style="color: var(--text-heading);">
 						Completion Streak
 					</h3>
 				</div>
@@ -133,15 +133,15 @@
 					>
 						{store.streak}
 					</span>
-					<span class="mt-2 text-sm font-medium" style="color: var(--text-secondary);">
+					<span class="mt-2 text-base font-medium" style="color: var(--text-secondary);">
 						{store.streak === 1 ? 'day' : 'days'} consecutive
 					</span>
 					{#if store.streak > 0}
-						<p class="m-0 mt-3 text-xs" style="color: var(--text-muted);">
+						<p class="m-0 mt-3 text-sm" style="color: var(--text-muted);">
 							Keep it up! You're on a roll.
 						</p>
 					{:else}
-						<p class="m-0 mt-3 text-xs" style="color: var(--text-muted);">
+						<p class="m-0 mt-3 text-sm" style="color: var(--text-muted);">
 							Complete a task today to start a streak!
 						</p>
 					{/if}
@@ -161,10 +161,10 @@
 						<BarChart3 size={18} style="color: #6366f1;" />
 					</div>
 					<div>
-						<h3 class="m-0 text-sm font-semibold" style="color: var(--text-heading);">
+						<h3 class="m-0 text-base font-semibold" style="color: var(--text-heading);">
 							Productivity This Week
 						</h3>
-						<p class="m-0 text-xs" style="color: var(--text-muted);">Tasks completed per day</p>
+						<p class="m-0 text-sm" style="color: var(--text-muted);">Tasks completed per day</p>
 					</div>
 				</div>
 
@@ -174,7 +174,7 @@
 						{@const heightPct = (count / maxDayCompletions) * 100}
 						<div class="flex flex-1 flex-col items-center gap-1">
 							<span
-								class="text-[10px] font-bold"
+								class="text-xs font-bold"
 								style="color: {count > 0 ? 'var(--text-secondary)' : 'var(--text-muted)'};"
 							>
 								{count}
@@ -187,7 +187,7 @@
 									opacity: {count > 0 ? 1 : 0.25};
 								"
 							></div>
-							<span class="text-[10px]" style="color: var(--text-muted);">{day.slice(0, 2)}</span>
+							<span class="text-xs" style="color: var(--text-muted);">{day.slice(0, 2)}</span>
 						</div>
 					{/each}
 				</div>
@@ -205,7 +205,7 @@
 					>
 						<PieChart size={18} style="color: #f59e0b;" />
 					</div>
-					<h3 class="m-0 text-sm font-semibold" style="color: var(--text-heading);">
+					<h3 class="m-0 text-base font-semibold" style="color: var(--text-heading);">
 						Priority Distribution
 					</h3>
 				</div>
@@ -234,7 +234,7 @@
 						{/if}
 					</div>
 
-					<div class="flex items-center justify-between text-sm">
+					<div class="flex items-center justify-between text-base">
 						<div class="flex items-center gap-1.5">
 							<span
 								class="inline-block h-2.5 w-2.5 rounded-full"
@@ -277,14 +277,14 @@
 					>
 						<List size={18} style="color: #a855f7;" />
 					</div>
-					<h3 class="m-0 text-sm font-semibold" style="color: var(--text-heading);">
+					<h3 class="m-0 text-base font-semibold" style="color: var(--text-heading);">
 						Category Breakdown
 					</h3>
 				</div>
 
 				<div class="space-y-2">
 					{#if Object.keys(store.categoryBreakdown).length === 0}
-						<p class="m-0 py-4 text-center text-sm" style="color: var(--text-muted);">
+						<p class="m-0 py-4 text-center text-base" style="color: var(--text-muted);">
 							No categories assigned yet
 						</p>
 					{:else}
@@ -297,13 +297,13 @@
 									class="inline-block h-3 w-3 shrink-0 rounded-full"
 									style="background: {color};"
 								></span>
-								<span class="flex-1 text-sm font-medium" style="color: var(--text-secondary);">
+								<span class="flex-1 text-base font-medium" style="color: var(--text-secondary);">
 									{category}
 								</span>
-								<span class="text-sm font-semibold" style="color: var(--text-heading);"
+								<span class="text-base font-semibold" style="color: var(--text-heading);"
 									>{count}</span
 								>
-								<span class="text-xs" style="color: var(--text-muted);">({pct}%)</span>
+								<span class="text-sm" style="color: var(--text-muted);">({pct}%)</span>
 								<div
 									class="h-1.5 w-16 overflow-hidden rounded-full sm:w-24"
 									style="background: var(--input-bg);"
@@ -332,10 +332,10 @@
 						<AlertTriangle size={18} style="color: #ef4444;" />
 					</div>
 					<div>
-						<h3 class="m-0 text-sm font-semibold" style="color: var(--text-heading);">
+						<h3 class="m-0 text-base font-semibold" style="color: var(--text-heading);">
 							Overdue Tasks
 						</h3>
-						<p class="m-0 text-xs" style="color: var(--text-muted);">
+						<p class="m-0 text-sm" style="color: var(--text-muted);">
 							{store.stats.overdue} task{store.stats.overdue !== 1 ? 's' : ''} past due
 						</p>
 					</div>
@@ -343,19 +343,19 @@
 
 				<div class="space-y-1.5">
 					{#if store.overdueTasks.length === 0}
-						<p class="m-0 py-4 text-center text-sm" style="color: var(--text-muted);">
+						<p class="m-0 py-4 text-center text-base" style="color: var(--text-muted);">
 							No overdue tasks — you're all caught up!
 						</p>
 					{:else}
 						{#each store.overdueTasks as todo (todo.id)}
 							<a
 								href="/"
-								class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm no-underline transition-colors"
+								class="flex items-center gap-2 rounded-lg px-3 py-2 text-base no-underline transition-colors"
 								style="background: rgba(239, 68, 68, 0.08); color: var(--priority-high);"
 							>
 								<AlertTriangle size={12} />
 								<span class="flex-1 truncate font-medium">{todo.title}</span>
-								<span class="shrink-0 text-xs font-semibold">
+								<span class="shrink-0 text-sm font-semibold">
 									{formatDate(todo.dueDate)}
 								</span>
 							</a>

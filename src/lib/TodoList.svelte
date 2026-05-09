@@ -56,7 +56,9 @@
 				<h3 class="m-0 mb-2 text-lg font-semibold" style="color: var(--text-heading);">
 					No tasks yet
 				</h3>
-				<p class="m-0 mb-6 text-sm" style="color: var(--text-muted);">Add a task to get started</p>
+				<p class="m-0 mb-6 text-base" style="color: var(--text-muted);">
+					Add a task to get started
+				</p>
 				<button
 					class="glow-btn flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border-none px-4 py-3.5 text-base font-semibold"
 					style="background: var(--btn-primary); color: white; max-width: 280px;"
@@ -76,12 +78,12 @@
 				<h3 class="m-0 mb-2 text-lg font-semibold" style="color: var(--text-heading);">
 					All tasks completed!
 				</h3>
-				<p class="m-0 mb-6 text-sm" style="color: var(--text-muted);">
+				<p class="m-0 mb-6 text-base" style="color: var(--text-muted);">
 					Great job! You're all caught up.
 				</p>
 				{#if store.activeFilterCount > 0}
 					<button
-						class="glow-btn flex cursor-pointer items-center gap-1.5 rounded-xl border-none px-4 py-2.5 text-sm font-semibold"
+						class="glow-btn flex cursor-pointer items-center gap-1.5 rounded-xl border-none px-4 py-2.5 text-base font-semibold"
 						style="background: var(--btn-cancel); color: white;"
 						data-btn="cancel"
 						onclick={() => store.clearFilters()}
@@ -100,11 +102,11 @@
 				<h3 class="m-0 mb-2 text-lg font-semibold" style="color: var(--text-heading);">
 					No results for “{store.filterText}”
 				</h3>
-				<p class="m-0 mb-6 text-sm" style="color: var(--text-muted);">
+				<p class="m-0 mb-6 text-base" style="color: var(--text-muted);">
 					Try different keywords or check your spelling
 				</p>
 				<button
-					class="glow-btn flex cursor-pointer items-center gap-1.5 rounded-xl border-none px-4 py-2.5 text-sm font-semibold"
+					class="glow-btn flex cursor-pointer items-center gap-1.5 rounded-xl border-none px-4 py-2.5 text-base font-semibold"
 					style="background: var(--btn-cancel); color: white;"
 					data-btn="cancel"
 					onclick={() => store.clearFilters()}
@@ -122,14 +124,14 @@
 				<h3 class="m-0 mb-2 text-lg font-semibold" style="color: var(--text-heading);">
 					No tasks match your filters
 				</h3>
-				<p class="m-0 mb-6 text-sm" style="color: var(--text-muted);">
+				<p class="m-0 mb-6 text-base" style="color: var(--text-muted);">
 					Try adjusting or clearing your filters
 					{#if store.filterDateFrom || store.filterDateTo}
 						<br />The date range filter may be limiting results.
 					{/if}
 				</p>
 				<button
-					class="glow-btn flex cursor-pointer items-center gap-1.5 rounded-xl border-none px-4 py-2.5 text-sm font-semibold"
+					class="glow-btn flex cursor-pointer items-center gap-1.5 rounded-xl border-none px-4 py-2.5 text-base font-semibold"
 					style="background: var(--btn-cancel); color: white;"
 					data-btn="cancel"
 					onclick={() => store.clearFilters()}
@@ -145,14 +147,14 @@
 				transition:slide={{ duration: store.prefersReducedMotion ? 0 : 200 }}
 			>
 				<button
-					class="upcoming-toggle flex w-full cursor-pointer items-center gap-2 border-none bg-none p-0 text-sm font-semibold"
+					class="upcoming-toggle flex w-full cursor-pointer items-center gap-2 border-none bg-none p-0 text-base font-semibold"
 					style="color: var(--text-heading);"
 					onclick={() => (showUpcoming = !showUpcoming)}
 				>
 					<Calendar size={14} />
 					<span>Upcoming Due Dates</span>
 					<span
-						class="upcoming-badge ml-1 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-xs font-bold text-white"
+						class="upcoming-badge ml-1 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-sm font-bold text-white"
 						style="background: var(--btn-primary);"
 					>
 						{store.upcomingDueTasks.length}
@@ -171,7 +173,7 @@
 							{@const isToday = task.dueDate === todayStr}
 							{@const isTomorrow = task.dueDate === tomorrowStr}
 							<div
-								class="upcoming-task flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm"
+								class="upcoming-task flex items-center gap-2 rounded-lg px-2.5 py-2 text-base"
 								class:due-today={isToday}
 								class:due-tomorrow={isTomorrow}
 							>
@@ -179,7 +181,7 @@
 									>{task.title}</span
 								>
 								<span
-									class="upcoming-date-label text-xs font-medium whitespace-nowrap"
+									class="upcoming-date-label text-sm font-medium whitespace-nowrap"
 									style="color: {isToday
 										? 'var(--priority-high)'
 										: isTomorrow

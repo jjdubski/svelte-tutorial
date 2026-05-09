@@ -151,6 +151,10 @@ class TodoStore {
 	selectMode = $state(false);
 	selectedTodos = $state(new SvelteSet());
 
+	// ── Undo archive ──
+	/** @type {{id: number}|null} */
+	lastArchivedTodo = $state(null);
+
 	// ── Toast ──
 	toast = $state({ show: false, message: '', type: 'success' });
 
@@ -679,7 +683,16 @@ class TodoStore {
 		if (index !== -1) {
 			const [todo] = this.todos.splice(index, 1);
 			this.archivedTodos = [...this.archivedTodos, todo];
+			this.lastArchivedTodo = { id };
 			this.showToast('Task archived', 'info');
+		}
+	}
+
+	undoArchive() {
+		if (this.lastArchivedTodo) {
+			this.restoreTodo(this.lastArchivedTodo.id);
+			this.lastArchivedTodo = null;
+			this.showToast('Task restore undone', 'info');
 		}
 	}
 

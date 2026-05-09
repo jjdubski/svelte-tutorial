@@ -38,9 +38,9 @@
 		aria-label={store.darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
 	>
 		{#if store.darkMode}
-			<Sun size={20} />
+			<Sun size={25} />
 		{:else}
-			<Moon size={20} />
+			<Moon size={25} />
 		{/if}
 	</span>
 </nav>
