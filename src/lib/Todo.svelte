@@ -1,5 +1,5 @@
 <script>
-	import { slide, fade } from 'svelte/transition';
+	import { slide } from 'svelte/transition';
 	import { scale } from 'svelte/transition';
 	import { elasticOut, cubicOut } from 'svelte/easing';
 	import {
@@ -31,6 +31,8 @@
 		handleDragOver,
 		handleDragLeave,
 		handleDrop,
+		draggedId = null,
+		dragOverId = null,
 		selectMode = false,
 		selectedTodos = new Set(),
 		toggleSelect,
@@ -196,6 +198,8 @@
 		role="listitem"
 		class="todo-card flex gap-3 items-stretch rounded-xl border p-4"
 		class:completed={todo.completed}
+		class:dragging={draggedId === todo.id}
+		class:drag-over={dragOverId === todo.id}
 		draggable={sortBy === 'manual'}
 		ondragstart={(e) => handleDragStart(e, todo.id)}
 		ondragend={handleDragEnd}

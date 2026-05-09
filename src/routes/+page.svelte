@@ -6,6 +6,7 @@
 	import Toast from '../lib/Toast.svelte';
 	import StatsBar from '../lib/StatsBar.svelte';
 	import SkeletonLoader from '../lib/SkeletonLoader.svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 	import {
 		Sun,
 		Moon,
@@ -16,9 +17,6 @@
 		ChevronUp,
 		X,
 		CheckSquare,
-		Square,
-		Tag,
-		Repeat,
 		Layers
 	} from 'lucide-svelte';
 
@@ -41,11 +39,9 @@
 				if (parsed.length > 0) {
 					nextId = Math.max(...parsed.map(t => t.id)) + 1;
 				}
-				setTimeout(() => { isLoading = false; }, 300);
 				return parsed;
 			}
 		} catch {}
-		setTimeout(() => { isLoading = false; }, 300);
 		return [];
 	}
 
@@ -56,7 +52,10 @@
 	}
 
 	let todos = $state(loadTodos());
+	isLoading = false;
 
+	// $effect used here intentionally — saveTodos() writes to localStorage (a side effect)
+	// and does NOT reassign any $state variable, making it safe per Svelte 5 best practices.
 	$effect(() => {
 		saveTodos(todos);
 	});
@@ -111,7 +110,7 @@
 	let showAddCategory = $state(false);
 	let showForm = $state(true);
 	let selectedTemplate = $state('None');
-	let selectedTodos = $state(new Set());
+	let selectedTodos = $state(new SvelteSet());
 	let selectMode = $state(false);
 
 	// Toast state
@@ -242,33 +241,48 @@
 
 	function toggleTodo(id) {
 		const todo = todos.find(t => t.id === id);
-		if (todo) todo.completed = !todo.completed;
+		if (todo) {
+			const wasCompleted = todo.completed;
+			todo.completed = !todo.completed;
+			// When a recurring task is completed, create a new instance with an updated due date
+			if (!wasCompleted && todo.completed && todo.recurring) {
+				const newDueDate = getNextDueDate(todo.dueDate, todo.recurring);
+				addTodo(
+					todo.title,
+					todo.description || '',
+					newDueDate,
+					todo.priority,
+					todo.category || '',
+					todo.tags || [],
+					todo.recurring,
+					todo.subtasks || []
+				);
+			}
+		}
 	}
 
 	// Batch operations
 	function toggleSelect(id) {
-		const newSet = new Set(selectedTodos);
-		if (newSet.has(id)) {
-			newSet.delete(id);
+		if (selectedTodos.has(id)) {
+			selectedTodos.delete(id);
 		} else {
-			newSet.add(id);
+			selectedTodos.add(id);
 		}
-		selectedTodos = newSet;
 	}
 
 	function selectAll() {
-		selectedTodos = new Set(filteredTodos.map(t => t.id));
+		selectedTodos = new SvelteSet(filteredTodos.map(t => t.id));
 	}
 
 	function deselectAll() {
-		selectedTodos = new Set();
+		selectedTodos = new SvelteSet();
 	}
 
 	function deleteSelected() {
 		todos = todos.filter(t => !selectedTodos.has(t.id));
 		toast = { show: true, message: `${selectedTodos.size} tasks deleted`, type: 'info' };
 		setTimeout(() => { toast = { ...toast, show: false }; }, 3000);
-		selectedTodos = new Set();
+		selectedTodos = new SvelteSet();
 		selectMode = false;
 	}
 
@@ -276,7 +290,7 @@
 		todos = todos.map(t => selectedTodos.has(t.id) ? { ...t, completed: true } : t);
 		toast = { show: true, message: `${selectedTodos.size} tasks completed`, type: 'success' };
 		setTimeout(() => { toast = { ...toast, show: false }; }, 2000);
-		selectedTodos = new Set();
+		selectedTodos = new SvelteSet();
 		selectMode = false;
 	}
 
@@ -298,38 +312,36 @@
 		}
 	}
 
-	// Drag and drop
+	// Drag and drop — uses reactive state instead of direct DOM class manipulation
 	let draggedId = $state(null);
+	let dragOverId = $state(null);
 
 	function handleDragStart(e, id) {
 		draggedId = id;
-		e.target.closest('.todo-card')?.classList.add('dragging');
 		e.dataTransfer.effectAllowed = 'move';
+		e.dataTransfer.setData('text/plain', String(id));
 	}
 
-	function handleDragEnd(e) {
-		e.target.closest('.todo-card')?.classList.remove('dragging');
-		document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+	function handleDragEnd() {
 		draggedId = null;
+		dragOverId = null;
 	}
 
 	function handleDragOver(e, id) {
 		e.preventDefault();
 		e.dataTransfer.dropEffect = 'move';
-		const el = e.currentTarget;
 		if (draggedId !== id) {
-			document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
-			el.classList.add('drag-over');
+			dragOverId = id;
 		}
 	}
 
-	function handleDragLeave(e) {
-		e.currentTarget.classList.remove('drag-over');
+	function handleDragLeave() {
+		dragOverId = null;
 	}
 
 	function handleDrop(e, targetId) {
 		e.preventDefault();
-		e.currentTarget.classList.remove('drag-over');
+		dragOverId = null;
 		if (draggedId === null || draggedId === targetId) return;
 		const fromIdx = todos.findIndex(t => t.id === draggedId);
 		const toIdx = todos.findIndex(t => t.id === targetId);
@@ -337,6 +349,18 @@
 		const item = todos.splice(fromIdx, 1)[0];
 		todos.splice(toIdx, 0, item);
 		draggedId = null;
+	}
+
+	/** Compute next due date for recurring tasks */
+	function getNextDueDate(currentDate, recurring) {
+		if (!currentDate || !recurring) return '';
+		const date = new Date(currentDate + 'T00:00:00');
+		switch (recurring) {
+			case 'daily': date.setDate(date.getDate() + 1); break;
+			case 'weekly': date.setDate(date.getDate() + 7); break;
+			case 'monthly': date.setMonth(date.getMonth() + 1); break;
+		}
+		return date.toISOString().split('T')[0];
 	}
 
 	// Subtask management
@@ -358,7 +382,7 @@
 		if (e.key === 'Escape') {
 			if (selectMode) {
 				selectMode = false;
-				selectedTodos = new Set();
+				selectedTodos = new SvelteSet();
 			}
 		}
 	}
@@ -399,7 +423,7 @@
 	<div class="w-full max-w-[900px] rounded-2xl border p-8 sm:p-5 sm:rounded-xl" style="background: var(--card-bg); box-shadow: 0 8px 32px var(--shadow); border-color: var(--border); transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;">
 		<!-- Header -->
 		<div class="flex items-center justify-center mb-6 relative">
-			<h1 class="m-0 text-2xl font-light" style="color: var(--text-heading); font-family: 'Caveat', 'Brush Script MT', cursive; letter-spacing: 0.02em;">Todo List</h1>
+			<h1 class="m-0 text-4xl font-light" style="color: var(--text-heading); font-family: 'Caveat', 'Brush Script MT', cursive; letter-spacing: 0.02em;">Todo List</h1>
 			<button
 				class="absolute right-0 flex items-center justify-center w-11 h-11 rounded-xl border cursor-pointer"
 				style="background: var(--todo-bg); border-color: var(--border); color: var(--text-secondary); transition: all 0.2s;"
@@ -543,7 +567,7 @@
 						onclick={addSubtask} type="button">
 						<Plus size={14} /> Add subtask
 					</button>
-					<button type="submit" class="flex items-center justify-center gap-1.5 flex-1 px-4 py-3.5 border-none rounded-xl font-semibold text-base cursor-pointer"
+					<button type="button" class="flex items-center justify-center gap-1.5 flex-1 px-4 py-3.5 border-none rounded-xl font-semibold text-base cursor-pointer"
 						style="background: var(--btn-primary); color: white; transition: all 0.2s;"
 						onclick={add}>
 						<Plus size={16} /> Add Task
@@ -602,7 +626,7 @@
 						</button>
 						<button class="flex items-center gap-1 px-2.5 py-2 border-none rounded-lg text-xs font-medium cursor-pointer"
 							style="background: var(--btn-cancel); color: white; transition: all 0.2s;"
-							onclick={() => { selectMode = false; selectedTodos = new Set(); }}>
+							onclick={() => { selectMode = false; selectedTodos = new SvelteSet(); }}>
 							<X size={14} /> Cancel
 						</button>
 					</div>
@@ -688,6 +712,8 @@
 							{handleDragOver}
 							{handleDragLeave}
 							{handleDrop}
+							{draggedId}
+							{dragOverId}
 							{selectMode}
 							{selectedTodos}
 							{toggleSelect}
