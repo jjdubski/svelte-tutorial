@@ -479,6 +479,18 @@
 		font-weight: 700;
 	}
 
+	.tag-toggle:hover {
+		filter: brightness(1.1);
+	}
+
+	.text-btn:hover {
+		color: var(--btn-primary-hover);
+	}
+
+	.icon-btn.tiny:hover {
+		background: var(--btn-delete-hover);
+	}
+
 	.subtask-item.done {
 		text-decoration: line-through;
 		opacity: 0.6;

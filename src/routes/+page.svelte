@@ -192,7 +192,29 @@
 		newPriority = template.priority;
 		newCategory = template.category;
 		newTags = [...template.tags];
+		newRecurring = '';
+		newSubtasks = [{ text: '', done: false }];
 	}
+
+	$effect(() => {
+		if (selectedTemplate !== 'None') {
+			const t = templates.find(t => t.name === selectedTemplate);
+			if (t) {
+				const hasChanges =
+					newTitle !== t.title ||
+					newDescription !== t.description ||
+					newDueDate !== t.dueDate ||
+					newPriority !== t.priority ||
+					newCategory !== t.category ||
+					JSON.stringify(newTags) !== JSON.stringify(t.tags) ||
+					newRecurring !== '' ||
+					newSubtasks.some(s => s.text);
+				if (hasChanges) {
+					selectedTemplate = 'None';
+				}
+			}
+		}
+	});
 
 	function addCustomTag() {
 		const tag = newCustomTag.trim().toLowerCase();
@@ -426,7 +448,7 @@
 			<h1 class="m-0 text-4xl font-light" style="color: var(--text-heading); font-family: 'Caveat', 'Brush Script MT', cursive; letter-spacing: 0.02em;">Todo List</h1>
 			<button
 				class="absolute right-0 flex items-center justify-center w-11 h-11 rounded-xl border cursor-pointer"
-				style="background: var(--todo-bg); border-color: var(--border); color: var(--text-secondary); transition: all 0.2s;"
+				style="background: var(--todo-bg); border-color: var(--border); color: var(--text-secondary); transition: all 0.2s;" data-btn="ghost"
 				onclick={() => darkMode = !darkMode}
 				aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
 			>
@@ -451,8 +473,7 @@
 				<div class="flex rounded-xl p-0.5 gap-0.5 mb-4" style="background: var(--input-bg); border: 1px solid var(--border);">
 					{#each templates as template (template.name)}
 						<button
-							class="flex-1 px-3 py-2 border-none rounded-lg text-sm font-medium cursor-pointer"
-							style="background: transparent; color: var(--text-secondary); transition: all 0.2s;"
+							class="template-btn flex-1 px-3 py-2 border-none rounded-lg text-sm font-medium cursor-pointer"
 							class:active={selectedTemplate === template.name}
 							onclick={() => applyTemplate(template)}
 						>
@@ -505,18 +526,19 @@
 						{#each availableTags as tag (tag)}
 							<button
 								class="tag-btn px-3 py-1.5 rounded-full text-sm font-medium border cursor-pointer"
-								style="--tag-color: {tagColors[tag]}; transition: all 0.2s;"
-								class:selected={newTags.includes(tag)}
-								onclick={() => newTags = newTags.includes(tag) ? newTags.filter(t => t !== tag) : [...newTags, tag]}
-								type="button"
-							>
-								{tag}
-							</button>
+						style="--tag-color: {tagColors[tag]}; transition: all 0.2s;"
+							class:selected={newTags.includes(tag)}
+							onclick={() => newTags = newTags.includes(tag) ? newTags.filter(t => t !== tag) : [...newTags, tag]}
+							type="button"
+							data-btn="tag"
+						>
+							{tag}
+						</button>
 						{/each}
 						{#each newTags.filter(t => !availableTags.includes(t)) as tag (tag)}
 							<button
 								class="tag-btn px-3 py-1.5 rounded-full text-sm font-medium border cursor-pointer"
-								style="background: #6366f1; color: white; border-color: #6366f1;"
+								style="background: #6366f1; color: white; border-color: #6366f1;" data-btn="tag"
 								onclick={() => newTags = newTags.filter(t => t !== tag)}
 								type="button"
 							>
@@ -534,7 +556,7 @@
 							onkeydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCustomTag(); } }}
 						/>
 						<div class="tag-add-btn flex items-center px-3 py-2 text-sm rounded-r-lg cursor-pointer"
-							style="border: 1px dashed var(--border); background: transparent; color: var(--text-muted); transition: all 0.2s;"
+							style="border: 1px dashed var(--border); background: transparent; color: var(--text-muted); transition: all 0.2s;" data-btn="ghost"
 							onclick={addCustomTag} role="button" tabindex="0" onkeydown={(e) => e.key === 'Enter' && addCustomTag()}>+</div>
 					</div>
 				</div>
@@ -552,7 +574,7 @@
 										bind:value={newSubtasks[i].text}
 										placeholder="Subtask"
 									/>
-									<button class="w-7 h-7 flex items-center justify-center border-none rounded" style="background: var(--btn-delete); color: white;" onclick={() => removeSubtask(i)} aria-label="Remove subtask">
+									<button class="w-7 h-7 flex items-center justify-center border-none rounded" style="background: var(--btn-delete); color: white;" data-btn="delete" onclick={() => removeSubtask(i)} aria-label="Remove subtask">
 										<X size={14} />
 									</button>
 								</div>
@@ -563,12 +585,12 @@
 
 				<div class="flex gap-3 items-center">
 					<button class="flex items-center gap-1.5 px-4 py-3 rounded-xl border border-dashed text-sm cursor-pointer"
-						style="border-color: var(--border); color: var(--text-muted); transition: all 0.2s;"
+						style="border-color: var(--border); color: var(--text-muted); transition: all 0.2s;" data-btn="ghost"
 						onclick={addSubtask} type="button">
 						<Plus size={14} /> Add subtask
 					</button>
 					<button type="button" class="flex items-center justify-center gap-1.5 flex-1 px-4 py-3.5 border-none rounded-xl font-semibold text-base cursor-pointer"
-						style="background: var(--btn-primary); color: white; transition: all 0.2s;"
+						style="background: var(--btn-primary); color: white; transition: all 0.2s;" data-btn="primary"
 						onclick={add}>
 						<Plus size={16} /> Add Task
 					</button>
@@ -576,7 +598,7 @@
 			</div>
 		{:else}
 			<button class="flex items-center justify-center gap-2 w-full p-4 rounded-xl border border-dashed cursor-pointer mb-6"
-				style="border-color: var(--border); color: var(--text-muted); transition: all 0.2s;"
+				style="border-color: var(--border); color: var(--text-muted); transition: all 0.2s;" data-btn="ghost"
 				onclick={() => showForm = true}>
 				<Plus size={18} /> Add a task
 			</button>
@@ -601,7 +623,7 @@
 			<div class="relative">
 				<button
 					class="flex items-center justify-center w-10 h-10 rounded-xl border cursor-pointer"
-					style="background: var(--input-bg); border-color: var(--border); color: var(--text-muted); transition: all 0.2s;"
+					style="background: var(--input-bg); border-color: var(--border); color: var(--text-muted); transition: all 0.2s;" data-btn="ghost"
 					class:active={selectMode}
 					onclick={() => selectMode = !selectMode}
 					aria-label="Toggle select mode"
@@ -615,17 +637,17 @@
 				{#if selectMode}
 					<div class="absolute top-full right-0 mt-2 flex gap-1.5 p-2 rounded-xl border shadow-lg z-50 whitespace-nowrap" style="background: var(--card-bg); border-color: var(--border);" transition:slide={{ duration: prefersReducedMotion ? 0 : 150 }}>
 						<button class="flex items-center gap-1 px-2.5 py-2 border-none rounded-lg text-xs font-medium cursor-pointer"
-							style="background: var(--btn-save); color: white; transition: all 0.2s;"
+							style="background: var(--btn-save); color: white; transition: all 0.2s;" data-btn="save"
 							onclick={completeSelected} disabled={selectedTodos.size === 0}>
 							<CheckSquare size={14} /> Complete
 						</button>
 						<button class="flex items-center gap-1 px-2.5 py-2 border-none rounded-lg text-xs font-medium cursor-pointer"
-							style="background: var(--btn-delete); color: white; transition: all 0.2s;"
+							style="background: var(--btn-delete); color: white; transition: all 0.2s;" data-btn="delete"
 							onclick={deleteSelected} disabled={selectedTodos.size === 0}>
 							<Trash2 size={14} /> Delete
 						</button>
 						<button class="flex items-center gap-1 px-2.5 py-2 border-none rounded-lg text-xs font-medium cursor-pointer"
-							style="background: var(--btn-cancel); color: white; transition: all 0.2s;"
+							style="background: var(--btn-cancel); color: white; transition: all 0.2s;" data-btn="cancel"
 							onclick={() => { selectMode = false; selectedTodos = new SvelteSet(); }}>
 							<X size={14} /> Cancel
 						</button>
@@ -638,14 +660,14 @@
 		<div class="flex gap-2 flex-wrap items-center mb-3 px-3 py-2.5 rounded-xl border" style="background: var(--todo-bg); border-color: var(--border); transition: background 0.3s, border-color 0.3s;">
 			<button
 				class="px-3 py-1.5 rounded-full text-sm font-medium cursor-pointer border-transparent"
-				style="color: var(--text-secondary); transition: all 0.15s;"
+				style="color: var(--text-secondary); transition: all 0.15s;" data-btn="ghost"
 				class:active={filterCategory === ''}
 				onclick={() => filterCategory = ''}
 			>All</button>
 			{#each categories as cat (cat)}
 				<button
 					class="px-3 py-1.5 rounded-full text-sm font-medium cursor-pointer border-transparent"
-					style="color: var(--text-secondary); --cat-color: {categoryColors[cat]}; transition: all 0.15s;"
+					style="color: var(--text-secondary); --cat-color: {categoryColors[cat]}; transition: all 0.15s;" data-btn="ghost"
 					class:active={filterCategory === cat}
 					onclick={() => setFilterCategory(cat)}
 				>
@@ -655,17 +677,17 @@
 			{#if showAddCategory}
 				<form class="flex gap-1 items-center" onsubmit={(e) => { e.preventDefault(); addCategory(); }}>
 					<input class="w-[70px] px-2 py-1 text-xs rounded-md" style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text);" bind:value={newCategoryName} placeholder="New" />
-					<button type="submit" class="px-2 py-1 text-xs font-medium border-none rounded-md cursor-pointer" style="background: var(--btn-save); color: white;">Add</button>
-					<button type="button" class="px-2 py-1 text-xs font-medium border-none rounded-md cursor-pointer" style="background: var(--btn-cancel); color: white;" onclick={() => showAddCategory = false}>X</button>
+					<button type="submit" class="px-2 py-1 text-xs font-medium border-none rounded-md cursor-pointer" style="background: var(--btn-save); color: white;" data-btn="save">Add</button>
+					<button type="button" class="px-2 py-1 text-xs font-medium border-none rounded-md cursor-pointer" style="background: var(--btn-cancel); color: white;" data-btn="cancel" onclick={() => showAddCategory = false}>X</button>
 				</form>
 			{:else}
-				<button class="px-2 py-1 bg-none rounded-full border border-dashed text-xs cursor-pointer" style="border-color: var(--border-input); color: var(--text-muted); transition: all 0.15s;" onclick={() => showAddCategory = true}>+</button>
+				<button class="px-2 py-1 bg-none rounded-full border border-dashed text-xs cursor-pointer" style="border-color: var(--border-input); color: var(--text-muted); transition: all 0.15s;" data-btn="ghost" onclick={() => showAddCategory = true}>+</button>
 			{/if}
 		</div>
 
 		<!-- Toggle form -->
 		<button class="flex items-center justify-center w-full py-2 mb-3 border-none rounded-md cursor-pointer"
-			style="background: transparent; color: var(--text-muted); transition: all 0.2s;"
+			style="background: transparent; color: var(--text-muted); transition: all 0.2s;" data-btn="ghost"
 			onclick={() => showForm = !showForm} aria-label="Toggle add form">
 			{#if showForm}
 				<ChevronUp size={16} />
@@ -686,7 +708,7 @@
 					<h3 class="m-0 mb-2 text-lg font-semibold" style="color: var(--text-heading);">No tasks yet</h3>
 					<p class="m-0 mb-6 text-sm" style="color: var(--text-muted);">Add a task to get started</p>
 					<button class="flex items-center justify-center gap-1.5 flex-1 px-4 py-3.5 border-none rounded-xl font-semibold text-base cursor-pointer"
-						style="background: var(--btn-primary); color: white; transition: all 0.2s; max-width: 280px;"
+						style="background: var(--btn-primary); color: white; transition: all 0.2s; max-width: 280px;" data-btn="primary"
 						onclick={() => showForm = true}>
 						<Plus size={16} /> Add your first task
 					</button>
@@ -752,6 +774,40 @@
 	:global(.tag-input-field:focus + .tag-add-btn) {
 		border-color: var(--btn-primary);
 		color: var(--btn-primary);
+	}
+
+	/* Template buttons */
+	.template-btn {
+		background: transparent;
+		color: var(--text-secondary);
+		transition: all 0.2s;
+	}
+
+	.template-btn:hover {
+		background: var(--input-bg);
+	}
+
+	.template-btn.active {
+		background: var(--btn-primary) !important;
+		color: white !important;
+		box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+	}
+
+	/* Hover effects */
+	:global(.tag-btn:hover) {
+		filter: brightness(1.1);
+	}
+
+	[data-btn="primary"]:hover,
+	[data-btn="save"]:hover,
+	[data-btn="delete"]:hover,
+	[data-btn="cancel"]:hover {
+		filter: brightness(1.15);
+	}
+
+	[data-btn="ghost"]:hover {
+		background: var(--todo-bg) !important;
+		border-color: var(--text-muted) !important;
 	}
 
 	/* Reduce motion */

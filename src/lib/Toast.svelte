@@ -29,6 +29,7 @@
 				class="flex items-center gap-1 px-2.5 py-1.5 border-none rounded-md text-xs font-semibold cursor-pointer whitespace-nowrap"
 				style="background: var(--btn-primary); color: white; transition: background 0.2s;"
 				onclick={undoDelete}
+				data-btn="primary"
 			>
 				<RotateCcw size={14} /> Undo
 			</button>
@@ -47,5 +48,9 @@
 
 	.warning {
 		border-color: var(--priority-high) !important;
+	}
+
+	button:hover {
+		filter: brightness(1.15);
 	}
 </style>
