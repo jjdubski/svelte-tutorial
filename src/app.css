@@ -21,7 +21,6 @@
 	--btn-primary: #2563eb;
 	--btn-primary-hover: #1d4ed8;
 	--btn-edit: #0ea5e9;
-	--btn-edit-hover: #0284c7;
 	--btn-delete: #ef4444;
 	--btn-delete-hover: #dc2626;
 	--btn-save: #22c55e;
@@ -33,11 +32,6 @@
 	--priority-low: #22c55e;
 	--drag-handle: #94a3b8;
 	--completed-text: #94a3b8;
-	--overdue: #b45309;
-	--filter-btn-bg: #e2e8f0;
-	--filter-btn-active: #2563eb;
-	--cat-filter-bg: transparent;
-	--cat-filter-active: #2563eb;
 }
 
 .dark {
@@ -57,7 +51,6 @@
 	--btn-primary: #3b82f6;
 	--btn-primary-hover: #2563eb;
 	--btn-edit: #38bdf8;
-	--btn-edit-hover: #0ea5e9;
 	--btn-delete: #f87171;
 	--btn-delete-hover: #ef4444;
 	--btn-save: #4ade80;
@@ -69,11 +62,6 @@
 	--priority-low: #4ade80;
 	--drag-handle: #475569;
 	--completed-text: #64748b;
-	--overdue: #fbbf24;
-	--filter-btn-bg: #2d3a4e;
-	--filter-btn-active: #3b82f6;
-	--cat-filter-bg: transparent;
-	--cat-filter-active: #3b82f6;
 }
 
 @layer base {
@@ -103,6 +91,24 @@
 		transition:
 			background 0.3s,
 			color 0.3s;
+	}
+
+	/* Visible focus ring for keyboard navigation */
+	:focus-visible {
+		outline: 2px solid var(--btn-primary);
+		outline-offset: 2px;
+	}
+
+	/* Prevent double-tap zoom on mobile interactive elements */
+	button,
+	a,
+	select,
+	input[type='checkbox'],
+	input[type='date'],
+	input[type='text'],
+	input[type='search'],
+	textarea {
+		touch-action: manipulation;
 	}
 }
 

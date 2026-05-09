@@ -3,19 +3,19 @@
 	import { scale } from 'svelte/transition';
 	import { elasticOut } from 'svelte/easing';
 	import {
-		GripVertical,
 		Edit2,
 		Trash2,
-		Check,
 		X,
 		ChevronDown,
 		ChevronRight,
 		Repeat,
 		Tag,
 		CheckSquare,
-		Square
+		Square,
+		Share2
 	} from 'lucide-svelte';
 	import { getTodoStore } from '$lib/todoStore.svelte.js';
+	import { renderMarkdown } from '$lib/markdown.js';
 
 	/** @type {import('./todoStore.svelte.js').Todo} */
 	let { todo } = $props();
@@ -111,6 +111,36 @@
 		showSubtasks = !showSubtasks;
 	}
 
+	// ── Share task ──
+	async function handleShare() {
+		const shareUrl = window.location.href.split('?')[0] + '?task=' + todo.id;
+		const shareData = {
+			title: todo.title,
+			text: todo.description || '',
+			url: shareUrl
+		};
+		if (navigator.share) {
+			try {
+				await navigator.share(shareData);
+			} catch (e) {
+				if (e.name !== 'AbortError') {
+					copyToClipboard(shareUrl);
+				}
+			}
+		} else {
+			copyToClipboard(shareUrl);
+		}
+	}
+
+	async function copyToClipboard(text) {
+		try {
+			await navigator.clipboard.writeText(text);
+			store.showToast('Link copied to clipboard', 'success');
+		} catch {
+			store.showToast('Could not copy link', 'warning');
+		}
+	}
+
 	let completedSubtasks = $derived(todo.subtasks?.filter((s) => s.done).length || 0);
 	let totalSubtasks = $derived(todo.subtasks?.length || 0);
 </script>
@@ -126,12 +156,14 @@
 			bind:value={editTitle}
 			placeholder="Title"
 			class="w-full rounded-lg border px-3 py-2.5 text-base"
+			aria-label="Edit title"
 		/>
 		<textarea
 			bind:value={editDescription}
 			placeholder="Description"
 			rows="2"
 			class="resize-vertical min-h-[60px] w-full rounded-lg border px-3 py-2.5 text-base"
+			aria-label="Edit description"
 		></textarea>
 		<div class="form-inline flex flex-wrap gap-2">
 			<input
@@ -204,12 +236,14 @@
 						checked={subtask.done}
 						class="h-4 w-4"
 						onchange={() => toggleSubtask(i)}
+						aria-label="Subtask {i + 1} done"
 					/>
 					<input
 						type="text"
 						bind:value={editSubtasks[i].text}
 						placeholder="Subtask {i + 1}"
 						class="flex-1 rounded-md border px-2 py-1.5 text-sm"
+						aria-label="Subtask {i + 1} text"
 					/>
 					<button
 						type="button"
@@ -244,6 +278,9 @@
 		class:completed={todo.completed}
 		class:dragging={store.draggedId === todo.id}
 		class:drag-over={store.dragOverId === todo.id}
+		class:drag-indicator-before={store.dragOverId === todo.id &&
+			store.dragIndicatorPos === 'before'}
+		class:drag-indicator-after={store.dragOverId === todo.id && store.dragIndicatorPos === 'after'}
 		draggable={store.sortBy === 'manual'}
 		ondragstart={(e) => store.handleDragStart(e, todo.id)}
 		ondragend={() => store.handleDragEnd()}
@@ -314,12 +351,9 @@
 					</div>
 
 					{#if todo.description}
-						<p
-							class="todo-desc m-0 mt-0.5 text-sm leading-relaxed"
-							style="color: var(--text-muted);"
-						>
-							{todo.description}
-						</p>
+						<div class="markdown-content m-0 mt-0.5 text-sm leading-relaxed">
+							{@html renderMarkdown(todo.description)}
+						</div>
 					{/if}
 
 					{#if todo.tags && todo.tags.length > 0}
@@ -367,6 +401,14 @@
 									{formatDate(todo.dueDate)}
 								</span>
 							{/if}
+							<button
+								onclick={handleShare}
+								class="glow-btn flex cursor-pointer items-center justify-center rounded-md border-0 p-1"
+								style="color: var(--text-muted);"
+								aria-label="Share task"
+							>
+								<Share2 size={13} />
+							</button>
 							<button
 								onclick={startEdit}
 								class="glow-btn flex cursor-pointer items-center justify-center rounded-md border-0 p-1"
@@ -422,13 +464,14 @@
 								class="flex-1 rounded-md px-2 py-1 text-sm"
 								style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text);"
 								bind:value={newSubtaskText}
-								placeholder="Add a subtask..."
+								placeholder="Add a subtask\u2026"
 								onkeydown={(e) => {
 									if (e.key === 'Enter') {
 										e.preventDefault();
 										addInlineSubtask();
 									}
 								}}
+								aria-label="New subtask text"
 							/>
 							<button
 								class="cursor-pointer rounded-md border-none px-2 py-1 text-sm font-medium text-white"
@@ -455,6 +498,7 @@
 
 <style>
 	.todo-card {
+		position: relative;
 		border: 1px solid var(--border);
 		background: var(--todo-bg);
 		transition:
@@ -473,9 +517,31 @@
 		opacity: 0.35;
 	}
 
+	/* Drag-over: scale-up + elevated shadow */
 	.todo-card.drag-over {
+		transform: scale(1.05);
 		border-color: var(--btn-primary);
-		box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+		box-shadow:
+			0 12px 40px rgba(37, 99, 235, 0.2),
+			0 0 0 2px rgba(37, 99, 235, 0.15);
+	}
+
+	/* Drop indicator: thin glowing line at top of the card */
+	.todo-card.drag-indicator-before {
+		border-top: 2px solid var(--btn-primary);
+		box-shadow:
+			0 -1px 0 0 var(--btn-primary),
+			0 0 12px rgba(37, 99, 235, 0.4);
+		animation: pulse-indicator-top 1.5s ease-in-out infinite;
+	}
+
+	/* Drop indicator: thin glowing line at bottom of the card */
+	.todo-card.drag-indicator-after {
+		border-bottom: 2px solid var(--btn-primary);
+		box-shadow:
+			0 1px 0 0 var(--btn-primary),
+			0 0 12px rgba(37, 99, 235, 0.4);
+		animation: pulse-indicator-bottom 1.5s ease-in-out infinite;
 	}
 
 	.todo-card.completed .todo-title {
@@ -627,6 +693,107 @@
 	:global(.select-check:focus-visible) {
 		outline: 2px solid var(--btn-primary);
 		outline-offset: 2px;
+	}
+
+	/* ── Drop indicator pulse animations ── */
+
+	@keyframes pulse-indicator-top {
+		0%,
+		100% {
+			border-top-color: var(--btn-primary);
+			box-shadow:
+				0 -1px 0 0 var(--btn-primary),
+				0 0 8px rgba(37, 99, 235, 0.3);
+		}
+		50% {
+			border-top-color: rgba(37, 99, 235, 0.4);
+			box-shadow:
+				0 -1px 0 0 rgba(37, 99, 235, 0.4),
+				0 0 4px rgba(37, 99, 235, 0.1);
+		}
+	}
+
+	@keyframes pulse-indicator-bottom {
+		0%,
+		100% {
+			border-bottom-color: var(--btn-primary);
+			box-shadow:
+				0 1px 0 0 var(--btn-primary),
+				0 0 8px rgba(37, 99, 235, 0.3);
+		}
+		50% {
+			border-bottom-color: rgba(37, 99, 235, 0.4);
+			box-shadow:
+				0 1px 0 0 rgba(37, 99, 235, 0.4),
+				0 0 4px rgba(37, 99, 235, 0.1);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.todo-card.drag-over {
+			transform: none;
+		}
+
+		.todo-card.drag-indicator-before,
+		.todo-card.drag-indicator-after {
+			animation-duration: 0.01ms !important;
+		}
+	}
+
+	/* ── Markdown rendered content ── */
+	:global(.markdown-content p) {
+		margin: 0 0 0.25rem;
+		color: var(--text);
+	}
+
+	:global(.markdown-content p:last-child) {
+		margin-bottom: 0;
+	}
+
+	:global(.markdown-content a) {
+		color: var(--btn-primary);
+		text-decoration: underline;
+	}
+
+	:global(.markdown-content a:hover) {
+		opacity: 0.85;
+	}
+
+	:global(.markdown-content code) {
+		background: var(--input-bg);
+		padding: 0.125rem 0.375rem;
+		border-radius: 4px;
+		font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+		font-size: 0.875em;
+		color: var(--text);
+		border: 1px solid var(--border);
+	}
+
+	:global(.markdown-content h2) {
+		margin: 0.5rem 0 0.25rem;
+		font-size: 1rem;
+		font-weight: 600;
+		color: var(--text-heading);
+	}
+
+	:global(.markdown-content ul) {
+		margin: 0.25rem 0;
+		padding-left: 1.25rem;
+		list-style: disc;
+	}
+
+	:global(.markdown-content li) {
+		margin: 0.125rem 0;
+		color: var(--text);
+	}
+
+	:global(.markdown-content strong) {
+		font-weight: 600;
+		color: var(--text-heading);
+	}
+
+	:global(.markdown-content em) {
+		font-style: italic;
 	}
 
 	@media (max-width: 480px) {

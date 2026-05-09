@@ -5,7 +5,10 @@
 	const store = getTodoStore();
 </script>
 
-<div class="fixed bottom-6 left-1/2 z-[1000] w-[min(90%,400px)] -translate-x-1/2">
+<div
+	class="fixed bottom-6 left-1/2 z-[1000] w-[min(90%,400px)] -translate-x-1/2"
+	aria-live="polite"
+>
 	<div
 		class="animate-toast-in flex items-center gap-3 rounded-xl border px-4 py-3.5 shadow-lg"
 		style="background: var(--card-bg); border-color: var(--border); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);"

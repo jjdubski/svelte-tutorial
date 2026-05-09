@@ -68,18 +68,22 @@
 		<input
 			id="title-input"
 			class="mb-3 w-full rounded-xl p-3 text-sm"
-			style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text); transition: all 0.2s;"
+			style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text); transition: border 0.2s, box-shadow 0.2s;"
 			bind:value={store.newTitle}
 			placeholder="What needs to be done?"
 			onkeydown={(e) => e.key === 'Enter' && handleAdd()}
 			autocomplete="off"
+			name="title"
+			aria-label="Task title"
 		/>
 		<textarea
 			class="mb-3 min-h-[70px] w-full resize-y rounded-xl p-3 text-sm"
-			style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text); transition: all 0.2s;"
+			style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text); transition: border 0.2s, box-shadow 0.2s;"
 			bind:value={store.newDescription}
-			placeholder="Add details..."
+			placeholder="Add details\u2026"
 			rows="2"
+			name="description"
+			aria-label="Task description"
 		></textarea>
 		<div class="flex flex-wrap gap-2">
 			<input
@@ -159,7 +163,7 @@
 					type="text"
 					class="tag-input-field flex-1 rounded-l-lg px-3 py-2 text-sm outline-none"
 					style="border: 1px dashed var(--border); border-right: none; background: transparent; color: var(--text);"
-					placeholder="Add custom tag..."
+					placeholder="Add custom tag\u2026"
 					bind:value={store.newCustomTag}
 					onkeydown={(e) => {
 						if (e.key === 'Enter') {
@@ -168,17 +172,16 @@
 						}
 					}}
 				/>
-				<div
-					class="tag-add-btn flex cursor-pointer items-center rounded-r-lg px-3 py-2 text-sm"
-					style="border: 1px dashed var(--border); background: transparent; color: var(--text-muted); transition: all 0.2s;"
+				<button
+					class="tag-add-btn flex cursor-pointer items-center rounded-r-lg border-none px-3 py-2 text-sm"
+					style="border: 1px dashed var(--border); background: transparent; color: var(--text-muted); transition: border 0.2s, color 0.2s;"
 					data-btn="ghost"
 					onclick={() => store.addCustomTag()}
-					role="button"
-					tabindex="0"
-					onkeydown={(e) => e.key === 'Enter' && store.addCustomTag()}
+					aria-label="Add custom tag"
+					type="button"
 				>
 					+
-				</div>
+				</button>
 			</div>
 		</div>
 
@@ -200,6 +203,7 @@
 						placeholder="Subtask {i + 1}"
 						class="flex-1 rounded-md border px-2 py-1.5 text-sm"
 						style="border: 1px solid var(--border-input); background: var(--input-bg); color: var(--text);"
+						aria-label="Subtask {i + 1} text"
 					/>
 					<button
 						type="button"
