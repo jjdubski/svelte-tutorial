@@ -14,39 +14,38 @@ A feature-rich todo application built with **Svelte 5** (runes mode) and
 
 ## Features
 
-| Feature                    | Description                                                                                 |
-| -------------------------- | ------------------------------------------------------------------------------------------- |
-| **CRUD Tasks**             | Create, read, update, and delete tasks with inline editing                                  |
-| **Categories**             | Work, Personal, Ideas — plus custom categories with auto-assigned colors                    |
-| **Tags**                   | Predefined tags + custom tags with random color generation                                  |
-| **Priorities**             | High, Medium, Low with color-coded badges                                                   |
-| **Due Dates**              | Date picker with overdue highlighting (Today/Tomorrow formatting)                           |
-| **Recurring Tasks**        | Daily, weekly, monthly — auto-creates next instance on completion                           |
-| **Subtasks**               | Add, toggle, and track subtask progress per todo                                            |
-| **Task Templates**         | Quick-fill from templates: Meeting, Errand, Urgent, Health                                  |
-| **Batch Operations**       | Select mode to complete or delete multiple tasks at once                                    |
-| **Drag & Drop**            | Manual reorder with custom ghost preview and drop-position indicator                        |
-| **Drag-to-Assign**         | Drag a task onto a category or tag pill to assign it                                        |
-| **Fuzzy Search**           | Character-wise fuzzy matching across titles and descriptions                                |
-| **Advanced Filters**       | Status, priority, category, tag intersection (AND), date range                              |
-| **Sort Options**           | Manual, priority, due date, alphabetical (A-Z / Z-A), category                              |
-| **Kanban Board**           | `/board` — Pending / In Progress / Done columns with drag between                           |
-| **Analytics Dashboard**    | `/stats` — completion rate, streak, productivity chart, priority dist., categories, overdue |
-| **Markdown Descriptions**  | Zero-dep renderer for `**bold**`, `*italic*`, `` `code` ``, `[links](url)`, headings, lists |
-| **Due Date Notifications** | Web Notifications API + in-app upcoming section with inline opt-in banner                   |
-| **Share Task**             | Native Web Share API with clipboard fallback                                                |
-| **Quick Add via URL**      | Pre-fill form from query params (`?title=&desc=&due=&priority=...`)                         |
-| **Dark Mode**              | Toggle with system preference detection, persistent storage, zero FOUC                      |
-| **Undo Delete**            | Toast notification with undo button                                                         |
-| **Keyboard Shortcuts**     | `Ctrl+N` quick add, `Escape` exit select / edit mode                                        |
-| **Stats Bar**              | Spring-animated counters for active, completed, overdue tasks                               |
-| **Skeleton Loading**       | Animated placeholder while data initializes                                                 |
-| **Animations**             | fade, slide, scale, flip transitions with spring-eased stats                                |
-| **Reduced Motion**         | Respects `prefers-reduced-motion` — disables all animations                                 |
-| **Persistent Storage**     | All data saved to `localStorage` with error handling                                        |
-| **Responsive**             | Adapts from mobile to desktop with rounded card-based layout                                |
-| **Theme System**           | Runtime CSS custom properties for full light/dark theming                                   |
-| **Accessibility**          | Skip link, focus-visible rings, aria-labels on all controls, touch-action                   |
+| Feature                     | Description                                                                                 |
+| --------------------------- | ------------------------------------------------------------------------------------------- |
+| **CRUD Tasks**              | Create, read, update, and delete tasks with inline editing                                  |
+| **Categories**              | Work, Personal, Ideas — plus custom categories with auto-assigned colors                    |
+| **Tags**                    | Predefined tags + custom tags with random color generation                                  |
+| **Priorities**              | High, Medium, Low with color-coded badges                                                   |
+| **Due Dates**               | Date picker with overdue highlighting (Today/Tomorrow formatting)                           |
+| **Recurring Tasks**         | Daily, weekly, monthly — auto-creates next instance on completion                           |
+| **Subtasks**                | Add, toggle, and track subtask progress per todo                                            |
+| **Task Templates**          | Quick-fill from templates: Meeting, Errand, Urgent, Health                                  |
+| **Batch Operations**        | Select mode to complete or delete multiple tasks at once                                    |
+| **Drag & Drop**             | Manual reorder with custom ghost preview and drop-position indicator                        |
+| **Drag-to-Assign**          | Drag a task onto a category or tag pill to assign it                                        |
+| **Fuzzy Search**            | Character-wise fuzzy matching across titles and descriptions                                |
+| **Advanced Filters**        | Status, priority, category, tag intersection (AND), date range                              |
+| **Sort Options**            | Manual, priority, due date, alphabetical (A-Z / Z-A), category                              |
+| **Kanban Board**            | `/board` — Pending / In Progress / Done columns with drag between                           |
+| **Analytics Dashboard**     | `/stats` — completion rate, streak, productivity chart, priority dist., categories, overdue |
+| **Markdown Descriptions**   | Zero-dep renderer for `**bold**`, `*italic*`, `` `code` ``, `[links](url)`, headings, lists |
+| **Due Date Notifications**  | Web Notifications API + in-app upcoming section with inline opt-in banner                   |
+| **Quick Add via URL**       | Pre-fill form from query params (`?title=&desc=&due=&priority=...`)                         |
+| **Dark Mode**               | Toggle with system preference detection, persistent storage, zero FOUC                      |
+| **Undo Archive / Complete** | Toast notification with undo for both archive/delete and batch complete                     |
+| **Keyboard Shortcuts**      | `Ctrl+N` quick add, `Escape` exit select / edit mode                                        |
+| **Stats Bar**               | Spring-animated counters for active, completed, overdue tasks                               |
+| **Skeleton Loading**        | Animated placeholder while data initializes                                                 |
+| **Animations**              | fade, slide, scale, flip transitions with spring-eased stats                                |
+| **Reduced Motion**          | Respects `prefers-reduced-motion` — disables all animations                                 |
+| **Persistent Storage**      | All data saved to `localStorage` with error handling                                        |
+| **Responsive**              | Adapts from mobile to desktop with rounded card-based layout                                |
+| **Theme System**            | Runtime CSS custom properties for full light/dark theming                                   |
+| **Accessibility**           | Skip link, focus-visible rings, aria-labels on all controls, touch-action                   |
 
 ---
 
@@ -101,9 +100,10 @@ src/
 │   ├── StatsBar.svelte        # Spring-animated stat counters
 │   ├── storage.js             # Safe localStorage wrapper with error handling
 │   ├── Toast.svelte           # Toast notification with undo support
-│   ├── Todo.svelte            # Single todo item (view, edit, subtasks, drag, share, markdown)
+│   ├── Todo.svelte            # Single todo item (view, edit, subtasks, drag, markdown)
 │   ├── TodoFilters.svelte     # Search, filter, sort, category pills, batch select
 │   ├── TodoForm.svelte        # Add-task form with templates, tags, subtasks
+│   ├── TodoEditModal.svelte   # Modal for full editing of existing tasks
 │   ├── TodoHeader.svelte      # App title + dark mode toggle
 │   ├── TodoList.svelte        # Renders filtered list with loading/empty/due states
 │   └── todoStore.svelte.js    # Central store (class + createContext) — all state & logic
@@ -111,7 +111,7 @@ src/
 │   ├── +layout.svelte         # Root layout (creates store, renders NavBar + page content)
 │   ├── +page.svelte           # Main list view (orchestrates header, form, filters, list)
 │   ├── archived/
-│   │   └── +page.svelte       # Archived tasks view (placeholder)
+│   │   └── +page.svelte       # Archived tasks view (restore, permanent delete, batch select)
 │   ├── board/
 │   │   └── +page.svelte       # Kanban board (Pending / In Progress / Done)
 │   └── stats/
@@ -122,17 +122,18 @@ e2e/
 
 ### Key files
 
-| File                          | Purpose                                                                 |
-| ----------------------------- | ----------------------------------------------------------------------- |
-| `src/lib/todoStore.svelte.js` | Central store: class with `$state` fields, exposed via `createContext`  |
-| `src/lib/Todo.svelte`         | Single todo with inline editing, subtasks, drag handle, share, markdown |
-| `src/lib/TodoForm.svelte`     | Add-task form with templates, tags, subtasks                            |
-| `src/lib/TodoFilters.svelte`  | Search, filter, sort, category pills, batch select                      |
-| `src/lib/TodoList.svelte`     | Renders filtered list with differentiated empty states                  |
-| `src/lib/NavBar.svelte`       | Route navigation with active-state highlighting                         |
-| `src/lib/storage.js`          | Safe localStorage wrapper with error handling                           |
-| `src/lib/markdown.js`         | Zero-dependency markdown renderer                                       |
-| `src/app.css`                 | CSS custom properties, Tailwind imports, glow animations                |
+| File                           | Purpose                                                                |
+| ------------------------------ | ---------------------------------------------------------------------- |
+| `src/lib/todoStore.svelte.js`  | Central store: class with `$state` fields, exposed via `createContext` |
+| `src/lib/Todo.svelte`          | Single todo with inline editing, subtasks, drag handle, markdown       |
+| `src/lib/TodoForm.svelte`      | Add-task form with templates, tags, subtasks                           |
+| `src/lib/TodoFilters.svelte`   | Search, filter, sort, category pills, batch select                     |
+| `src/lib/TodoEditModal.svelte` | Modal for editing tasks (title, description, due, priority, category)  |
+| `src/lib/TodoList.svelte`      | Renders filtered list with differentiated empty states                 |
+| `src/lib/NavBar.svelte`        | Route navigation with active-state highlighting                        |
+| `src/lib/storage.js`           | Safe localStorage wrapper with error handling                          |
+| `src/lib/markdown.js`          | Zero-dependency markdown renderer                                      |
+| `src/app.css`                  | CSS custom properties, Tailwind imports, glow animations               |
 
 ---
 

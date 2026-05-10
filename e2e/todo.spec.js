@@ -23,7 +23,7 @@ test.describe('Todo App', () => {
 		const todoCard = page.locator('.todo-card').first();
 		await expect(todoCard).toHaveClass(/completed/);
 
-		const deleteBtn = page.locator('[aria-label="Delete task"]').first();
+		const deleteBtn = page.locator('[aria-label="Archive task"]').first();
 		await deleteBtn.click();
 
 		await expect(page.locator('h3.todo-title')).toHaveCount(0);

@@ -14,7 +14,7 @@
 </script>
 
 <nav
-	class="relative flex items-center justify-center gap-1 border-b px-4 py-2"
+	class="relative flex items-center justify-start gap-1 border-b px-4 py-2 sm:justify-center"
 	style="background: var(--card-bg); border-color: var(--border); transition: background 0.3s, border-color 0.3s;"
 >
 	<div class="flex gap-1">

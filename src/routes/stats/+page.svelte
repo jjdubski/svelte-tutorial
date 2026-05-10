@@ -40,7 +40,7 @@
 </script>
 
 <div
-	class="flex min-h-dvh justify-center p-8 sm:p-4"
+	class="flex min-h-dvh justify-center p-4"
 	style="background: linear-gradient(145deg, var(--bg-gradient-1) 0%, var(--bg-gradient-2) 100%); transition: background 0.3s;"
 >
 	<div

@@ -89,15 +89,6 @@
 		</button>
 	{/if}
 
-	{#if store.sortBy === 'manual' && !store.selectMode}
-		<div
-			class="drag-handle mt-1 flex shrink-0 cursor-grab flex-col gap-[2px] self-start p-[0.25rem_0.1rem_0.25rem_0] select-none"
-			aria-label="Drag to reorder"
-		>
-			<span></span><span></span><span></span>
-		</div>
-	{/if}
-
 	<div class="todo-body min-w-0 flex-1">
 		<div class="flex items-start gap-2">
 			<input
@@ -187,10 +178,10 @@
 					>
 						+ Subtask
 					</button>
-					<span class="ml-auto flex items-center gap-1">
+					<span class="mt-2 ml-auto flex items-center gap-1">
 						{#if todo.dueDate}
 							<span
-								class="text-sm font-medium sm:text-base"
+								class="mr-2 text-sm font-medium sm:text-base"
 								style="color: {isOverdue(todo.dueDate)
 									? 'var(--priority-high)'
 									: 'var(--text-muted)'};"
@@ -200,7 +191,7 @@
 						{/if}
 						<button
 							onclick={() => store.startEdit(todo.id)}
-							class="glow-btn mt-2 flex cursor-pointer items-center justify-center rounded-md border-0 p-1"
+							class="glow-btn flex cursor-pointer items-center justify-center rounded-md border-0 p-1"
 							style="color: var(--text-muted);"
 							aria-label="Edit task"
 						>
@@ -208,7 +199,7 @@
 						</button>
 						<button
 							onclick={() => store.deleteTodo(todo.id)}
-							class="glow-btn mt-2 flex cursor-pointer items-center justify-center rounded-md border-0 p-1"
+							class="glow-btn flex cursor-pointer items-center justify-center rounded-md border-0 p-1"
 							style="color: var(--text-muted);"
 							aria-label="Archive task"
 						>
