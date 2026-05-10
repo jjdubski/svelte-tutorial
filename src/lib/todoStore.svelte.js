@@ -163,6 +163,10 @@ class TodoStore {
 	selectMode = $state(false);
 	selectedTodos = $state(new SvelteSet());
 
+	// ── Archived select mode ──
+	archivedSelectMode = $state(false);
+	selectedArchived = $state(new SvelteSet());
+
 	// ── Undo archive / complete ──
 	/** @type {Todo[]} */
 	lastArchivedTodos = $state([]);
@@ -844,6 +848,47 @@ class TodoStore {
 		this.selectedTodos = new SvelteSet();
 	}
 
+	// ── Archived select mode ──
+
+	/**
+	 * @param {number} id
+	 */
+	toggleArchivedSelect(id) {
+		if (this.selectedArchived.has(id)) {
+			this.selectedArchived.delete(id);
+		} else {
+			this.selectedArchived.add(id);
+		}
+	}
+
+	selectAllArchived() {
+		this.selectedArchived = new SvelteSet(this.archivedTodos.map((t) => t.id));
+	}
+
+	deselectAllArchived() {
+		this.selectedArchived = new SvelteSet();
+	}
+
+	restoreSelectedArchived() {
+		const count = this.selectedArchived.size;
+		if (count === 0) return;
+		const toRestore = this.archivedTodos.filter((t) => this.selectedArchived.has(t.id));
+		this.todos = [...this.todos, ...toRestore];
+		this.archivedTodos = this.archivedTodos.filter((t) => !this.selectedArchived.has(t.id));
+		this.showToast(`${count} task${count > 1 ? 's' : ''} restored`, 'success');
+		this.selectedArchived = new SvelteSet();
+		this.archivedSelectMode = false;
+	}
+
+	permanentDeleteSelectedArchived() {
+		const count = this.selectedArchived.size;
+		if (count === 0) return;
+		this.archivedTodos = this.archivedTodos.filter((t) => !this.selectedArchived.has(t.id));
+		this.showToast(`${count} task${count > 1 ? 's' : ''} permanently deleted`, 'info');
+		this.selectedArchived = new SvelteSet();
+		this.archivedSelectMode = false;
+	}
+
 	/**
 	 * Create a new todo copy for a recurring task (with the next due date).
 	 * Returns the new todo object, or null if the task is not recurring.
@@ -1244,6 +1289,10 @@ class TodoStore {
 			if (this.selectMode) {
 				this.selectMode = false;
 				this.selectedTodos = new SvelteSet();
+			}
+			if (this.archivedSelectMode) {
+				this.archivedSelectMode = false;
+				this.selectedArchived = new SvelteSet();
 			}
 		}
 	}

@@ -47,7 +47,7 @@
 		class="w-full max-w-[1100px] rounded-2xl border p-8 sm:rounded-xl sm:p-5 xl:max-w-[1300px] 2xl:max-w-[1500px]"
 		style="background: var(--card-bg); box-shadow: 0 8px 32px var(--shadow); border-color: var(--border); transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;"
 	>
-		<div class="mb-4 flex items-center justify-between">
+		<div class="mb-4 flex items-center justify-between gap-2">
 			<h2 class="m-0 text-xl font-semibold sm:text-2xl" style="color: var(--text-heading);">
 				Analytics
 			</h2>

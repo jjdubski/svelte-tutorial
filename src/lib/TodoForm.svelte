@@ -28,7 +28,7 @@
 			>Choose a template</span
 		>
 		<div
-			class="mb-4 flex gap-0.5 rounded-xl p-0.5"
+			class="mb-4 flex flex-wrap gap-1 rounded-xl p-1 sm:gap-0.5 sm:p-0.5"
 			style="background: var(--input-bg); border: 1px solid var(--border);"
 		>
 			{#each store.templates as template (template.name)}

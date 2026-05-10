@@ -6,8 +6,8 @@
 
 <div class="relative mb-3 flex items-center justify-center">
 	<h1
-		class="m-0 text-3xl font-light sm:text-4xl"
-		style="color: var(--text-heading); font-family: 'Calligraffitti', cursive; letter-spacing: 0.02em;"
+		class="m-0 text-3xl font-medium sm:text-4xl"
+		style="color: var(--text-heading); letter-spacing: 0.05em;"
 	>
 		Todo List
 	</h1>
