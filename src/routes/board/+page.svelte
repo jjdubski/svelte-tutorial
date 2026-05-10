@@ -114,10 +114,12 @@
 		style="background: var(--card-bg); box-shadow: 0 8px 32px var(--shadow); border-color: var(--border); transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;"
 	>
 		<div class="mb-4 flex items-center justify-between">
-			<h2 class="m-0 text-2xl font-semibold" style="color: var(--text-heading);">Kanban Board</h2>
+			<h2 class="m-0 text-xl font-semibold sm:text-2xl" style="color: var(--text-heading);">
+				Kanban Board
+			</h2>
 			<a
 				href="/"
-				class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-base font-medium no-underline transition-all hover:opacity-80"
+				class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium no-underline transition-all hover:opacity-80 sm:text-base"
 				style="color: var(--btn-primary); background: var(--input-bg);"
 			>
 				<ArrowLeft size={14} /> Back to Tasks
@@ -155,12 +157,15 @@
 					>
 						<div class="flex items-center gap-2">
 							<col.icon size={16} style="color: {col.color};" />
-							<h3 class="m-0 text-base font-semibold" style="color: var(--text-heading);">
+							<h3
+								class="m-0 text-sm font-semibold sm:text-base"
+								style="color: var(--text-heading);"
+							>
 								{col.label}
 							</h3>
 						</div>
 						<span
-							class="inline-flex h-6 min-w-6 items-center justify-center rounded-full px-1.5 text-sm font-bold text-white"
+							class="inline-flex h-6 min-w-6 items-center justify-center rounded-full px-1.5 text-xs font-bold text-white sm:text-sm"
 							style="background: {col.color};"
 						>
 							{col.todos.length}
@@ -171,7 +176,7 @@
 					<div class="flex flex-col gap-2 p-3">
 						{#if col.todos.length === 0}
 							<div class="flex flex-col items-center px-2 py-8 text-center">
-								<p class="m-0 text-base" style="color: var(--text-muted);">No tasks</p>
+								<p class="m-0 text-sm sm:text-base" style="color: var(--text-muted);">No tasks</p>
 							</div>
 						{:else}
 							{#each col.todos as todo (todo.id)}
@@ -203,7 +208,7 @@
 									<div class="min-w-0 flex-1">
 										<div class="flex items-start gap-1.5">
 											<h4
-												class="m-0 text-base leading-snug font-medium"
+												class="m-0 text-sm leading-snug font-medium sm:text-base"
 												style="color: var(--text-heading);"
 												class:line-through={todo.completed}
 												class:opacity-60={todo.completed}
@@ -244,7 +249,7 @@
 										<!-- Due date -->
 										{#if todo.dueDate}
 											<p
-												class="m-0 mt-1 text-sm font-medium"
+												class="m-0 mt-1 text-xs font-medium sm:text-sm"
 												style="color: {isOverdue(todo.dueDate)
 													? 'var(--priority-high)'
 													: 'var(--text-muted)'};"

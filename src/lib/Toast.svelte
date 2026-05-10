@@ -30,12 +30,17 @@
 				<Info size={18} style="color: var(--btn-primary);" />
 			{/if}
 		</div>
-		<span class="flex-1 text-base" style="color: var(--text);">{store.toast.message}</span>
-		{#if store.toast.type === 'info' && store.lastArchivedTodo}
+		<span class="flex-1 text-sm sm:text-base" style="color: var(--text);"
+			>{store.toast.message}</span
+		>
+		{#if store.toast.type === 'info' && (store.lastArchivedTodos.length > 0 || store.lastCompletedTodos.length > 0)}
 			<button
 				class="flex cursor-pointer items-center gap-1 rounded-md border-none px-2 py-1 text-xs font-medium"
 				style="background: var(--btn-primary); color: white;"
-				onclick={() => store.undoArchive()}
+				onclick={() => {
+					if (store.lastArchivedTodos.length > 0) store.undoArchive();
+					else if (store.lastCompletedTodos.length > 0) store.undoComplete();
+				}}
 			>
 				<RotateCcw size={12} /> Undo
 			</button>

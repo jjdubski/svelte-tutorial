@@ -22,7 +22,7 @@
 			<a
 				href={link.href}
 				data-sveltekit-preload-data
-				class="nav-link rounded-lg px-3 py-1.5 text-base font-medium no-underline transition-all"
+				class="nav-link rounded-lg px-3 py-1.5 text-sm font-medium no-underline transition-all sm:text-base"
 				class:active={$page.url.pathname === link.href}
 			>
 				{link.label}

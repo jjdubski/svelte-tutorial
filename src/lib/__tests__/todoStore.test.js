@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { SvelteSet } from 'svelte/reactivity';
 import { TodoStore } from '../todoStore.svelte.js';
 
 // Extract pure computation methods from the TodoStore prototype.
@@ -11,6 +12,7 @@ const {
 	_computePriorityDistribution,
 	_computeCategoryBreakdown,
 	_computeOverdueTasks,
+	_computeUpcomingDue,
 	_getRandomTagColor,
 	getNextDueDate
 } = TodoStore.prototype;
@@ -170,40 +172,40 @@ describe('TodoStore pure methods', () => {
 		});
 
 		it('counts a single completion today as streak of 1', () => {
-			const today = new Date().toISOString().split('T')[0];
+			const now = new Date();
+			const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 			const todos = [{ id: 1, completed: true, completedAt: today + 'T12:00:00' }];
 			expect(_computeStreak(todos)).toBe(1);
 		});
 
 		it('counts consecutive days backwards from today', () => {
-			const today = new Date();
 			const todos = [];
 			for (let i = 0; i < 3; i++) {
-				const d = new Date(today);
+				const d = new Date();
 				d.setDate(d.getDate() - i);
-				const dateStr = d.toISOString().split('T')[0];
+				const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 				todos.push({ id: i + 1, completed: true, completedAt: dateStr + 'T12:00:00' });
 			}
 			expect(_computeStreak(todos)).toBe(3);
 		});
 
 		it('breaks streak when a day is missing', () => {
-			const today = new Date();
 			const todos = [];
 			// Today and yesterday completed, but day before yesterday is missing
 			for (let i = 0; i < 2; i++) {
-				const d = new Date(today);
+				const d = new Date();
 				d.setDate(d.getDate() - i);
-				const dateStr = d.toISOString().split('T')[0];
+				const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 				todos.push({ id: i + 1, completed: true, completedAt: dateStr + 'T12:00:00' });
 			}
 			// Add a completion from 3 days ago (gap at 2 days ago)
-			const d3 = new Date(today);
+			const d3 = new Date();
 			d3.setDate(d3.getDate() - 3);
+			const dateStr3 = `${d3.getFullYear()}-${String(d3.getMonth() + 1).padStart(2, '0')}-${String(d3.getDate()).padStart(2, '0')}`;
 			todos.push({
 				id: 3,
 				completed: true,
-				completedAt: d3.toISOString().split('T')[0] + 'T12:00:00'
+				completedAt: dateStr3 + 'T12:00:00'
 			});
 			expect(_computeStreak(todos)).toBe(2);
 		});
@@ -216,9 +218,9 @@ describe('TodoStore pure methods', () => {
 		});
 
 		it('counts a completion on its correct day of week', () => {
-			// Create a completion for today
+			// Create a completion for today (using local date)
 			const now = new Date();
-			const todayStr = now.toISOString().split('T')[0];
+			const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 			const dayOfWeek = now.getDay();
 			const labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 			const todos = [{ id: 1, completed: true, completedAt: todayStr + 'T12:00:00' }];
@@ -287,6 +289,200 @@ describe('TodoStore pure methods', () => {
 			const result = _computeOverdueTasks(todos);
 			expect(result).toHaveLength(1);
 			expect(result[0].id).toBe(1);
+		});
+	});
+
+	describe('_computeUpcomingDue', () => {
+		it('returns empty array when no todos', () => {
+			expect(_computeUpcomingDue([])).toEqual([]);
+		});
+
+		it('returns tasks due today or within next 2 days (in local time)', () => {
+			// Use local date strings so the test is timezone-independent
+			const now = new Date();
+			const todayLocal = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+			const tomorrowLocal = new Date(now);
+			tomorrowLocal.setDate(tomorrowLocal.getDate() + 1);
+			const tomorrowStr = `${tomorrowLocal.getFullYear()}-${String(tomorrowLocal.getMonth() + 1).padStart(2, '0')}-${String(tomorrowLocal.getDate()).padStart(2, '0')}`;
+			const twoDaysLocal = new Date(now);
+			twoDaysLocal.setDate(twoDaysLocal.getDate() + 2);
+			const twoDaysStr = `${twoDaysLocal.getFullYear()}-${String(twoDaysLocal.getMonth() + 1).padStart(2, '0')}-${String(twoDaysLocal.getDate()).padStart(2, '0')}`;
+
+			const todos = [
+				{ id: 1, completed: false, dueDate: todayLocal }, // due today
+				{ id: 2, completed: false, dueDate: tomorrowStr }, // due tomorrow
+				{ id: 3, completed: false, dueDate: twoDaysStr }, // due in 2 days
+				{ id: 4, completed: false, dueDate: '2099-12-31' }, // far future, excluded
+				{ id: 5, completed: true, dueDate: todayLocal }, // completed, excluded
+				{ id: 6, completed: false } // no due date, excluded
+			];
+			const result = _computeUpcomingDue(todos);
+			expect(result).toHaveLength(3);
+			expect(result.map((t) => t.id)).toEqual([1, 2, 3]);
+		});
+
+		it('sorts results by due date ascending', () => {
+			const now = new Date();
+			const todayLocal = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+			const tomorrowLocal = new Date(now);
+			tomorrowLocal.setDate(tomorrowLocal.getDate() + 1);
+			const tomorrowStr = `${tomorrowLocal.getFullYear()}-${String(tomorrowLocal.getMonth() + 1).padStart(2, '0')}-${String(tomorrowLocal.getDate()).padStart(2, '0')}`;
+
+			const todos = [
+				{ id: 1, completed: false, dueDate: tomorrowStr },
+				{ id: 2, completed: false, dueDate: todayLocal }
+			];
+			const result = _computeUpcomingDue(todos);
+			expect(result[0].id).toBe(2);
+			expect(result[1].id).toBe(1);
+		});
+	});
+
+	describe('completeSelected with recurring tasks', () => {
+		/** @type {import('../todoStore.svelte.js').default} */
+		let store;
+
+		beforeEach(() => {
+			// Mock localStorage so store constructor doesn't fail
+			vi.stubGlobal('localStorage', {
+				getItem: vi.fn(() => null),
+				setItem: vi.fn(),
+				removeItem: vi.fn(),
+				clear: vi.fn(),
+				get length() {
+					return 0;
+				},
+				key: vi.fn(() => null)
+			});
+			store = new TodoStore();
+			// Silence showToast (which uses setTimeout)
+			store.showToast = vi.fn();
+		});
+
+		afterEach(() => {
+			vi.unstubAllGlobals();
+		});
+
+		it('creates a new recurring instance when completing a selected recurring task', () => {
+			store.todos = [
+				{
+					id: 1,
+					title: 'Daily standup',
+					completed: false,
+					dueDate: '2026-05-09',
+					recurring: 'daily',
+					tags: [],
+					createdAt: '2026-05-09T00:00:00.000Z'
+				}
+			];
+			store.nextId = 2;
+			store.selectedTodos = new SvelteSet([1]);
+			store.selectMode = true;
+
+			store.completeSelected();
+
+			// Original task should be completed
+			expect(store.todos[0].completed).toBe(true);
+			expect(store.todos[0].completedAt).toBeTruthy();
+			// New recurring copy should exist
+			expect(store.todos.length).toBe(2);
+			expect(store.todos[1].recurring).toBe('daily');
+			expect(store.todos[1].completed).toBe(false);
+			expect(store.todos[1].dueDate).toBe('2026-05-10');
+			expect(store.todos[1].title).toBe('Daily standup');
+			// Select mode cleared
+			expect(store.selectMode).toBe(false);
+			expect(store.selectedTodos.size).toBe(0);
+		});
+
+		it('creates recurring copies for multiple selected recurring tasks', () => {
+			store.todos = [
+				{
+					id: 1,
+					title: 'Daily A',
+					completed: false,
+					dueDate: '2026-05-09',
+					recurring: 'daily',
+					tags: [],
+					createdAt: '2026-05-09T00:00:00.000Z'
+				},
+				{
+					id: 2,
+					title: 'Weekly B',
+					completed: false,
+					dueDate: '2026-05-09',
+					recurring: 'weekly',
+					tags: [],
+					createdAt: '2026-05-09T00:00:00.000Z'
+				},
+				{
+					id: 3,
+					title: 'One-time C',
+					completed: false,
+					dueDate: '2026-05-09',
+					tags: [],
+					createdAt: '2026-05-09T00:00:00.000Z'
+				}
+			];
+			store.nextId = 10;
+			store.selectedTodos = new SvelteSet([1, 2, 3]);
+
+			store.completeSelected();
+
+			// Should have 5 todos: 3 completed originals + 2 recurring copies (one-time doesn't recur)
+			expect(store.todos.length).toBe(5);
+			expect(store.todos[0].completed).toBe(true); // Daily A
+			expect(store.todos[1].completed).toBe(true); // Weekly B
+			expect(store.todos[2].completed).toBe(true); // One-time C
+			// Recurring copies
+			const copies = store.todos.filter((t) => !t.completed);
+			expect(copies).toHaveLength(2);
+			expect(copies.find((t) => t.recurring === 'daily')).toBeTruthy();
+			expect(copies.find((t) => t.recurring === 'weekly')).toBeTruthy();
+		});
+
+		it('does not create copies for non-recurring tasks', () => {
+			store.todos = [
+				{
+					id: 1,
+					title: 'One-time task',
+					completed: false,
+					dueDate: '2026-05-09',
+					tags: [],
+					createdAt: '2026-05-09T00:00:00.000Z'
+				}
+			];
+			store.nextId = 2;
+			store.selectedTodos = new SvelteSet([1]);
+
+			store.completeSelected();
+
+			expect(store.todos.length).toBe(1);
+			expect(store.todos[0].completed).toBe(true);
+		});
+
+		it('does not create a recurring copy if the todo is already completed', () => {
+			store.todos = [
+				{
+					id: 1,
+					title: 'Already done recurring',
+					completed: true,
+					dueDate: '2026-05-09',
+					recurring: 'daily',
+					tags: [],
+					createdAt: '2026-05-09T00:00:00.000Z',
+					completedAt: '2026-05-09T12:00:00.000Z'
+				}
+			];
+			store.nextId = 2;
+			store.selectedTodos = new SvelteSet([1]);
+
+			store.completeSelected();
+
+			// Should still be just 1 todo — no recurring copy spawned
+			expect(store.todos.length).toBe(1);
+			expect(store.todos[0].completed).toBe(true);
+			expect(store.todos[0].recurring).toBe('daily');
 		});
 	});
 });

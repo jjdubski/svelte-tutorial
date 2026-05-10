@@ -24,7 +24,7 @@
 		}}
 	>
 		<!-- Templates Segmented Control -->
-		<span class="mb-2 block text-sm font-medium" style="color: var(--text-muted);"
+		<span class="mb-2 block text-xs font-medium sm:text-sm" style="color: var(--text-muted);"
 			>Choose a template</span
 		>
 		<div
@@ -33,7 +33,7 @@
 		>
 			{#each store.templates as template (template.name)}
 				<button
-					class="glow-btn template-btn flex-1 cursor-pointer rounded-lg border-none px-3 py-2 text-base font-medium"
+					class="glow-btn template-btn flex-1 cursor-pointer rounded-lg border-none px-3 py-2 text-sm font-medium sm:text-base"
 					class:active={store.selectedTemplate === template.name}
 					onclick={() => handleTemplate(template)}
 				>
@@ -44,7 +44,7 @@
 
 		<input
 			id="title-input"
-			class="mb-3 w-full rounded-xl p-3 text-base"
+			class="mb-3 w-full rounded-xl p-3 text-sm sm:text-base"
 			style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text); transition: border 0.2s, box-shadow 0.2s;"
 			bind:value={store.newTitle}
 			placeholder="What needs to be done?"
@@ -54,7 +54,7 @@
 			aria-label="Task title"
 		/>
 		<textarea
-			class="mb-3 min-h-[70px] w-full resize-y rounded-xl p-3 text-base"
+			class="mb-3 min-h-[70px] w-full resize-y rounded-xl p-3 text-sm sm:text-base"
 			style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text); transition: border 0.2s, box-shadow 0.2s;"
 			bind:value={store.newDescription}
 			placeholder="Add details…"
@@ -65,13 +65,13 @@
 		<div class="flex flex-wrap gap-2">
 			<input
 				type="date"
-				class="mb-3 min-w-[100px] flex-1 rounded-xl p-3 text-base"
+				class="mb-3 min-w-[100px] flex-1 rounded-xl p-3 text-sm sm:text-base"
 				style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text);"
 				bind:value={store.newDueDate}
 				aria-label="Due date"
 			/>
 			<select
-				class="mb-3 min-w-[100px] flex-1 rounded-xl p-3 text-base"
+				class="mb-3 min-w-[100px] flex-1 rounded-xl p-3 text-sm sm:text-base"
 				style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text);"
 				bind:value={store.newPriority}
 				aria-label="Priority"
@@ -81,7 +81,7 @@
 				<option value="low">Low</option>
 			</select>
 			<select
-				class="mb-3 min-w-[100px] flex-1 rounded-xl p-3 text-base"
+				class="mb-3 min-w-[100px] flex-1 rounded-xl p-3 text-sm sm:text-base"
 				style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text);"
 				bind:value={store.newCategory}
 				aria-label="Category"
@@ -92,7 +92,7 @@
 				{/each}
 			</select>
 			<select
-				class="mb-3 min-w-[100px] flex-1 rounded-xl p-3 text-base"
+				class="mb-3 min-w-[100px] flex-1 rounded-xl p-3 text-sm sm:text-base"
 				style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text);"
 				bind:value={store.newRecurring}
 				aria-label="Recurring"
@@ -107,10 +107,10 @@
 		<!-- Tags selector -->
 		<div class="mb-3">
 			<div class="mb-2 flex flex-wrap items-center gap-2">
-				<span class="text-sm font-medium" style="color: var(--text-muted);">Tags:</span>
+				<span class="text-xs font-medium sm:text-sm" style="color: var(--text-muted);">Tags:</span>
 				{#each store.availableTags as tag (tag)}
 					<button
-						class="glow-tag tag-btn cursor-pointer rounded-full border px-3 py-1.5 text-base font-medium"
+						class="glow-tag tag-btn cursor-pointer rounded-full border px-3 py-1.5 text-sm font-medium sm:text-base"
 						style="--tag-color: {store.tagColors[tag]};"
 						class:selected={store.newTags.includes(tag)}
 						onclick={() =>
@@ -125,7 +125,7 @@
 				{/each}
 				{#each store.newTags.filter((t) => !store.availableTags.includes(t)) as tag (tag)}
 					<button
-						class="tag-btn cursor-pointer rounded-full border px-3 py-1.5 text-base font-medium"
+						class="tag-btn cursor-pointer rounded-full border px-3 py-1.5 text-sm font-medium sm:text-base"
 						style="background: #6366f1; color: white; border-color: #6366f1;"
 						data-btn="tag"
 						onclick={() => (store.newTags = store.newTags.filter((t) => t !== tag))}
@@ -138,7 +138,7 @@
 			<div class="flex">
 				<input
 					type="text"
-					class="tag-input-field flex-1 rounded-l-lg px-3 py-2 text-base outline-none"
+					class="tag-input-field flex-1 rounded-l-lg px-3 py-2 text-sm outline-none sm:text-base"
 					style="border: 1px dashed var(--border); border-right: none; background: transparent; color: var(--text);"
 					placeholder="Add custom tag…"
 					bind:value={store.newCustomTag}
@@ -150,7 +150,7 @@
 					}}
 				/>
 				<button
-					class="tag-add-btn flex cursor-pointer items-center rounded-r-lg border-none px-3 py-2 text-base"
+					class="tag-add-btn flex cursor-pointer items-center rounded-r-lg border-none px-3 py-2 text-sm sm:text-base"
 					style="border: 1px dashed var(--border); background: transparent; color: var(--text-muted); transition: border 0.2s, color 0.2s;"
 					data-btn="ghost"
 					onclick={() => store.addCustomTag()}
@@ -164,7 +164,7 @@
 
 		<button
 			type="button"
-			class="glow-btn flex w-full flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border-none px-4 py-3.5 text-base font-semibold"
+			class="glow-btn flex w-full flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border-none px-4 py-3.5 text-sm font-semibold sm:text-base"
 			style="background: var(--btn-primary); color: white;"
 			data-btn="primary"
 			onclick={handleAdd}

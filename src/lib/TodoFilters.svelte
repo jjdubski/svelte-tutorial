@@ -1,6 +1,6 @@
 <script>
 	import { slide } from 'svelte/transition';
-	import { Search, CheckSquare, Trash2, X, Calendar, RotateCcw } from 'lucide-svelte';
+	import { Search, CheckSquare, Archive, X, Calendar, RotateCcw } from 'lucide-svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { getTodoStore } from '$lib/todoStore.svelte.js';
 
@@ -17,7 +17,7 @@
 	>
 		<Search size={16} style="color: var(--text-muted);" aria-hidden="true" />
 		<input
-			class="m-0 flex-1 rounded-sm border-none bg-transparent p-0 text-base focus-visible:ring-2 focus-visible:ring-[var(--btn-primary)] focus-visible:outline-none focus-visible:ring-inset"
+			class="m-0 flex-1 rounded-sm border-none bg-transparent p-0 text-sm focus-visible:ring-2 focus-visible:ring-[var(--btn-primary)] focus-visible:outline-none focus-visible:ring-inset sm:text-base"
 			style="color: var(--text);"
 			bind:value={store.filterText}
 			placeholder="Search…"
@@ -26,7 +26,7 @@
 		/>
 	</div>
 	<select
-		class="rounded-xl p-2.5 px-3 text-base"
+		class="rounded-xl p-2.5 px-3 text-sm sm:text-base"
 		style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text); cursor: pointer;"
 		bind:value={store.filterStatus}
 		aria-label="Filter by status"
@@ -36,7 +36,7 @@
 		<option value="done">Done</option>
 	</select>
 	<select
-		class="rounded-xl p-2.5 px-3 text-base"
+		class="rounded-xl p-2.5 px-3 text-sm sm:text-base"
 		style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text); cursor: pointer;"
 		bind:value={store.filterPriority}
 		aria-label="Filter by priority"
@@ -47,7 +47,7 @@
 		<option value="low">Low</option>
 	</select>
 	<select
-		class="rounded-xl p-2.5 px-3 text-base"
+		class="rounded-xl p-2.5 px-3 text-sm sm:text-base"
 		style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text); cursor: pointer;"
 		bind:value={store.sortBy}
 		aria-label="Sort by"
@@ -61,19 +61,19 @@
 	</select>
 	{#if store.activeFilterCount > 0}
 		<button
-			class="glow-btn flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border"
+			class="glow-btn flex h-12 w-12 cursor-pointer items-center justify-center rounded-xl border"
 			style="background: var(--btn-delete); border-color: var(--btn-delete); color: white;"
 			data-btn="delete"
 			onclick={() => store.clearFilters()}
 			aria-label="Clear all filters"
 			title="Clear all filters"
 		>
-			<RotateCcw size={16} />
+			<RotateCcw size={20} />
 		</button>
 	{/if}
 	<div class="relative">
 		<button
-			class="glow-btn flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border"
+			class="glow-btn flex h-12 w-12 cursor-pointer items-center justify-center rounded-xl border"
 			style="background: var(--input-bg); border-color: var(--border); color: var(--text-muted);"
 			data-btn="ghost"
 			class:active={store.selectMode}
@@ -81,9 +81,9 @@
 			aria-label="Toggle select mode"
 		>
 			{#if store.selectMode && store.selectedTodos.size > 0}
-				<span class="text-base font-semibold">{store.selectedTodos.size}</span>
+				<span class="text-sm font-semibold sm:text-base">{store.selectedTodos.size}</span>
 			{:else}
-				<CheckSquare size={18} />
+				<CheckSquare size={20} />
 			{/if}
 		</button>
 		{#if store.selectMode}
@@ -93,7 +93,7 @@
 				transition:slide={{ duration: store.prefersReducedMotion ? 0 : 150 }}
 			>
 				<button
-					class="glow-btn flex cursor-pointer items-center gap-1 rounded-lg border-none px-2.5 py-2 text-sm font-medium"
+					class="glow-btn flex cursor-pointer items-center gap-1 rounded-lg border-none px-2.5 py-2 text-xs font-medium sm:text-sm"
 					style="background: var(--btn-save); color: white;"
 					data-btn="save"
 					onclick={() => store.completeSelected()}
@@ -102,16 +102,16 @@
 					<CheckSquare size={14} /> Complete
 				</button>
 				<button
-					class="glow-btn flex cursor-pointer items-center gap-1 rounded-lg border-none px-2.5 py-2 text-sm font-medium"
+					class="glow-btn flex cursor-pointer items-center gap-1 rounded-lg border-none px-2.5 py-2 text-xs font-medium sm:text-sm"
 					style="background: var(--btn-delete); color: white;"
 					data-btn="delete"
-					onclick={() => store.deleteSelected()}
+					onclick={() => store.archiveSelected()}
 					disabled={store.selectedTodos.size === 0}
 				>
-					<Trash2 size={14} /> Delete
+					<Archive size={14} /> Archive
 				</button>
 				<button
-					class="glow-btn flex cursor-pointer items-center gap-1 rounded-lg border-none px-2.5 py-2 text-sm font-medium"
+					class="glow-btn flex cursor-pointer items-center gap-1 rounded-lg border-none px-2.5 py-2 text-xs font-medium sm:text-sm"
 					style="background: var(--btn-cancel); color: white;"
 					data-btn="cancel"
 					onclick={() => {
@@ -129,7 +129,7 @@
 <!-- Date Range Filter (collapsible) -->
 <div class="mb-3">
 	<button
-		class="glow-btn flex cursor-pointer items-center gap-1.5 rounded-lg border-none px-3 py-1.5 text-sm font-medium"
+		class="glow-btn flex cursor-pointer items-center gap-1.5 rounded-lg border-none px-3 py-1.5 text-xs font-medium sm:text-sm"
 		style="color: var(--text-muted);"
 		data-btn="ghost"
 		onclick={() => (showDateFilter = !showDateFilter)}
@@ -150,22 +150,22 @@
 		>
 			<input
 				type="date"
-				class="rounded-xl p-2 px-3 text-base"
+				class="rounded-xl p-2 px-3 text-sm sm:text-base"
 				style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text);"
 				bind:value={store.filterDateFrom}
 				aria-label="Date from"
 			/>
-			<span class="text-sm" style="color: var(--text-muted);">to</span>
+			<span class="text-xs" style="color: var(--text-muted);">to</span>
 			<input
 				type="date"
-				class="rounded-xl p-2 px-3 text-base"
+				class="rounded-xl p-2 px-3 text-sm sm:text-base"
 				style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text);"
 				bind:value={store.filterDateTo}
 				aria-label="Date to"
 			/>
 			{#if store.filterDateFrom || store.filterDateTo}
 				<button
-					class="glow-btn flex cursor-pointer items-center gap-1 rounded-lg border-none px-2 py-1 text-sm font-medium"
+					class="glow-btn flex cursor-pointer items-center gap-1 rounded-lg border-none px-2 py-1 text-xs font-medium sm:text-sm"
 					style="color: var(--btn-delete);"
 					data-btn="ghost"
 					onclick={() => {
@@ -187,7 +187,7 @@
 	style="background: var(--todo-bg); border-color: var(--border); transition: background 0.3s, border-color 0.3s;"
 >
 	<button
-		class="glow-btn cursor-pointer rounded-full border-transparent px-3 py-1.5 text-base font-medium"
+		class="glow-btn cursor-pointer rounded-full border-transparent px-3 py-1.5 text-sm font-medium sm:text-base"
 		style="color: var(--text-secondary);"
 		data-btn="ghost"
 		class:active={store.filterCategory === ''}
@@ -195,7 +195,7 @@
 	>
 	{#each store.categories as cat (cat)}
 		<button
-			class="glow-btn cursor-pointer rounded-full border-transparent px-3 py-1.5 text-base font-medium"
+			class="glow-btn cursor-pointer rounded-full border-transparent px-3 py-1.5 text-sm font-medium sm:text-base"
 			style="color: var(--text-secondary); --cat-color: {store.categoryColors[cat]};"
 			data-btn="ghost"
 			data-pill="category"
@@ -219,20 +219,20 @@
 			}}
 		>
 			<input
-				class="w-[70px] rounded-md px-2 py-1 text-sm"
+				class="w-[70px] rounded-md px-2 py-1 text-xs sm:text-sm"
 				style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text);"
 				bind:value={store.newCategoryName}
 				placeholder="New"
 			/>
 			<button
 				type="submit"
-				class="cursor-pointer rounded-md border-none px-2 py-1 text-sm font-medium"
+				class="cursor-pointer rounded-md border-none px-2 py-1 text-xs font-medium sm:text-sm"
 				style="background: var(--btn-save); color: white;"
 				data-btn="save">Add</button
 			>
 			<button
 				type="button"
-				class="cursor-pointer rounded-md border-none px-2 py-1 text-sm font-medium"
+				class="cursor-pointer rounded-md border-none px-2 py-1 text-xs font-medium sm:text-sm"
 				style="background: var(--btn-cancel); color: white;"
 				data-btn="cancel"
 				onclick={() => (store.showAddCategory = false)}>X</button
@@ -240,7 +240,7 @@
 		</form>
 	{:else}
 		<button
-			class="cursor-pointer rounded-full border border-dashed bg-none px-2 py-1 text-sm"
+			class="cursor-pointer rounded-full border border-dashed bg-none px-2 py-1 text-xs sm:text-sm"
 			style="border-color: var(--border-input); color: var(--text-muted); transition: all 0.15s;"
 			data-btn="ghost"
 			onclick={() => (store.showAddCategory = true)}>+</button
@@ -255,10 +255,10 @@
 		class:drag-active={store.draggedId !== null}
 		style="background: var(--todo-bg); border-color: var(--border);"
 	>
-		<span class="mr-1 text-sm font-medium" style="color: var(--text-muted);">Tags:</span>
+		<span class="mr-1 text-xs font-medium sm:text-sm" style="color: var(--text-muted);">Tags:</span>
 		{#each store.availableTags as tag (tag)}
 			<button
-				class="tag-filter-pill cursor-pointer rounded-full border px-3 py-1.5 text-base font-medium"
+				class="glow-tag tag-filter-pill cursor-pointer rounded-full border px-3 py-1.5 text-sm font-medium sm:text-base"
 				style="--tag-color: {store.tagColors[tag]};"
 				class:selected={store.filterTags.includes(tag)}
 				class:drag-over={store.dragTargetPill === 'tag' && store.dragTargetValue === tag}
@@ -280,7 +280,7 @@
 		{/each}
 		{#if store.filterTags.length > 0}
 			<button
-				class="glow-btn cursor-pointer rounded-full border-none px-2 py-1 text-sm font-medium"
+				class="glow-btn cursor-pointer rounded-full border-none px-2 py-1 text-xs font-medium sm:text-sm"
 				style="color: var(--text-muted);"
 				data-btn="ghost"
 				onclick={() => (store.filterTags = [])}

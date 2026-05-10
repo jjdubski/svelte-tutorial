@@ -19,6 +19,18 @@ import { storageGet, storageSet } from '$lib/storage.js';
  */
 
 /**
+ * Format a Date as YYYY-MM-DD in the local timezone.
+ * @param {Date} [date]
+ * @returns {string}
+ */
+function _localDateStr(date = new Date()) {
+	const y = date.getFullYear();
+	const m = String(date.getMonth() + 1).padStart(2, '0');
+	const d = String(date.getDate()).padStart(2, '0');
+	return `${y}-${m}-${d}`;
+}
+
+/**
  * @typedef {Object} Stats
  * @property {number} active
  * @property {number} completed
@@ -151,9 +163,11 @@ class TodoStore {
 	selectMode = $state(false);
 	selectedTodos = $state(new SvelteSet());
 
-	// ── Undo archive ──
-	/** @type {{id: number}|null} */
-	lastArchivedTodo = $state(null);
+	// ── Undo archive / complete ──
+	/** @type {Todo[]} */
+	lastArchivedTodos = $state([]);
+	/** @type {Todo[]} */
+	lastCompletedTodos = $state([]);
 
 	// ── Toast ──
 	toast = $state({ show: false, message: '', type: 'success' });
@@ -392,7 +406,7 @@ class TodoStore {
 	 * @returns {Stats}
 	 */
 	_computeStats(todos) {
-		const today = new Date().toISOString().split('T')[0];
+		const today = _localDateStr();
 		const active = todos.filter((t) => !t.completed).length;
 		const completed = todos.filter((t) => t.completed).length;
 		const overdue = todos.filter((t) => !t.completed && t.dueDate && t.dueDate < today).length;
@@ -407,14 +421,13 @@ class TodoStore {
 	_computeStreak(todos) {
 		const completed = todos.filter((t) => t.completed && t.completedAt);
 		if (completed.length === 0) return 0;
-		const completionDates = new Set(completed.map((t) => t.completedAt.split('T')[0]));
+		const completionDates = new Set(completed.map((t) => _localDateStr(new Date(t.completedAt))));
 		let streak = 0;
-		const today = new Date();
-		today.setHours(0, 0, 0, 0);
+		const todayStr = _localDateStr();
 		for (let i = 0; ; i++) {
-			const d = new Date(today);
+			const d = new Date();
 			d.setDate(d.getDate() - i);
-			const dateStr = d.toISOString().split('T')[0];
+			const dateStr = _localDateStr(d);
 			if (completionDates.has(dateStr)) {
 				streak++;
 			} else {
@@ -441,7 +454,7 @@ class TodoStore {
 		const labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 		const counts = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 };
 		for (const todo of completed) {
-			const completedDate = new Date(todo.completedAt.split('T')[0] + 'T00:00:00');
+			const completedDate = new Date(todo.completedAt);
 			if (completedDate >= monday) {
 				const day = completedDate.getDay();
 				counts[labels[day]]++;
@@ -485,7 +498,7 @@ class TodoStore {
 	 * @returns {Todo[]}
 	 */
 	_computeOverdueTasks(todos) {
-		const today = new Date().toISOString().split('T')[0];
+		const today = _localDateStr();
 		return todos.filter((t) => !t.completed && t.dueDate && t.dueDate < today);
 	}
 
@@ -683,16 +696,40 @@ class TodoStore {
 		if (index !== -1) {
 			const [todo] = this.todos.splice(index, 1);
 			this.archivedTodos = [...this.archivedTodos, todo];
-			this.lastArchivedTodo = { id };
+			this.lastArchivedTodos = [todo];
 			this.showToast('Task archived', 'info');
 		}
 	}
 
 	undoArchive() {
-		if (this.lastArchivedTodo) {
-			this.restoreTodo(this.lastArchivedTodo.id);
-			this.lastArchivedTodo = null;
-			this.showToast('Task restore undone', 'info');
+		if (this.lastArchivedTodos.length > 0) {
+			const count = this.lastArchivedTodos.length;
+			for (const todo of this.lastArchivedTodos) {
+				const idx = this.archivedTodos.findIndex((t) => t.id === todo.id);
+				if (idx !== -1) {
+					const [restored] = this.archivedTodos.splice(idx, 1);
+					this.todos = [...this.todos, restored];
+				}
+			}
+			this.lastArchivedTodos = [];
+			this.showToast(`${count} task${count > 1 ? 's' : ''} restored`, 'success');
+		}
+	}
+
+	undoComplete() {
+		if (this.lastCompletedTodos.length > 0) {
+			const count = this.lastCompletedTodos.length;
+			this.todos = this.todos.map((t) => {
+				const undone = this.lastCompletedTodos.find((u) => u.id === t.id);
+				if (undone) {
+					const updated = { ...t, completed: false };
+					delete updated.completedAt;
+					return updated;
+				}
+				return t;
+			});
+			this.lastCompletedTodos = [];
+			this.showToast(`${count} task${count > 1 ? 's' : ''} reverted`, 'success');
 		}
 	}
 
@@ -719,9 +756,10 @@ class TodoStore {
 		}
 	}
 
-	deleteSelected() {
+	archiveSelected() {
 		const count = this.selectedTodos.size;
 		const archived = this.todos.filter((t) => this.selectedTodos.has(t.id));
+		this.lastArchivedTodos = archived;
 		this.todos = this.todos.filter((t) => !this.selectedTodos.has(t.id));
 		this.archivedTodos = [...this.archivedTodos, ...archived];
 		this.showToast(`${count} tasks archived`, 'info');
@@ -745,17 +783,10 @@ class TodoStore {
 			}
 			// Recurring task: create new instance with updated due date
 			if (!wasCompleted && todo.completed && todo.recurring) {
-				const newDueDate = this.getNextDueDate(todo.dueDate, todo.recurring);
-				this.addTodo(
-					todo.title,
-					todo.description || '',
-					newDueDate,
-					todo.priority,
-					todo.category || '',
-					todo.tags || [],
-					todo.recurring,
-					todo.subtasks || []
-				);
+				const copy = this._createRecurringCopy(todo);
+				if (copy) {
+					this.todos.push(copy);
+				}
 			}
 		}
 	}
@@ -798,12 +829,51 @@ class TodoStore {
 		this.selectedTodos = new SvelteSet();
 	}
 
+	/**
+	 * Create a new todo copy for a recurring task (with the next due date).
+	 * Returns the new todo object, or null if the task is not recurring.
+	 * @param {Todo} todo
+	 * @returns {Todo|null}
+	 */
+	_createRecurringCopy(todo) {
+		if (!todo.recurring) return null;
+		const newDueDate = this.getNextDueDate(todo.dueDate, todo.recurring);
+		return {
+			id: this.nextId++,
+			title: todo.title,
+			description: todo.description || '',
+			dueDate: newDueDate,
+			priority: todo.priority,
+			category: todo.category || '',
+			tags: todo.tags || [],
+			recurring: todo.recurring,
+			subtasks: todo.subtasks || [],
+			completed: false,
+			createdAt: new Date().toISOString()
+		};
+	}
+
 	completeSelected() {
 		const count = this.selectedTodos.size;
+		this.lastCompletedTodos = this.todos.filter((t) => this.selectedTodos.has(t.id));
+		// Mark selected todos as completed
 		this.todos = this.todos.map((t) =>
-			this.selectedTodos.has(t.id) ? { ...t, completed: true } : t
+			this.selectedTodos.has(t.id)
+				? { ...t, completed: true, completedAt: new Date().toISOString() }
+				: t
 		);
-		this.showToast(`${count} tasks completed`, 'success');
+		// Create recurring copies for any recurring tasks that were just completed
+		// (skip already-completed todos so double-clicking doesn't spawn duplicates)
+		const recurringCopies = [];
+		for (const todo of this.lastCompletedTodos) {
+			if (todo.completed) continue;
+			const copy = this._createRecurringCopy(todo);
+			if (copy) recurringCopies.push(copy);
+		}
+		if (recurringCopies.length > 0) {
+			this.todos = [...this.todos, ...recurringCopies];
+		}
+		this.showToast(`${count} tasks completed`, 'info');
 		this.selectedTodos = new SvelteSet();
 		this.selectMode = false;
 	}
@@ -1019,7 +1089,8 @@ class TodoStore {
 	 */
 	getNextDueDate(currentDate, recurring) {
 		if (!currentDate || !recurring) return '';
-		const date = new Date(currentDate + 'T00:00:00');
+		const parts = currentDate.split('-');
+		const date = new Date(+parts[0], +parts[1] - 1, +parts[2]);
 		switch (recurring) {
 			case 'daily':
 				date.setDate(date.getDate() + 1);
@@ -1031,7 +1102,7 @@ class TodoStore {
 				date.setMonth(date.getMonth() + 1);
 				break;
 		}
-		return date.toISOString().split('T')[0];
+		return _localDateStr(date);
 	}
 
 	// ── Upcoming due tasks computation ──
@@ -1042,12 +1113,10 @@ class TodoStore {
 	 * @returns {Todo[]}
 	 */
 	_computeUpcomingDue(todos) {
-		const today = new Date();
-		today.setHours(0, 0, 0, 0);
-		const todayStr = today.toISOString().split('T')[0];
-		const twoDaysLater = new Date(today);
+		const todayStr = _localDateStr();
+		const twoDaysLater = new Date();
 		twoDaysLater.setDate(twoDaysLater.getDate() + 2);
-		const twoDaysStr = twoDaysLater.toISOString().split('T')[0];
+		const twoDaysStr = _localDateStr(twoDaysLater);
 
 		return todos
 			.filter((t) => !t.completed && t.dueDate && t.dueDate >= todayStr && t.dueDate <= twoDaysStr)
@@ -1088,7 +1157,7 @@ class TodoStore {
 		if (typeof window === 'undefined' || !('Notification' in window)) return;
 		if (Notification.permission !== 'granted') return;
 
-		const today = new Date().toISOString().split('T')[0];
+		const today = _localDateStr();
 		const dueToday = this.todos.filter((t) => !t.completed && t.dueDate === today);
 		const overdue = this.todos.filter((t) => !t.completed && t.dueDate && t.dueDate < today);
 

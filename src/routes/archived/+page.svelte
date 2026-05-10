@@ -16,15 +16,17 @@
 	>
 		<StatsBar />
 		<div class="mb-4 flex items-center justify-between">
-			<h2 class="text-xl font-semibold" style="color: var(--text-heading);">Archived Tasks</h2>
-			<span class="text-base" style="color: var(--text-muted);"
+			<h2 class="text-lg font-semibold sm:text-xl" style="color: var(--text-heading);">
+				Archived Tasks
+			</h2>
+			<span class="text-sm sm:text-base" style="color: var(--text-muted);"
 				>{store.archivedTodos.length} archived</span
 			>
 		</div>
 		{#if store.archivedTodos.length === 0}
 			<div class="flex flex-col items-center justify-center px-4 py-24">
 				<Archive size={48} style="color: var(--text-muted); opacity: 0.4;" />
-				<p class="mt-4 text-base" style="color: var(--text-muted);">No archived tasks</p>
+				<p class="mt-4 text-sm sm:text-base" style="color: var(--text-muted);">No archived tasks</p>
 			</div>
 		{:else}
 			<div class="flex flex-col gap-2">
@@ -36,21 +38,21 @@
 						<div class="min-w-0 flex-1">
 							<div class="flex flex-wrap items-center gap-1.5">
 								<h3
-									class="m-0 text-base leading-snug font-medium"
+									class="m-0 text-sm leading-snug font-medium sm:text-base"
 									style="color: var(--text-heading);"
 								>
 									{todo.title}
 								</h3>
 								{#if todo.priority}
 									<span
-										class="inline-block rounded px-1.5 py-0.5 text-sm font-bold tracking-wider text-white uppercase priority-{todo.priority}"
+										class="inline-block rounded px-1.5 py-0.5 text-xs font-bold tracking-wider text-white uppercase priority-{todo.priority} sm:text-sm"
 									>
 										{todo.priority}
 									</span>
 								{/if}
 								{#if todo.category && store.categories.includes(todo.category)}
 									<span
-										class="inline-block rounded-full px-1.5 py-0.5 text-sm font-semibold text-white"
+										class="inline-block rounded-full px-1.5 py-0.5 text-xs font-semibold text-white sm:text-sm"
 										style="background: {store.categoryColors[todo.category]};"
 									>
 										{todo.category}
@@ -58,7 +60,7 @@
 								{/if}
 							</div>
 							{#if todo.description}
-								<p class="m-0 mt-0.5 text-base" style="color: var(--text-secondary);">
+								<p class="m-0 mt-0.5 text-sm sm:text-base" style="color: var(--text-secondary);">
 									{todo.description}
 								</p>
 							{/if}
@@ -66,7 +68,7 @@
 								<div class="mt-1 flex flex-wrap gap-1">
 									{#each todo.tags as tag (tag)}
 										<span
-											class="inline-block rounded-full px-1.5 py-0.5 text-sm font-semibold text-white"
+											class="inline-block rounded-full px-1.5 py-0.5 text-xs font-semibold text-white sm:text-sm"
 											style="background: {store.tagColors[tag]};"
 										>
 											{tag}
@@ -76,7 +78,7 @@
 							{/if}
 							{#if todo.dueDate}
 								<div
-									class="mt-1 flex items-center gap-1 text-base"
+									class="mt-1 flex items-center gap-1 text-sm sm:text-base"
 									style="color: var(--text-muted);"
 								>
 									<Calendar size={12} />
@@ -86,7 +88,7 @@
 						</div>
 						<div class="flex shrink-0 flex-col justify-around">
 							<button
-								class="glow-btn flex cursor-pointer items-center gap-1 rounded-lg border-none px-3 py-1.5 text-sm font-semibold text-white"
+								class="glow-btn flex cursor-pointer items-center gap-1 rounded-lg border-none px-3 py-1.5 text-xs font-semibold text-white sm:text-sm"
 								style="background: var(--btn-save);"
 								data-btn="save"
 								onclick={() => store.restoreTodo(todo.id)}
@@ -94,7 +96,7 @@
 								<RotateCcw size={12} /> Restore
 							</button>
 							<button
-								class="glow-btn flex cursor-pointer items-center gap-1 rounded-lg border-none px-3 py-1.5 text-sm font-semibold text-white"
+								class="glow-btn flex cursor-pointer items-center gap-1 rounded-lg border-none px-3 py-1.5 text-xs font-semibold text-white sm:text-sm"
 								style="background: var(--btn-delete);"
 								data-btn="delete"
 								onclick={() => store.permanentDeleteTodo(todo.id)}

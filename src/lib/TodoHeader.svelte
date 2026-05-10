@@ -4,9 +4,9 @@
 	const store = getTodoStore();
 </script>
 
-<div class="relative mb-6 flex items-center justify-center">
+<div class="relative mb-3 flex items-center justify-center">
 	<h1
-		class="m-0 text-4xl font-light"
+		class="m-0 text-3xl font-light sm:text-4xl"
 		style="color: var(--text-heading); font-family: 'Calligraffitti', cursive; letter-spacing: 0.02em;"
 	>
 		Todo List

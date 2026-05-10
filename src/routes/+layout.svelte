@@ -16,7 +16,7 @@
 
 <a
 	href="#main-content"
-	class="skip-link sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:rounded-lg focus:bg-[var(--btn-primary)] focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white focus:no-underline"
+	class="skip-link sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:rounded-lg focus:bg-[var(--btn-primary)] focus:px-4 focus:py-2 focus:text-xs focus:font-semibold focus:text-white focus:no-underline focus:sm:text-sm"
 >
 	Skip to main content
 </a>

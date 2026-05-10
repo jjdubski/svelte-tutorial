@@ -59,7 +59,8 @@
 
 	function isOverdue(dateStr) {
 		if (!dateStr) return false;
-		const today = new Date().toISOString().split('T')[0];
+		const now = new Date();
+		const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 		return dateStr < today && !todo.completed;
 	}
 
@@ -124,14 +125,14 @@
 		<input
 			bind:value={editTitle}
 			placeholder="Title"
-			class="w-full rounded-lg border px-3 py-2.5 text-base"
+			class="w-full rounded-lg border px-3 py-2.5 text-sm sm:text-base"
 			aria-label="Edit title"
 		/>
 		<textarea
 			bind:value={editDescription}
 			placeholder="Description"
 			rows="2"
-			class="resize-vertical min-h-[60px] w-full rounded-lg border px-3 py-2.5 text-base"
+			class="resize-vertical min-h-[60px] w-full rounded-lg border px-3 py-2.5 text-sm sm:text-base"
 			aria-label="Edit description"
 		></textarea>
 		<div class="form-inline flex flex-wrap gap-2">
@@ -139,12 +140,12 @@
 				type="date"
 				bind:value={editDueDate}
 				aria-label="Due date"
-				class="min-w-20 flex-1 rounded-lg border px-3 py-2.5 text-base"
+				class="min-w-20 flex-1 rounded-lg border px-3 py-2.5 text-sm sm:text-base"
 			/>
 			<select
 				bind:value={editPriority}
 				aria-label="Priority"
-				class="min-w-20 flex-1 rounded-lg border px-3 py-2.5 text-base"
+				class="min-w-20 flex-1 rounded-lg border px-3 py-2.5 text-sm sm:text-base"
 			>
 				<option value="high">High</option>
 				<option value="medium">Medium</option>
@@ -153,7 +154,7 @@
 			<select
 				bind:value={editCategory}
 				aria-label="Category"
-				class="min-w-20 flex-1 rounded-lg border px-3 py-2.5 text-base"
+				class="min-w-20 flex-1 rounded-lg border px-3 py-2.5 text-sm sm:text-base"
 			>
 				<option value="">No category</option>
 				{#each store.categories as cat (cat)}
@@ -163,7 +164,7 @@
 			<select
 				bind:value={editRecurring}
 				aria-label="Recurring"
-				class="min-w-20 flex-1 rounded-lg border px-3 py-2.5 text-base"
+				class="min-w-20 flex-1 rounded-lg border px-3 py-2.5 text-sm sm:text-base"
 			>
 				<option value="">One-time</option>
 				<option value="daily">Daily</option>
@@ -177,7 +178,7 @@
 			{#each store.availableTags as tag (tag)}
 				<button
 					type="button"
-					class="glow-tag tag-toggle cursor-pointer rounded-full border px-2 py-0.5 text-sm font-semibold"
+					class="glow-tag tag-toggle cursor-pointer rounded-full border px-2 py-0.5 text-xs font-semibold sm:text-sm"
 					class:selected={editTags.includes(tag)}
 					style="--tag-color: {store.tagColors[tag]}"
 					onclick={() =>
@@ -193,7 +194,7 @@
 		<div class="subtasks-editor mt-1">
 			<button
 				type="button"
-				class="text-btn cursor-pointer border-none bg-none p-1 text-base"
+				class="text-btn cursor-pointer border-none bg-none p-1 text-sm sm:text-base"
 				onclick={addEditSubtask}
 			>
 				+ Add subtask
@@ -211,7 +212,7 @@
 						type="text"
 						bind:value={editSubtasks[i].text}
 						placeholder="Subtask {i + 1}"
-						class="flex-1 rounded-md border px-2 py-1.5 text-base"
+						class="flex-1 rounded-md border px-2 py-1.5 text-sm sm:text-base"
 						aria-label="Subtask {i + 1} text"
 					/>
 					<button
@@ -291,17 +292,19 @@
 				/>
 				<div class="min-w-0 flex-1">
 					<div class="flex flex-wrap items-center gap-1.5">
-						<h3 class="todo-title m-0 text-base leading-snug font-medium">{todo.title}</h3>
+						<h3 class="todo-title m-0 text-sm leading-snug font-medium sm:text-base">
+							{todo.title}
+						</h3>
 						<span class="ml-auto flex shrink-0 items-center gap-1">
 							<span
-								class="priority-badge inline-block rounded px-1.5 py-0.5 text-sm font-bold tracking-wider text-white uppercase priority-{todo.priority ||
+								class="priority-badge inline-block rounded px-2 py-1 text-xs font-bold tracking-wider text-white uppercase sm:text-sm priority-{todo.priority ||
 									'medium'}"
 							>
 								{todo.priority || 'medium'}
 							</span>
 							{#if todo.category && store.categories.includes(todo.category)}
 								<span
-									class="category-badge inline-block rounded-full px-1.5 py-0.5 text-sm font-semibold text-white"
+									class="category-badge inline-block rounded-full px-2 py-1 text-xs font-semibold text-white sm:text-sm"
 									style="background: {store.categoryColors[todo.category]};"
 								>
 									{todo.category}
@@ -309,7 +312,7 @@
 							{/if}
 							{#if todo.recurring}
 								<span
-									class="recurring-badge inline-flex h-6 w-6 items-center justify-center rounded-full"
+									class="recurring-badge inline-flex h-6 w-8 items-center justify-center rounded-full"
 									style="background: var(--btn-edit); color: white;"
 									title="Recurring {todo.recurring}"
 								>
@@ -322,7 +325,7 @@
 					{#if todo.description || (todo.tags && todo.tags.length > 0)}
 						<div class="mt-1 ml-2 flex items-start gap-2" class:justify-end={!todo.description}>
 							{#if todo.description}
-								<div class="markdown-content min-w-0 flex-1 text-base leading-relaxed">
+								<div class="markdown-content min-w-0 flex-1 text-sm leading-relaxed sm:text-base">
 									{@html renderMarkdown(todo.description)}
 								</div>
 							{:else}
@@ -335,7 +338,7 @@
 								<div class="mt-1 flex shrink-0 flex-wrap gap-1">
 									{#each todo.tags as tag (tag)}
 										<span
-											class="inline-block rounded-full px-1.5 py-0.5 text-sm font-semibold text-white"
+											class="inline-block rounded-full px-2 py-1 text-xs font-semibold text-white sm:text-sm"
 											style="background: {store.tagColors[tag]};"
 										>
 											{tag}
@@ -349,7 +352,7 @@
 					<div class="flex flex-wrap items-center gap-2">
 						{#if totalSubtasks > 0}
 							<button
-								class="subtasks-preview inline-flex cursor-pointer items-center gap-0.5 border-none bg-none p-0.5 text-base"
+								class="subtasks-preview inline-flex cursor-pointer items-center gap-0.5 border-none bg-none p-0.5 text-sm sm:text-base"
 								onclick={toggleSubtasksView}
 							>
 								{#if showSubtasks}
@@ -361,7 +364,7 @@
 							</button>
 						{/if}
 						<button
-							class="inline-flex cursor-pointer items-center gap-0.5 border-none bg-none p-0.5 text-base"
+							class="inline-flex cursor-pointer items-center gap-0.5 border-none bg-none p-0.5 text-sm sm:text-base"
 							style="color: var(--text-muted);"
 							onclick={() => (showAddSubtask = !showAddSubtask)}
 						>
@@ -370,7 +373,7 @@
 						<span class="ml-auto flex items-center gap-1">
 							{#if todo.dueDate}
 								<span
-									class="text-base font-medium"
+									class="text-sm font-medium sm:text-base"
 									style="color: {isOverdue(todo.dueDate)
 										? 'var(--priority-high)'
 										: 'var(--text-muted)'};"
@@ -405,7 +408,7 @@
 						>
 							{#each todo.subtasks as subtask, i (i)}
 								<div
-									class="subtask-item flex items-center gap-1.5 py-0.5 text-base"
+									class="subtask-item flex items-center gap-1.5 py-0.5 text-sm sm:text-base"
 									class:done={subtask.done}
 								>
 									<input
@@ -430,7 +433,7 @@
 						>
 							<input
 								type="text"
-								class="flex-1 rounded-md px-2 py-1 text-base"
+								class="flex-1 rounded-md px-2 py-1 text-sm sm:text-base"
 								style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text);"
 								bind:value={newSubtaskText}
 								placeholder="Add a subtask…"
@@ -443,12 +446,12 @@
 								aria-label="New subtask text"
 							/>
 							<button
-								class="cursor-pointer rounded-md border-none px-2 py-1 text-base font-medium text-white"
+								class="cursor-pointer rounded-md border-none px-2 py-1 text-sm font-medium text-white sm:text-base"
 								style="background: var(--btn-save);"
 								onclick={addInlineSubtask}>Add</button
 							>
 							<button
-								class="cursor-pointer rounded-md border-none px-2 py-1 text-sm font-medium text-white"
+								class="cursor-pointer rounded-md border-none px-2 py-1 text-xs font-medium text-white sm:text-sm"
 								style="background: var(--btn-cancel);"
 								onclick={() => {
 									showAddSubtask = false;
