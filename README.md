@@ -6,9 +6,9 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![lucide-svelte](https://img.shields.io/badge/lucide--svelte-1.0-F56565?logo=lucide&logoColor=white)](https://lucide.dev/)
 
-A feature-rich todo application built with **Svelte 5** (runes mode) and
-**SvelteKit 2**, demonstrating modern Svelte patterns like `$state`, `$derived`,
-`$effect`, `$props`, context stores, transitions, spring animations, and more.
+A feature-rich todo application built with **Svelte 5** (runes mode) and **SvelteKit 2**.
+This repository demonstrates modern Svelte patterns used throughout the codebase: `$state`, `$derived`,
+`$effect`, `$props`, context stores, lightweight utilities, transitions, and simple zero-dependency helpers.
 
 ---
 
@@ -30,9 +30,11 @@ A feature-rich todo application built with **Svelte 5** (runes mode) and
 | **Fuzzy Search**            | Character-wise fuzzy matching across titles and descriptions                                |
 | **Advanced Filters**        | Status, priority, category, tag intersection (AND), date range                              |
 | **Sort Options**            | Manual, priority, due date, alphabetical (A-Z / Z-A), category                              |
+| **Calendar View**           | `/calendar` — month calendar with tasks grouped by date                                     |
 | **Kanban Board**            | `/board` — Pending / In Progress / Done columns with drag between                           |
 | **Analytics Dashboard**     | `/stats` — completion rate, streak, productivity chart, priority dist., categories, overdue |
 | **Markdown Descriptions**   | Zero-dep renderer for `**bold**`, `*italic*`, `` `code` ``, `[links](url)`, headings, lists |
+| **Markdown Toolbar**        | Lightweight toolbar component (insert bold/italic/list/link) used by the editor textarea    |
 | **Due Date Notifications**  | Web Notifications API + in-app upcoming section with inline opt-in banner                   |
 | **Quick Add via URL**       | Pre-fill form from query params (`?title=&desc=&due=&priority=...`)                         |
 | **Dark Mode**               | Toggle with system preference detection, persistent storage, zero FOUC                      |
@@ -82,60 +84,67 @@ Preview the production build with `npm run preview`.
 
 ## Project Structure
 
-```bash
+```md
 src/
-├── app.css                    # Global styles, CSS custom properties (light/dark), animations
-├── app.html                   # Shell HTML template (dark mode preload, theme-color meta)
+├── app.css # Global styles, CSS custom properties (light/dark), animations
+├── app.html # Shell HTML template (dark mode preload, theme-color meta)
 ├── lib/
-│   ├── __tests__/             # Unit tests (Vitest)
-│   │   ├── markdown.test.js
-│   │   ├── storage.test.js
-│   │   └── todoStore.test.js
-│   ├── assets/
-│   │   └── favicon.svg
-│   ├── index.js               # Library barrel export
-│   ├── scripts/
-│   │   ├── markdown.js            # Zero-dep markdown renderer
-│   ├── NavBar.svelte          # Navigation bar (Tasks / Board / Analytics / Archived)
-│   ├── SkeletonLoader.svelte  # Animated loading placeholder
-│   ├── StatsBar.svelte        # Spring-animated stat counters
-│   │   └── storage.js             # Safe localStorage wrapper with error handling
-│   ├── Toast.svelte           # Toast notification with undo support
-│   ├── Todo.svelte            # Single todo item (view, edit, subtasks, drag, markdown)
-│   ├── TodoFilters.svelte     # Search, filter, sort, category pills, batch select
-│   ├── TodoForm.svelte        # Add-task form with templates, tags, subtasks
-│   ├── TodoEditModal.svelte   # Modal for full editing of existing tasks
-│   ├── TodoHeader.svelte      # App title + dark mode toggle
-│   ├── TodoList.svelte        # Renders filtered list with loading/empty/due states
-│   └── state/
-│       └── todoStore.svelte.js    # Central store (class + createContext) — all state & logic
+│ ├── components/ # Reusable Svelte components
+│ │ ├── NavBar.svelte
+│ │ ├── TodoHeader.svelte
+│ │ ├── Todo.svelte
+│ │ ├── TodoList.svelte
+│ │ ├── TodoForm.svelte
+│ │ ├── TodoFilters.svelte
+│ │ ├── TodoEditModal.svelte
+│ │ ├── MarkdownToolbar.svelte
+│ │ ├── StatsBar.svelte
+│ │ ├── SkeletonLoader.svelte
+│ │ └── Toast.svelte
+│ ├── scripts/
+│ │ ├── markdown.js # Zero-dep markdown renderer
+│ │ └── storage.js # Safe localStorage wrapper with error handling
+│ ├── utils/
+│ │ └── todoUtils.js # Pure utility functions (date helpers, filters, stats)
+│ ├── state/
+│ │ ├── todoStore.svelte.js # Central store (class + createContext)
+│ │ └── formState.svelte.js # Form-local state exposed via context
+│ ├── **tests**/ # Unit tests (Vitest)
+│ │ ├── markdown.test.js
+│ │ ├── storage.test.js
+│ │ └── todoStore.test.js
+│ └── assets/
+│ └── favicon.svg
 ├── routes/
-│   ├── +layout.svelte         # Root layout (creates store, renders NavBar + page content)
-│   ├── +page.svelte           # Main list view (orchestrates header, form, filters, list)
-│   ├── archived/
-│   │   └── +page.svelte       # Archived tasks view (restore, permanent delete, batch select)
-│   ├── board/
-│   │   └── +page.svelte       # Kanban board (Pending / In Progress / Done)
-│   └── stats/
-│       └── +page.svelte       # Analytics dashboard
+│ ├── +layout.svelte # Root layout (creates store, renders NavBar + page content)
+│ ├── +page.svelte # Main list view (orchestrates header, form, filters, list)
+│ ├── archived/
+│ │ └── +page.svelte # Archived tasks view (restore, permanent delete, batch select)
+│ ├── board/
+│ │ └── +page.svelte # Kanban board (Pending / In Progress / Done)
+│ ├── calendar/
+│ │ └── +page.svelte # Calendar month view with tasks by date
+│ └── stats/
+│ └── +page.svelte # Analytics dashboard
 e2e/
-└── todo.spec.js               # End-to-end tests (Playwright)
+└── todo.spec.js # End-to-end tests (Playwright)
 ```
 
 ### Key files
 
-| File                                | Purpose                                                                |
-| ----------------------------------- | ---------------------------------------------------------------------- |
-| `src/lib/state/todoStore.svelte.js` | Central store: class with `$state` fields, exposed via `createContext` |
-| `src/lib/Todo.svelte`               | Single todo with inline editing, subtasks, drag handle, markdown       |
-| `src/lib/TodoForm.svelte`           | Add-task form with templates, tags, subtasks                           |
-| `src/lib/TodoFilters.svelte`        | Search, filter, sort, category pills, batch select                     |
-| `src/lib/TodoEditModal.svelte`      | Modal for editing tasks (title, description, due, priority, category)  |
-| `src/lib/TodoList.svelte`           | Renders filtered list with differentiated empty states                 |
-| `src/lib/NavBar.svelte`             | Route navigation with active-state highlighting                        |
-| `src/lib/scripts/storage.js`        | Safe localStorage wrapper with error handling                          |
-| `src/lib/scripts/markdown.js`       | Zero-dependency markdown renderer                                      |
-| `src/app.css`                       | CSS custom properties, Tailwind imports, glow animations               |
+| File                                      | Purpose                                                                |
+| ----------------------------------------- | ---------------------------------------------------------------------- |
+| `src/lib/state/todoStore.svelte.js`       | Central store: class with `$state` fields, exposed via `createContext` |
+| `src/lib/components/Todo.svelte`          | Single todo with inline editing, subtasks, drag handle, markdown       |
+| `src/lib/components/TodoForm.svelte`      | Add-task form with templates, tags, subtasks                           |
+| `src/lib/components/TodoFilters.svelte`   | Search, filter, sort, category pills, batch select                     |
+| `src/lib/components/TodoEditModal.svelte` | Modal for editing tasks (title, description, due, priority, category)  |
+| `src/lib/components/TodoList.svelte`      | Renders filtered list with differentiated empty states                 |
+| `src/lib/components/NavBar.svelte`        | Route navigation with active-state highlighting                        |
+| `src/lib/scripts/storage.js`              | Safe localStorage wrapper with error handling                          |
+| `src/lib/scripts/markdown.js`             | Zero-dependency markdown renderer                                      |
+| `src/lib/utils/todoUtils.js`              | Pure utility functions used by the store and tests                     |
+| `src/app.css`                             | CSS custom properties, Tailwind imports, glow animations               |
 
 ---
 
@@ -146,13 +155,13 @@ e2e/
 | [Svelte 5](https://svelte.dev/)                                                                          | UI framework with runes (`$state`, `$derived`, `$effect`, `$props`) |
 | [SvelteKit 2](https://kit.svelte.dev/)                                                                   | Application framework (routing, SSR-ready)                          |
 | [Vite 7](https://vite.dev/)                                                                              | Build tool and dev server                                           |
-| [Tailwind CSS 4](https://tailwindcss.com/)                                                               | Utility-first CSS via PostCSS                                       |
+| [Tailwind CSS](https://tailwindcss.com/)                                                                 | Utility-first CSS via PostCSS (configured via postcss)              |
 | [lucide-svelte](https://lucide.dev/)                                                                     | Icon library                                                        |
 | [Prettier](https://prettier.io/)                                                                         | Code formatting (+ plugins for Svelte & Tailwind)                   |
 | [ESLint](https://eslint.org/) + [eslint-plugin-svelte](https://github.com/sveltejs/eslint-plugin-svelte) | Code linting                                                        |
 | [Husky](https://typicode.github.io/husky/) + [lint-staged](https://github.com/lint-staged/lint-staged)   | Pre-commit formatting and lint hooks                                |
-| [Vitest](https://vitest.dev/)                                                                            | Unit testing (45 tests)                                             |
-| [Playwright](https://playwright.dev/)                                                                    | End-to-end testing (6 tests)                                        |
+| [Vitest](https://vitest.dev/)                                                                            | Unit testing (tests under src/lib/**tests**)                        |
+| [Playwright](https://playwright.dev/)                                                                    | End-to-end testing (e2e/)                                           |
 
 ---
 
@@ -171,15 +180,16 @@ e2e/
 
 ## Scripts
 
-| Script                 | Action                            |
-| ---------------------- | --------------------------------- |
-| `npm run dev`          | Start development server          |
-| `npm run build`        | Build for production              |
-| `npm run preview`      | Preview production build          |
-| `npm run test`         | Run unit tests (Vitest)           |
-| `npm run test:watch`   | Run unit tests in watch mode      |
-| `npm run test:e2e`     | Run end-to-end tests (Playwright) |
-| `npm run lint`         | Lint source code with ESLint      |
-| `npm run lint:fix`     | Auto-fix lint issues              |
-| `npm run format`       | Format all files with Prettier    |
-| `npm run format:check` | Check formatting without writing  |
+| Script                 | Action                                                     |
+| ---------------------- | ---------------------------------------------------------- |
+| `npm run dev`          | Start development server                                   |
+| `npm run build`        | Build for production                                       |
+| `npm run preview`      | Preview production build                                   |
+| `npm run test`         | Run unit tests (Vitest) then end-to-end tests (Playwright) |
+| `npm run vitest`       | Run unit tests (Vitest)                                    |
+| `npm run test:watch`   | Run unit tests in watch mode                               |
+| `npm run test:e2e`     | Run only end-to-end tests (Playwright)                     |
+| `npm run lint`         | Lint source code with ESLint                               |
+| `npm run lint:fix`     | Auto-fix lint issues                                       |
+| `npm run format`       | Format all files with Prettier                             |
+| `npm run format:check` | Check formatting without writing                           |

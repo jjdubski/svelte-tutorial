@@ -13,8 +13,8 @@
 		ChevronRight,
 		Calendar
 	} from 'lucide-svelte';
-	import Todo from '$lib/Todo.svelte';
-	import SkeletonLoader from '$lib/SkeletonLoader.svelte';
+	import Todo from '$lib/components/Todo.svelte';
+	import SkeletonLoader from '$lib/components/SkeletonLoader.svelte';
 	import { getTodoStore } from '$lib/state/todoStore.svelte.js';
 
 	const store = getTodoStore();

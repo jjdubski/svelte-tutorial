@@ -1,7 +1,7 @@
 <script>
 	import { slide } from 'svelte/transition';
 	import { getTodoStore } from '$lib/state/todoStore.svelte.js';
-	import StatsBar from '$lib/StatsBar.svelte';
+	import StatsBar from '$lib/components/StatsBar.svelte';
 	import { Archive, RotateCcw, Trash2, Calendar, CheckSquare, Square, X } from 'lucide-svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 

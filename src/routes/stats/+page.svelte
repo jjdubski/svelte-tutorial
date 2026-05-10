@@ -1,6 +1,6 @@
 <script>
 	import { getTodoStore } from '$lib/state/todoStore.svelte.js';
-	import StatsBar from '$lib/StatsBar.svelte';
+	import StatsBar from '$lib/components/StatsBar.svelte';
 	import {
 		BarChart3,
 		PieChart,

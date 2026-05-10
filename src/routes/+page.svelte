@@ -2,13 +2,13 @@
 	import { page } from '$app/stores';
 	import { getTodoStore } from '$lib/state/todoStore.svelte.js';
 	import { getFormState, createFormState } from '$lib/state/formState.svelte.js';
-	import TodoHeader from '$lib/TodoHeader.svelte';
-	import TodoForm from '$lib/TodoForm.svelte';
-	import TodoFilters from '$lib/TodoFilters.svelte';
-	import TodoList from '$lib/TodoList.svelte';
-	import StatsBar from '$lib/StatsBar.svelte';
-	import Toast from '$lib/Toast.svelte';
-	import TodoEditModal from '$lib/TodoEditModal.svelte';
+	import TodoHeader from '$lib/components/TodoHeader.svelte';
+	import TodoForm from '$lib/components/TodoForm.svelte';
+	import TodoFilters from '$lib/components/TodoFilters.svelte';
+	import TodoList from '$lib/components/TodoList.svelte';
+	import StatsBar from '$lib/components/StatsBar.svelte';
+	import Toast from '$lib/components/Toast.svelte';
+	import TodoEditModal from '$lib/components/TodoEditModal.svelte';
 
 	const store = getTodoStore();
 	// Instantiate form state for this page

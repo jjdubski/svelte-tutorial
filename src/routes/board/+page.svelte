@@ -1,6 +1,6 @@
 <script>
 	import { getTodoStore } from '$lib/state/todoStore.svelte.js';
-	import StatsBar from '$lib/StatsBar.svelte';
+	import StatsBar from '$lib/components/StatsBar.svelte';
 	import { Check, Clock, ArrowLeft, Archive } from 'lucide-svelte';
 	import { localDateStr } from '$lib/utils/todoUtils.js';
 
