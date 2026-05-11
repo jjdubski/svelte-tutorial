@@ -16,18 +16,19 @@ class AuthStore {
 	}
 
 	_init() {
-		// Check if user was using guest mode
-		const guestMode = storageGet('authMode');
-		if (guestMode === 'guest') {
-			this.isGuest = true;
-			this.isLoading = false;
-			return;
-		}
-		// Fetch session from server
-		this._fetchSession();
+		// Always try to fetch the session first — don't short-circuit on guest mode,
+		// because the user may have authenticated since the last visit.
+		const wasGuest = storageGet('authMode') === 'guest';
+		this._fetchSession(wasGuest);
 	}
 
-	async _fetchSession() {
+	/**
+	 * Fetch the session from the server.
+	 * If a valid session exists, the user is logged in (guest mode is cleared).
+	 * If no session and the user was previously in guest mode, fall back to guest behavior.
+	 * @param {boolean} wasGuest
+	 */
+	async _fetchSession(wasGuest) {
 		try {
 			const res = await fetch('/auth/session');
 			if (res.ok) {
@@ -35,13 +36,23 @@ class AuthStore {
 				if (data?.user) {
 					this.user = data.user;
 					this.isLoggedIn = true;
+					// Clear guest mode marker since user is now authenticated
+					if (wasGuest) {
+						storageRemove('authMode');
+					}
+					this.isLoading = false;
+					return;
 				}
 			}
 		} catch {
 			// Session fetch failed (offline or not logged in)
-		} finally {
-			this.isLoading = false;
 		}
+
+		// No valid session found
+		if (wasGuest) {
+			this.isGuest = true;
+		}
+		this.isLoading = false;
 	}
 
 	/**

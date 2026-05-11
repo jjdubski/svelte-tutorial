@@ -58,18 +58,56 @@ describe('AuthStore', () => {
 			});
 		});
 
-		it('detects guest mode from localStorage and skips session fetch', () => {
+		it('falls back to guest mode when session fetch fails and authMode was guest', async () => {
 			// Set up localStorage with guest mode BEFORE creating the store
 			vi.unstubAllGlobals();
 			const mockStore = { authMode: JSON.stringify('guest') };
 			vi.stubGlobal('localStorage', createMockLocalStorage(mockStore));
-			vi.stubGlobal('fetch', vi.fn());
+			vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, json: async () => ({}) }));
 			vi.stubGlobal('window', { location: { href: '' } });
 
 			const auth = new AuthStore();
+			expect(auth.isLoading).toBe(true);
+
+			await vi.waitFor(() => {
+				expect(auth.isLoading).toBe(false);
+			});
+
+			// Session fetch was attempted even though authMode was 'guest'
+			expect(fetch).toHaveBeenCalledWith('/auth/session');
+			// Falls back to guest mode when no session
 			expect(auth.isGuest).toBe(true);
-			expect(auth.isLoading).toBe(false);
-			expect(fetch).not.toHaveBeenCalled();
+		});
+
+		it('clears guest mode when session is found', async () => {
+			vi.unstubAllGlobals();
+			const mockStore = { authMode: JSON.stringify('guest') };
+			vi.stubGlobal('localStorage', createMockLocalStorage(mockStore));
+			vi.stubGlobal(
+				'fetch',
+				vi.fn().mockResolvedValue({
+					ok: true,
+					json: async () => ({
+						user: {
+							authUserId: 'google-123',
+							email: 'test@example.com',
+							name: 'Test User'
+						}
+					})
+				})
+			);
+			vi.stubGlobal('window', { location: { href: '' } });
+
+			const auth = new AuthStore();
+
+			await vi.waitFor(() => {
+				expect(auth.isLoading).toBe(false);
+			});
+
+			// User is logged in, guest mode is cleared
+			expect(auth.isLoggedIn).toBe(true);
+			expect(auth.isGuest).toBe(false);
+			expect(localStorage.getItem('authMode')).toBeNull();
 		});
 
 		it('fetches session when no guest mode and logs in on valid session', async () => {

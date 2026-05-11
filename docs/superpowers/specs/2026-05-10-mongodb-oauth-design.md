@@ -235,7 +235,7 @@ User signs in with Google/Apple
 
 ```env
 # MongoDB Atlas
-MONGODB_URI=mongodb+srv://<user>:<password>@cluster0.xxxxx.mongodb.net/todo-app?retryWrites=true&w=majority
+STORAGE_MONGODB_URI=mongodb+srv://<user>:<password>@cluster0.xxxxx.mongodb.net/todo-app?retryWrites=true&w=majority
 
 # Auth.js
 AUTH_SECRET=<random base64 string from: openssl rand -base64 32>

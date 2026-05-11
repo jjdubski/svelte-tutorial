@@ -2,6 +2,8 @@
 
 Single-package Svelte 5 + SvelteKit 2 SPA. Plain JS (no TypeScript), JSDoc types.
 
+## DO NOT READ .env FILE NO MATTER WHAT, use .env.example for reference if needed
+
 ## Commands
 
 | Action              | Command                                  |

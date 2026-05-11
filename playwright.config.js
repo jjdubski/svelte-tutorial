@@ -15,6 +15,8 @@ export default defineConfig({
 		command: 'npm run build && npm run preview',
 		port: 4173,
 		timeout: 60000,
-		reuseExistingServer: !process.env.CI
+		reuseExistingServer: !process.env.CI,
+		stdout: 'ignore',
+		stderr: 'ignore'
 	}
 });

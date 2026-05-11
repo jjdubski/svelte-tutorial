@@ -263,10 +263,12 @@ class TodoStore {
 			window.addEventListener('storage', this._handleStorageChange.bind(this));
 		}
 
-		// Effect: recompute stats, upcoming due, and save todos + archivedTodos
+		// Effect: recompute stats, upcoming due, and save todos + archivedTodos + custom tags
 		$effect(() => {
 			const t = this.todos;
 			const a = this.archivedTodos;
+			const ct = this.customTags;
+			const tc = this.tagColors;
 			this.stats = this._computeStats([...t, ...a]);
 			this.filteredTodos = this._computeFiltered(t);
 			this.upcomingDueTasks = this._computeUpcomingDue(t);
@@ -277,6 +279,8 @@ class TodoStore {
 			this.overdueTasks = this._computeOverdueTasks([...t, ...a]);
 			storageSet('todos', t);
 			storageSet('archivedTodos', a);
+			storageSet('customTags', ct);
+			storageSet('tagColors', tc);
 		});
 
 		// Effect: recompute filteredTodos when filters/sort change
@@ -375,6 +379,21 @@ class TodoStore {
 		}
 
 		this.nextId = maxId + 1;
+
+		// Restore custom tags and tag colors from localStorage
+		const savedCustomTags = storageGet('customTags');
+		if (Array.isArray(savedCustomTags) && savedCustomTags.length > 0) {
+			this.customTags = savedCustomTags;
+			for (const tag of savedCustomTags) {
+				if (!this.availableTags.includes(tag)) {
+					this.availableTags = [...this.availableTags, tag];
+				}
+			}
+		}
+		const savedTagColors = storageGet('tagColors');
+		if (savedTagColors && typeof savedTagColors === 'object' && !Array.isArray(savedTagColors)) {
+			this.tagColors = { ...this.tagColors, ...savedTagColors };
+		}
 
 		this.darkMode = this._getInitialDarkMode();
 		this.isLoading = false;

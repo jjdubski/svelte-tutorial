@@ -51,6 +51,10 @@
 					...store.tagColors,
 					[tag]: colors[Math.floor(Math.random() * colors.length)]
 				};
+				// Track in customTags for persistence
+				if (!store.customTags.includes(tag)) {
+					store.customTags = [...store.customTags, tag];
+				}
 			}
 		}
 		formStore.newCustomTag = '';
