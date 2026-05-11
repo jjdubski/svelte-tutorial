@@ -14,8 +14,8 @@ export async function PUT(event) {
 			return error(401, 'Unauthorized');
 		}
 
-		const todoId = Number(event.params.id);
-		if (isNaN(todoId)) {
+		const todoId = event.params.id;
+		if (!todoId) {
 			return error(400, 'Invalid todo ID');
 		}
 
@@ -44,8 +44,8 @@ export async function DELETE(event) {
 			return error(401, 'Unauthorized');
 		}
 
-		const todoId = Number(event.params.id);
-		if (isNaN(todoId)) {
+		const todoId = event.params.id;
+		if (!todoId) {
 			return error(400, 'Invalid todo ID');
 		}
 

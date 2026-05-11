@@ -10,7 +10,7 @@ const { Schema } = mongoose;
 
 /**
  * @typedef {Object} TodoItem
- * @property {number} id
+ * @property {string} id
  * @property {string} title
  * @property {string} [description]
  * @property {string} [dueDate]
@@ -53,7 +53,6 @@ const userSchema = new Schema(
 		provider: { type: String },
 		createdAt: { type: Date, default: Date.now },
 		lastLoginAt: { type: Date, default: Date.now },
-		nextId: { type: Number, default: 1 },
 		todos: { type: [Schema.Types.Mixed], default: [] },
 		archivedTodos: { type: [Schema.Types.Mixed], default: [] },
 		customTags: {

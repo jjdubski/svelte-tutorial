@@ -40,7 +40,8 @@
 					{(auth.user.name || auth.user.email || '?')[0].toUpperCase()}
 				</div>
 			{/if}
-			<span class="hidden text-xs sm:inline" style="color: var(--text-secondary);">
+			<!-- Show this on large screen sizes but on < base hide it -->
+			<span class="hidden text-xs lg:inline" style="color: var(--text-secondary);">
 				{auth.user.name || auth.user.email || ''}
 			</span>
 		</button>

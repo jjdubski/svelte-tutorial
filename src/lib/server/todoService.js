@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { connectDB } from './db.js';
 import { User } from './models/User.js';
 
@@ -63,14 +64,13 @@ export async function upsertUser(authUserId, profile) {
 /**
  * Get all todos and user settings for a given user.
  * @param {string} authUserId
- * @returns {Promise<{ todos: Array, archivedTodos: Array, nextId: number, customTags: string[], tagColors: Record<string,string>, darkMode: boolean }>}
+ * @returns {Promise<{ todos: Array, archivedTodos: Array, customTags: string[], tagColors: Record<string,string>, darkMode: boolean }>}
  */
 export async function getTodos(authUserId) {
 	const user = await _getUser(authUserId);
 	return {
 		todos: user.todos || [],
 		archivedTodos: user.archivedTodos || [],
-		nextId: user.nextId,
 		customTags: user.customTags || [],
 		tagColors: Object.fromEntries(user.tagColors || new Map()),
 		darkMode: user.darkMode
@@ -86,13 +86,12 @@ export async function getTodos(authUserId) {
 export async function createTodo(authUserId, todoData) {
 	const user = await _getUser(authUserId);
 	const todo = {
-		id: user.nextId,
+		id: todoData.id || randomUUID(),
 		...todoData,
 		completed: false,
 		createdAt: new Date().toISOString()
 	};
 	user.todos.push(todo);
-	user.nextId += 1;
 	await user.save();
 	return todo;
 }
@@ -100,7 +99,7 @@ export async function createTodo(authUserId, todoData) {
 /**
  * Update an existing todo by ID.
  * @param {string} authUserId
- * @param {number} todoId
+ * @param {string} todoId
  * @param {Object} updates - Fields to update on the todo
  * @returns {Promise<Object>} The updated todo
  */
@@ -116,7 +115,7 @@ export async function updateTodo(authUserId, todoId, updates) {
 /**
  * Archive (soft-delete) a todo by moving it from todos to archivedTodos.
  * @param {string} authUserId
- * @param {number} todoId
+ * @param {string} todoId
  * @returns {Promise<Object>} The archived todo
  */
 export async function archiveTodo(authUserId, todoId) {
@@ -132,7 +131,7 @@ export async function archiveTodo(authUserId, todoId) {
 /**
  * Restore a todo from archivedTodos back to todos.
  * @param {string} authUserId
- * @param {number} todoId
+ * @param {string} todoId
  * @returns {Promise<Object>} The restored todo
  */
 export async function restoreTodo(authUserId, todoId) {
@@ -148,7 +147,7 @@ export async function restoreTodo(authUserId, todoId) {
 /**
  * Permanently delete a todo from archivedTodos.
  * @param {string} authUserId
- * @param {number} todoId
+ * @param {string} todoId
  * @returns {Promise<void>}
  */
 export async function permanentDeleteTodo(authUserId, todoId) {
@@ -162,7 +161,7 @@ export async function permanentDeleteTodo(authUserId, todoId) {
 /**
  * Batch archive multiple todos.
  * @param {string} authUserId
- * @param {number[]} todoIds
+ * @param {string[]} todoIds
  * @returns {Promise<Object[]>} The archived todos
  */
 export async function batchArchive(authUserId, todoIds) {
@@ -181,9 +180,9 @@ export async function batchArchive(authUserId, todoIds) {
 }
 
 /**
- * Batch restore multiple todos from archived to active.
+ * Batch restore multiple archived todos from archived to active.
  * @param {string} authUserId
- * @param {number[]} todoIds
+ * @param {string[]} todoIds
  * @returns {Promise<Object[]>} The restored todos
  */
 export async function batchRestore(authUserId, todoIds) {
@@ -202,6 +201,73 @@ export async function batchRestore(authUserId, todoIds) {
 }
 
 /**
+ * Update the dark mode preference for a user.
+ * @param {string} authUserId
+ * @param {boolean} darkMode
+ * @returns {Promise<Record<string, any>>}
+ */
+export async function updateDarkMode(authUserId, darkMode) {
+	const user = await _getUser(authUserId);
+	user.darkMode = darkMode;
+	await user.save();
+	return user.toObject();
+}
+
+/**
+ * Bulk-import data (todos, archivedTodos, customTags, tagColors) into the user's document.
+ * Existing items are updated by matching ID; new items are appended.
+ * @param {string} authUserId
+ * @param {{ todos?: Array, archivedTodos?: Array, customTags?: string[], tagColors?: Record<string,string> }} data
+ * @returns {Promise<Record<string, any>>} The updated user document as a plain object
+ */
+export async function importData(authUserId, data) {
+	const user = await _getUser(authUserId);
+
+	if (Array.isArray(data.todos)) {
+		for (const todo of data.todos) {
+			if (!todo || !todo.id || !todo.title) continue;
+			const existing = user.todos.find((t) => t.id === todo.id);
+			if (existing) {
+				Object.assign(existing, todo);
+			} else {
+				user.todos.push({ ...todo });
+			}
+		}
+	}
+
+	if (Array.isArray(data.archivedTodos)) {
+		for (const todo of data.archivedTodos) {
+			if (!todo || !todo.id || !todo.title) continue;
+			const existing = user.archivedTodos.find((t) => t.id === todo.id);
+			if (existing) {
+				Object.assign(existing, todo);
+			} else {
+				user.archivedTodos.push({ ...todo });
+			}
+		}
+	}
+
+	if (Array.isArray(data.customTags)) {
+		const existing = new Set(user.customTags);
+		for (const tag of data.customTags) {
+			if (!existing.has(tag)) {
+				user.customTags.push(tag);
+				existing.add(tag);
+			}
+		}
+	}
+
+	if (data.tagColors && typeof data.tagColors === 'object') {
+		for (const [key, value] of Object.entries(data.tagColors)) {
+			user.tagColors.set(key, value);
+		}
+	}
+
+	await user.save();
+	return user.toObject();
+}
+
+/**
  * Migrate guest localStorage data into the user's MongoDB document.
  * Merges todos, archivedTodos, customTags, and tag colors.
  * @param {string} authUserId
@@ -216,32 +282,26 @@ export async function migrateGuestData(authUserId, guestData) {
 	]);
 
 	/**
-	 * Assign a unique positive numeric ID for migrated todos.
-	 * Preserves incoming ID when possible; remaps collisions.
-	 * @param {any} incomingId
-	 * @returns {number}
+	 * Assign a unique ID for migrated todos.
+	 * Preserves incoming ID when possible; remaps collisions with a UUID.
+	 * @param {string} incomingId
+	 * @returns {string}
 	 */
 	const assignUniqueId = (incomingId) => {
-		const parsed =
-			typeof incomingId === 'number' && Number.isInteger(incomingId) && incomingId > 0
-				? incomingId
-				: null;
+		const id = incomingId;
 
-		if (parsed !== null && !usedIds.has(parsed)) {
-			usedIds.add(parsed);
-			if (parsed >= user.nextId) {
-				user.nextId = parsed + 1;
-			}
-			return parsed;
+		if (!usedIds.has(id)) {
+			usedIds.add(id);
+			return id;
 		}
 
-		let id = user.nextId;
-		while (usedIds.has(id)) {
-			id += 1;
-		}
-		usedIds.add(id);
-		user.nextId = id + 1;
-		return id;
+		// Collision: generate a new UUID
+		let newId;
+		do {
+			newId = randomUUID();
+		} while (usedIds.has(newId));
+		usedIds.add(newId);
+		return newId;
 	};
 
 	/**
@@ -281,6 +341,11 @@ export async function migrateGuestData(authUserId, guestData) {
 		for (const [key, value] of Object.entries(guestData.tagColors)) {
 			user.tagColors.set(key, value);
 		}
+	}
+
+	// Persist dark mode preference from guest data
+	if (typeof guestData.darkMode === 'boolean') {
+		user.darkMode = guestData.darkMode;
 	}
 
 	await user.save();

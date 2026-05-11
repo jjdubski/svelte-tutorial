@@ -17,7 +17,7 @@ import {
 
 /**
  * @typedef {Object} Todo
- * @property {number} id
+ * @property {string} id
  * @property {string} title
  * @property {string} [description]
  * @property {string} [dueDate]
@@ -39,9 +39,15 @@ import {
  * @property {number} total
  */
 
+/**
+ * Generate a UUID v4 string using the Web Crypto API.
+ * @returns {string}
+ */
+function _generateId() {
+	return crypto.randomUUID();
+}
+
 class TodoStore {
-	/** @type {number} */
-	nextId = $state(1);
 	/** @type {boolean} */
 	isLoading = $state(true);
 	/** @type {boolean} */
@@ -308,7 +314,7 @@ class TodoStore {
 			this.activeFilterCount = count;
 		});
 
-		// Effect: sync dark mode to DOM and localStorage
+		// Effect: sync dark mode to DOM, localStorage, and server (when signed in)
 		$effect(() => {
 			const dm = this.darkMode;
 			if (typeof document !== 'undefined') {
@@ -316,6 +322,7 @@ class TodoStore {
 				document.documentElement.style.colorScheme = dm ? 'dark' : 'light';
 			}
 			storageSet('darkMode', dm);
+			this._syncDarkMode(dm);
 		});
 
 		// ── Notification setup (runs once after mount) ──
@@ -357,28 +364,13 @@ class TodoStore {
 		const saved = storageGet('todos') || [];
 		const archivedSaved = storageGet('archivedTodos') || [];
 
-		let maxId = 0;
-		const seenIds = new Set();
-
 		if (Array.isArray(saved) && saved.length > 0) {
-			this.todos = saved.map((t) => {
-				if (seenIds.has(t.id)) t.id = ++maxId; // Recover corrupted IDs
-				seenIds.add(t.id);
-				maxId = Math.max(maxId, t.id);
-				return t;
-			});
+			this.todos = saved;
 		}
 
 		if (Array.isArray(archivedSaved) && archivedSaved.length > 0) {
-			this.archivedTodos = archivedSaved.map((t) => {
-				if (seenIds.has(t.id)) t.id = ++maxId; // Recover corrupted IDs
-				seenIds.add(t.id);
-				maxId = Math.max(maxId, t.id);
-				return t;
-			});
+			this.archivedTodos = archivedSaved;
 		}
-
-		this.nextId = maxId + 1;
 
 		// Restore custom tags and tag colors from localStorage
 		const savedCustomTags = storageGet('customTags');
@@ -613,7 +605,6 @@ class TodoStore {
 				// Replace local state with server data
 				this.todos = Array.isArray(data.todos) ? data.todos : [];
 				this.archivedTodos = Array.isArray(data.archivedTodos) ? data.archivedTodos : [];
-				this.nextId = typeof data.nextId === 'number' ? data.nextId : 1;
 
 				// Restore custom tags from server
 				if (Array.isArray(data.customTags)) {
@@ -709,6 +700,31 @@ class TodoStore {
 		this._syncToApi('POST', '/api/todos/permanent-delete', { id });
 	}
 
+	/**
+	 * Sync a full import payload to the server.
+	 * Fire-and-forget — only fires when signed in.
+	 * @param {{ todos: Array, archivedTodos: Array, customTags: string[], tagColors: Record<string,string> }} data
+	 */
+	_syncImport(data) {
+		this._syncToApi('POST', '/api/todos/import', data);
+	}
+
+	/**
+	 * Sync the dark mode preference to the server.
+	 * Fire-and-forget — only fires when signed in.
+	 * @param {boolean} darkMode
+	 */
+	_syncDarkMode(darkMode) {
+		if (!this._auth?.isLoggedIn) return;
+		fetch('/api/todos/dark-mode', {
+			method: 'PATCH',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ darkMode })
+		}).catch(() => {
+			// Silently ignore — dark mode is non-critical and saved locally
+		});
+	}
+
 	// ── Todo CRUD ──
 
 	/**
@@ -723,7 +739,7 @@ class TodoStore {
 	 */
 	addTodo(title, description, dueDate, priority, category, tags, recurring, subtasks) {
 		const todo = {
-			id: this.nextId++,
+			id: _generateId(),
 			title,
 			description,
 			dueDate,
@@ -963,7 +979,7 @@ class TodoStore {
 		if (!todo.recurring) return null;
 		const newDueDate = this.getNextDueDate(todo.dueDate, todo.recurring);
 		return {
-			id: this.nextId++,
+			id: _generateId(),
 			title: todo.title,
 			description: todo.description || '',
 			dueDate: newDueDate,
@@ -1324,7 +1340,6 @@ class TodoStore {
 			const todos = storageGet('todos');
 			if (todos && Array.isArray(todos)) {
 				this.todos = todos;
-				this.nextId = Math.max(...todos.map((t) => t.id)) + 1;
 			}
 		} else if (e.key === 'archivedTodos') {
 			const archived = storageGet('archivedTodos');
@@ -1342,14 +1357,16 @@ class TodoStore {
 	// ── Import / Export ──
 
 	/**
-	 * Export todos and archived todos as JSON string.
-	 * @returns {string} JSON string containing todos and archivedTodos
+	 * Export todos, archived todos, custom tags, and tag colors as JSON string.
+	 * @returns {string} JSON string containing all data
 	 */
 	exportTodos() {
 		return JSON.stringify(
 			{
 				todos: this.todos,
 				archivedTodos: this.archivedTodos,
+				customTags: this.customTags,
+				tagColors: this.tagColors,
 				exportedAt: new Date().toISOString()
 			},
 			null,
@@ -1359,7 +1376,10 @@ class TodoStore {
 
 	/**
 	 * Import todos from JSON string.
-	 * @param {string} json - JSON string containing todos and archivedTodos
+	 * Matching IDs are updated in-place; new items are added.
+	 * Custom tags and colors are merged into local state.
+	 * Synced to server if signed in.
+	 * @param {string} json - JSON string containing todos, archivedTodos, customTags, tagColors
 	 * @returns {{success: boolean, message: string}} Result object
 	 */
 	importTodos(json) {
@@ -1370,61 +1390,73 @@ class TodoStore {
 			}
 
 			let importedCount = 0;
+			let updatedCount = 0;
 
-			// Import todos if present and valid
+			// Import todos
 			if (Array.isArray(data.todos)) {
-				// Validate and filter valid todos
 				const validTodos = data.todos.filter((t) => t && t.id && t.title);
-				if (validTodos.length > 0) {
-					// Collect all existing IDs (from both todos and archived)
-					const existingIds = new Set(this.todos.map((t) => t.id));
-					const existingArchivedIds = new Set(this.archivedTodos.map((t) => t.id));
-
-					// Process each todo and assign new IDs for conflicts
-					const adjustedNewTodos = validTodos.map((t) => {
-						let newId = t.id;
-						// Check both todos and archived for conflicts
-						while (existingIds.has(newId) || existingArchivedIds.has(newId)) {
-							newId = this.nextId++;
-						}
-						existingIds.add(newId);
-						return { ...t, id: newId };
-					});
-
-					this.todos = [...this.todos, ...adjustedNewTodos];
-					importedCount += adjustedNewTodos.length;
+				for (const todo of validTodos) {
+					const idx = this.todos.findIndex((t) => t.id === todo.id);
+					if (idx !== -1) {
+						this.todos[idx] = { ...this.todos[idx], ...todo };
+						updatedCount++;
+					} else {
+						this.todos = [...this.todos, todo];
+						importedCount++;
+					}
 				}
 			}
 
-			// Import archived todos if present and valid
+			// Import archived todos
 			if (Array.isArray(data.archivedTodos)) {
 				const validArchived = data.archivedTodos.filter((t) => t && t.id && t.title);
-				if (validArchived.length > 0) {
-					const existingIds = new Set(this.todos.map((t) => t.id));
-					const existingArchivedIds = new Set(this.archivedTodos.map((t) => t.id));
-
-					const adjustedArchived = validArchived.map((t) => {
-						let newId = t.id;
-						while (existingIds.has(newId) || existingArchivedIds.has(newId)) {
-							newId = this.nextId++;
-						}
-						existingIds.add(newId);
-						return { ...t, id: newId };
-					});
-
-					this.archivedTodos = [...this.archivedTodos, ...adjustedArchived];
-					importedCount += adjustedArchived.length;
+				for (const todo of validArchived) {
+					const idx = this.archivedTodos.findIndex((t) => t.id === todo.id);
+					if (idx !== -1) {
+						this.archivedTodos[idx] = { ...this.archivedTodos[idx], ...todo };
+						updatedCount++;
+					} else {
+						this.archivedTodos = [...this.archivedTodos, todo];
+						importedCount++;
+					}
 				}
 			}
 
-			// Return error if nothing was imported
-			if (importedCount === 0) {
+			// Import custom tags + colors
+			if (Array.isArray(data.customTags)) {
+				for (const tag of data.customTags) {
+					if (!this.availableTags.includes(tag)) {
+						this.availableTags = [...this.availableTags, tag];
+					}
+					if (!this.customTags.includes(tag)) {
+						this.customTags = [...this.customTags, tag];
+					}
+				}
+			}
+			if (data.tagColors && typeof data.tagColors === 'object') {
+				for (const [tag, color] of Object.entries(data.tagColors)) {
+					this.tagColors = { ...this.tagColors, [tag]: color };
+				}
+			}
+
+			if (importedCount === 0 && updatedCount === 0) {
 				return { success: false, message: 'No valid tasks found in import file' };
 			}
 
+			// Sync full import to server
+			this._syncImport({
+				todos: data.todos || [],
+				archivedTodos: data.archivedTodos || [],
+				customTags: data.customTags || [],
+				tagColors: data.tagColors || {}
+			});
+
+			const parts = [];
+			if (importedCount > 0) parts.push(`imported ${importedCount} tasks`);
+			if (updatedCount > 0) parts.push(`updated ${updatedCount} tasks`);
 			return {
 				success: true,
-				message: `Successfully imported ${importedCount} tasks`
+				message: `Successfully ${parts.join(' and ')}`
 			};
 		} catch (error) {
 			return {

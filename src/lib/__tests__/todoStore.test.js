@@ -365,7 +365,7 @@ describe('TodoStore instance methods', () => {
 		it('creates a new recurring instance when completing a selected recurring task', () => {
 			store.todos = [
 				{
-					id: 1,
+					id: '1',
 					title: 'Daily standup',
 					completed: false,
 					dueDate: '2026-05-09',
@@ -374,8 +374,7 @@ describe('TodoStore instance methods', () => {
 					createdAt: '2026-05-09T00:00:00.000Z'
 				}
 			];
-			store.nextId = 2;
-			store.selectedTodos = new SvelteSet([1]);
+			store.selectedTodos = new SvelteSet(['1']);
 			store.selectMode = true;
 
 			store.completeSelected();
@@ -397,7 +396,7 @@ describe('TodoStore instance methods', () => {
 		it('creates recurring copies for multiple selected recurring tasks', () => {
 			store.todos = [
 				{
-					id: 1,
+					id: '1',
 					title: 'Daily A',
 					completed: false,
 					dueDate: '2026-05-09',
@@ -406,7 +405,7 @@ describe('TodoStore instance methods', () => {
 					createdAt: '2026-05-09T00:00:00.000Z'
 				},
 				{
-					id: 2,
+					id: '2',
 					title: 'Weekly B',
 					completed: false,
 					dueDate: '2026-05-09',
@@ -415,7 +414,7 @@ describe('TodoStore instance methods', () => {
 					createdAt: '2026-05-09T00:00:00.000Z'
 				},
 				{
-					id: 3,
+					id: '3',
 					title: 'One-time C',
 					completed: false,
 					dueDate: '2026-05-09',
@@ -423,8 +422,7 @@ describe('TodoStore instance methods', () => {
 					createdAt: '2026-05-09T00:00:00.000Z'
 				}
 			];
-			store.nextId = 10;
-			store.selectedTodos = new SvelteSet([1, 2, 3]);
+			store.selectedTodos = new SvelteSet(['1', '2', '3']);
 
 			store.completeSelected();
 
@@ -443,7 +441,7 @@ describe('TodoStore instance methods', () => {
 		it('does not create copies for non-recurring tasks', () => {
 			store.todos = [
 				{
-					id: 1,
+					id: '1',
 					title: 'One-time task',
 					completed: false,
 					dueDate: '2026-05-09',
@@ -451,8 +449,7 @@ describe('TodoStore instance methods', () => {
 					createdAt: '2026-05-09T00:00:00.000Z'
 				}
 			];
-			store.nextId = 2;
-			store.selectedTodos = new SvelteSet([1]);
+			store.selectedTodos = new SvelteSet(['1']);
 
 			store.completeSelected();
 
@@ -463,7 +460,7 @@ describe('TodoStore instance methods', () => {
 		it('does not create a recurring copy if the todo is already completed', () => {
 			store.todos = [
 				{
-					id: 1,
+					id: '1',
 					title: 'Already done recurring',
 					completed: true,
 					dueDate: '2026-05-09',
@@ -473,8 +470,7 @@ describe('TodoStore instance methods', () => {
 					completedAt: '2026-05-09T12:00:00.000Z'
 				}
 			];
-			store.nextId = 2;
-			store.selectedTodos = new SvelteSet([1]);
+			store.selectedTodos = new SvelteSet(['1']);
 
 			store.completeSelected();
 
@@ -507,17 +503,21 @@ describe('TodoStore instance methods', () => {
 			vi.unstubAllGlobals();
 		});
 
-		it('returns JSON string with todos and archivedTodos', () => {
-			store.todos = [{ id: 1, title: 'Test', completed: false, createdAt: '2024-01-01' }];
+		it('returns JSON string with todos, archivedTodos, customTags, and tagColors', () => {
+			store.todos = [{ id: '1', title: 'Test', completed: false, createdAt: '2024-01-01' }];
 			store.archivedTodos = [
-				{ id: 2, title: 'Archived', completed: true, createdAt: '2024-01-01' }
+				{ id: '2', title: 'Archived', completed: true, createdAt: '2024-01-01' }
 			];
+			store.customTags = ['work', 'personal'];
+			store.tagColors = { urgent: '#ef4444', work: '#3b82f6' };
 
 			const result = store.exportTodos();
 			const parsed = JSON.parse(result);
 
 			expect(parsed.todos).toHaveLength(1);
 			expect(parsed.archivedTodos).toHaveLength(1);
+			expect(parsed.customTags).toEqual(['work', 'personal']);
+			expect(parsed.tagColors).toEqual({ urgent: '#ef4444', work: '#3b82f6' });
 			expect(parsed.exportedAt).toBeTruthy();
 		});
 	});
@@ -546,7 +546,7 @@ describe('TodoStore instance methods', () => {
 
 		it('successfully imports valid JSON', () => {
 			const json = JSON.stringify({
-				todos: [{ id: 1, title: 'Imported', completed: false, createdAt: '2024-01-01' }],
+				todos: [{ id: '1', title: 'Imported', completed: false, createdAt: '2024-01-01' }],
 				archivedTodos: []
 			});
 
@@ -569,20 +569,94 @@ describe('TodoStore instance methods', () => {
 			expect(result.message).toContain('No valid tasks');
 		});
 
-		it('handles ID conflicts by assigning new IDs', () => {
-			store.todos = [{ id: 1, title: 'Existing', completed: false, createdAt: '2024-01-01' }];
-			store.nextId = 2;
+		it('updates existing todo when ID matches', () => {
+			store.todos = [{ id: '1', title: 'Existing', completed: false, createdAt: '2024-01-01' }];
 
 			const json = JSON.stringify({
-				todos: [{ id: 1, title: 'Conflict', completed: false, createdAt: '2024-01-01' }]
+				todos: [{ id: '1', title: 'Updated', completed: true, createdAt: '2024-01-01' }],
+				archivedTodos: []
+			});
+
+			const result = store.importTodos(json);
+
+			expect(result.success).toBe(true);
+			expect(result.message).toContain('updated');
+			expect(store.todos).toHaveLength(1);
+			expect(store.todos[0].title).toBe('Updated');
+			expect(store.todos[0].completed).toBe(true);
+		});
+
+		it('adds new todo when ID does not match existing', () => {
+			store.todos = [{ id: '1', title: 'Existing', completed: false, createdAt: '2024-01-01' }];
+
+			const json = JSON.stringify({
+				todos: [{ id: '2', title: 'New', completed: false, createdAt: '2024-01-01' }],
+				archivedTodos: []
+			});
+
+			const result = store.importTodos(json);
+
+			expect(result.success).toBe(true);
+			expect(result.message).toContain('imported');
+			expect(store.todos).toHaveLength(2);
+			expect(store.todos.find((t) => t.title === 'New')).toBeTruthy();
+		});
+
+		it('imports custom tags and tag colors', () => {
+			const json = JSON.stringify({
+				todos: [{ id: '1', title: 'Test', completed: false, createdAt: '2024-01-01' }],
+				archivedTodos: [],
+				customTags: ['custom1', 'custom2'],
+				tagColors: { custom1: '#ff0000', custom2: '#00ff00' }
 			});
 
 			store.importTodos(json);
 
-			// The imported todo should have a new ID assigned
-			expect(store.todos).toHaveLength(2);
-			const importedTodo = store.todos.find((t) => t.title === 'Conflict');
-			expect(importedTodo.id).not.toBe(1); // Should have new ID
+			expect(store.customTags).toContain('custom1');
+			expect(store.customTags).toContain('custom2');
+			expect(store.tagColors.custom1).toBe('#ff0000');
+			expect(store.tagColors.custom2).toBe('#00ff00');
+			expect(store.availableTags).toContain('custom1');
+			expect(store.availableTags).toContain('custom2');
+		});
+
+		it('handles archived todos with update and add', () => {
+			store.archivedTodos = [
+				{ id: 'a1', title: 'Old Archive', completed: true, createdAt: '2024-01-01' }
+			];
+
+			const json = JSON.stringify({
+				todos: [],
+				archivedTodos: [
+					{ id: 'a1', title: 'Updated Archive', completed: true, createdAt: '2024-01-01' },
+					{ id: 'a2', title: 'New Archive', completed: true, createdAt: '2024-01-01' }
+				]
+			});
+
+			const result = store.importTodos(json);
+
+			expect(result.success).toBe(true);
+			expect(store.archivedTodos).toHaveLength(2);
+			expect(store.archivedTodos.find((t) => t.id === 'a1').title).toBe('Updated Archive');
+			expect(store.archivedTodos.find((t) => t.id === 'a2').title).toBe('New Archive');
+		});
+
+		it('merges tags without removing existing ones', () => {
+			store.customTags = ['existing'];
+			store.tagColors = { existing: '#0000ff' };
+
+			const json = JSON.stringify({
+				todos: [{ id: '1', title: 'Test', completed: false, createdAt: '2024-01-01' }],
+				archivedTodos: [],
+				customTags: ['newtag'],
+				tagColors: { newtag: '#ff00ff' }
+			});
+
+			store.importTodos(json);
+
+			expect(store.customTags).toEqual(['existing', 'newtag']);
+			expect(store.tagColors.existing).toBe('#0000ff');
+			expect(store.tagColors.newtag).toBe('#ff00ff');
 		});
 	});
 });
@@ -606,7 +680,7 @@ describe('_computeFiltered', () => {
 		// Set up test todos
 		store.todos = [
 			{
-				id: 1,
+				id: '1',
 				title: 'Buy groceries',
 				description: 'Milk and eggs',
 				completed: false,
@@ -617,7 +691,7 @@ describe('_computeFiltered', () => {
 				createdAt: '2024-01-01'
 			},
 			{
-				id: 2,
+				id: '2',
 				title: 'Write documentation',
 				description: 'Update README',
 				completed: false,
@@ -628,7 +702,7 @@ describe('_computeFiltered', () => {
 				createdAt: '2024-01-02'
 			},
 			{
-				id: 3,
+				id: '3',
 				title: 'Call mom',
 				description: 'Weekly check-in',
 				completed: true,
@@ -640,7 +714,7 @@ describe('_computeFiltered', () => {
 				createdAt: '2024-01-03'
 			},
 			{
-				id: 4,
+				id: '4',
 				title: 'Team meeting',
 				completed: false,
 				dueDate: '2024-01-18',
@@ -650,7 +724,7 @@ describe('_computeFiltered', () => {
 				createdAt: '2024-01-04'
 			},
 			{
-				id: 5,
+				id: '5',
 				title: 'Fix bug #123',
 				completed: false,
 				dueDate: '2024-01-22',
@@ -676,19 +750,19 @@ describe('_computeFiltered', () => {
 		it('filters by title using fuzzy match', () => {
 			const result = store._computeFiltered(store.todos, 'groc');
 			expect(result).toHaveLength(1);
-			expect(result[0].id).toBe(1);
+			expect(result[0].id).toBe('1');
 		});
 
 		it('filters by description using fuzzy match', () => {
 			const result = store._computeFiltered(store.todos, 'readme');
 			expect(result).toHaveLength(1);
-			expect(result[0].id).toBe(2);
+			expect(result[0].id).toBe('2');
 		});
 
 		it('is case-insensitive', () => {
 			const result = store._computeFiltered(store.todos, 'BUY');
 			expect(result).toHaveLength(1);
-			expect(result[0].id).toBe(1);
+			expect(result[0].id).toBe('1');
 		});
 
 		it('does not match when query characters are out of order', () => {
@@ -699,7 +773,7 @@ describe('_computeFiltered', () => {
 		it('matches with gaps in fuzzy search', () => {
 			const result = store._computeFiltered(store.todos, 'wrt');
 			expect(result).toHaveLength(1);
-			expect(result[0].id).toBe(2); // "Write documentation"
+			expect(result[0].id).toBe('2'); // "Write documentation"
 		});
 	});
 
@@ -719,7 +793,7 @@ describe('_computeFiltered', () => {
 		it('filters completed todos when status is "done"', () => {
 			const result = store._computeFiltered(store.todos, '', 'done');
 			expect(result).toHaveLength(1);
-			expect(result[0].id).toBe(3);
+			expect(result[0].id).toBe('3');
 		});
 	});
 
@@ -770,7 +844,7 @@ describe('_computeFiltered', () => {
 		it('filters by "low" priority', () => {
 			const result = store._computeFiltered(store.todos, '', 'all', '', 'manual', 'low');
 			expect(result).toHaveLength(1);
-			expect(result[0].id).toBe(3);
+			expect(result[0].id).toBe('3');
 		});
 	});
 
@@ -786,7 +860,7 @@ describe('_computeFiltered', () => {
 				'shopping'
 			]);
 			expect(result).toHaveLength(1);
-			expect(result[0].id).toBe(1);
+			expect(result[0].id).toBe('1');
 		});
 
 		it('filters by multiple tags (AND logic - all must be present)', () => {
@@ -795,7 +869,7 @@ describe('_computeFiltered', () => {
 				'shopping'
 			]);
 			expect(result).toHaveLength(1);
-			expect(result[0].id).toBe(1);
+			expect(result[0].id).toBe('1');
 		});
 
 		it('returns empty when tags do not match', () => {
@@ -868,7 +942,7 @@ describe('_computeFiltered', () => {
 
 		it('excludes todos without due dates when date filter is applied', () => {
 			store.todos.push({
-				id: 6,
+				id: '6',
 				title: 'No due date',
 				completed: false,
 				createdAt: '2024-01-06'
@@ -884,7 +958,7 @@ describe('_computeFiltered', () => {
 				'2024-01-15',
 				'2024-01-20'
 			);
-			expect(result.find((t) => t.id === 6)).toBeUndefined();
+			expect(result.find((t) => t.id === '6')).toBeUndefined();
 		});
 	});
 
@@ -892,28 +966,28 @@ describe('_computeFiltered', () => {
 	describe('sorting', () => {
 		it('returns original order for "manual" sort', () => {
 			const result = store._computeFiltered(store.todos, '', 'all', '', 'manual');
-			expect(result.map((t) => t.id)).toEqual([1, 2, 3, 4, 5]);
+			expect(result.map((t) => t.id)).toEqual(['1', '2', '3', '4', '5']);
 		});
 
 		it('sorts by priority (high, medium, low)', () => {
 			const result = store._computeFiltered(store.todos, '', 'all', '', 'priority');
-			expect(result.map((t) => t.id)).toEqual([1, 5, 2, 4, 3]); // high, high, medium, medium, low
+			expect(result.map((t) => t.id)).toEqual(['1', '5', '2', '4', '3']); // high, high, medium, medium, low
 		});
 
 		it('sorts by date ascending (earliest first)', () => {
 			const result = store._computeFiltered(store.todos, '', 'all', '', 'date');
-			expect(result.map((t) => t.id)).toEqual([3, 1, 4, 2, 5]); // 10, 15, 18, 20, 22
+			expect(result.map((t) => t.id)).toEqual(['3', '1', '4', '2', '5']); // 10, 15, 18, 20, 22
 		});
 
 		it('sorts by date with tasks without due dates at the end', () => {
 			store.todos.push({
-				id: 6,
+				id: '6',
 				title: 'No due date',
 				completed: false,
 				createdAt: '2024-01-06'
 			});
 			const result = store._computeFiltered(store.todos, '', 'all', '', 'date');
-			expect(result[result.length - 1].id).toBe(6); // No due date should be last
+			expect(result[result.length - 1].id).toBe('6'); // No due date should be last
 		});
 
 		it('sorts alphabetically ascending (alpha-asc)', () => {
@@ -941,7 +1015,7 @@ describe('_computeFiltered', () => {
 		it('sorts by category then title', () => {
 			const result = store._computeFiltered(store.todos, '', 'all', '', 'category');
 			// Personal (Buy groceries, Call mom), then Work (Fix bug, Team meeting, Write documentation)
-			expect(result.map((t) => t.id)).toEqual([1, 3, 5, 4, 2]);
+			expect(result.map((t) => t.id)).toEqual(['1', '3', '5', '4', '2']);
 		});
 	});
 
@@ -958,7 +1032,7 @@ describe('_computeFiltered', () => {
 			);
 			// Should find "Team meeting" (medium priority, Work, active)
 			expect(result).toHaveLength(1);
-			expect(result[0].id).toBe(4);
+			expect(result[0].id).toBe('4');
 		});
 
 		it('applies all filters at once', () => {
@@ -974,7 +1048,7 @@ describe('_computeFiltered', () => {
 				'2024-01-31'
 			);
 			expect(result).toHaveLength(1);
-			expect(result[0].id).toBe(2);
+			expect(result[0].id).toBe('2');
 		});
 
 		it('returns empty when no todos match all filters', () => {
@@ -996,7 +1070,7 @@ describe('_computeFiltered', () => {
 		});
 
 		it('handles todos without optional fields', () => {
-			store.todos = [{ id: 1, title: 'Minimal todo', completed: false, createdAt: '2024-01-01' }];
+			store.todos = [{ id: '1', title: 'Minimal todo', completed: false, createdAt: '2024-01-01' }];
 			const result = store._computeFiltered(
 				store.todos,
 				'',
@@ -1023,7 +1097,7 @@ describe('_computeFiltered', () => {
 				['shopping'] // only first todo
 			);
 			expect(result).toHaveLength(1);
-			expect(result[0].id).toBe(1);
+			expect(result[0].id).toBe('1');
 		});
 	});
 });
@@ -1058,9 +1132,9 @@ describe('TodoStore drag and drop', () => {
 		});
 		store = new TodoStore();
 		store.todos = [
-			{ id: 1, title: 'First', completed: false, createdAt: '2024-01-01' },
-			{ id: 2, title: 'Second', completed: false, createdAt: '2024-01-01' },
-			{ id: 3, title: 'Third', completed: false, createdAt: '2024-01-01' }
+			{ id: '1', title: 'First', completed: false, createdAt: '2024-01-01' },
+			{ id: '2', title: 'Second', completed: false, createdAt: '2024-01-01' },
+			{ id: '3', title: 'Third', completed: false, createdAt: '2024-01-01' }
 		];
 	});
 
@@ -1079,9 +1153,9 @@ describe('TodoStore drag and drop', () => {
 				}
 			};
 
-			store.handleDragStart(mockEvent, 2);
+			store.handleDragStart(mockEvent, '2');
 
-			expect(store.draggedId).toBe(2);
+			expect(store.draggedId).toBe('2');
 			expect(mockEvent.dataTransfer.setData).toHaveBeenCalledWith('text/plain', '2');
 		});
 
@@ -1095,7 +1169,7 @@ describe('TodoStore drag and drop', () => {
 				}
 			};
 
-			store.handleDragStart(mockEvent, 1);
+			store.handleDragStart(mockEvent, '1');
 
 			expect(store._dragGhost).not.toBeNull();
 			expect(document.body.contains(store._dragGhost)).toBe(true);
@@ -1113,11 +1187,11 @@ describe('TodoStore drag and drop', () => {
 			};
 
 			// First drag
-			store.handleDragStart(mockEvent, 1);
+			store.handleDragStart(mockEvent, '1');
 			const firstGhost = store._dragGhost;
 
 			// Second drag - should clean up first ghost
-			store.handleDragStart(mockEvent, 2);
+			store.handleDragStart(mockEvent, '2');
 
 			// Ghost cleanup verified by checking _dragGhost was replaced
 			expect(store._dragGhost).not.toBe(firstGhost);
@@ -1135,10 +1209,10 @@ describe('TodoStore drag and drop', () => {
 				clientY: 60 // In the bottom half (60 > 50)
 			};
 
-			store.handleDragStart({ dataTransfer: { setData: vi.fn(), setDragImage: vi.fn() } }, 1);
-			store.handleDragOver(mockEvent, 2);
+			store.handleDragStart({ dataTransfer: { setData: vi.fn(), setDragImage: vi.fn() } }, '1');
+			store.handleDragOver(mockEvent, '2');
 
-			expect(store.dragOverId).toBe(2);
+			expect(store.dragOverId).toBe('2');
 			expect(store.dragIndicatorPos).toBe('after'); // y=30 is in bottom half of height 100
 		});
 
@@ -1152,8 +1226,8 @@ describe('TodoStore drag and drop', () => {
 				clientY: 20 // In the top half
 			};
 
-			store.handleDragStart({ dataTransfer: { setData: vi.fn(), setDragImage: vi.fn() } }, 1);
-			store.handleDragOver(mockEvent, 2);
+			store.handleDragStart({ dataTransfer: { setData: vi.fn(), setDragImage: vi.fn() } }, '1');
+			store.handleDragOver(mockEvent, '2');
 
 			expect(store.dragIndicatorPos).toBe('before');
 		});
@@ -1168,8 +1242,8 @@ describe('TodoStore drag and drop', () => {
 				clientY: 50
 			};
 
-			store.handleDragStart({ dataTransfer: { setData: vi.fn(), setDragImage: vi.fn() } }, 1);
-			store.handleDragOver(mockEvent, 1); // Same ID
+			store.handleDragStart({ dataTransfer: { setData: vi.fn(), setDragImage: vi.fn() } }, '1');
+			store.handleDragOver(mockEvent, '1'); // Same ID
 
 			expect(store.dragOverId).toBeNull();
 		});
@@ -1182,13 +1256,13 @@ describe('TodoStore drag and drop', () => {
 				dataTransfer: { getData: () => '1' }
 			};
 
-			store.handleDragStart({ dataTransfer: { setData: vi.fn(), setDragImage: vi.fn() } }, 1);
-			store.handleDrop(mockEvent, 3);
+			store.handleDragStart({ dataTransfer: { setData: vi.fn(), setDragImage: vi.fn() } }, '1');
+			store.handleDrop(mockEvent, '3');
 
 			// Drag 1 onto 3: [1,2,3] -> remove idx 0 -> [2,3], toIdx 2->1, insert -> [2,1,3]
-			expect(store.todos[0].id).toBe(2);
-			expect(store.todos[1].id).toBe(1);
-			expect(store.todos[2].id).toBe(3);
+			expect(store.todos[0].id).toBe('2');
+			expect(store.todos[1].id).toBe('1');
+			expect(store.todos[2].id).toBe('3');
 		});
 
 		it('reorders todos array correctly (moving item backward)', () => {
@@ -1198,13 +1272,13 @@ describe('TodoStore drag and drop', () => {
 			};
 
 			// Drag item 3 to position of item 1
-			store.handleDragStart({ dataTransfer: { setData: vi.fn(), setDragImage: vi.fn() } }, 3);
-			store.handleDrop(mockEvent, 1);
+			store.handleDragStart({ dataTransfer: { setData: vi.fn(), setDragImage: vi.fn() } }, '3');
+			store.handleDrop(mockEvent, '1');
 
 			// Item 3 should be at index 0
-			expect(store.todos[0].id).toBe(3);
-			expect(store.todos[1].id).toBe(1);
-			expect(store.todos[2].id).toBe(2);
+			expect(store.todos[0].id).toBe('3');
+			expect(store.todos[1].id).toBe('1');
+			expect(store.todos[2].id).toBe('2');
 		});
 
 		it('does nothing when draggedId is null', () => {
@@ -1215,7 +1289,7 @@ describe('TodoStore drag and drop', () => {
 
 			store.draggedId = null;
 			const originalOrder = [...store.todos];
-			store.handleDrop(mockEvent, 2);
+			store.handleDrop(mockEvent, '2');
 
 			expect(store.todos).toEqual(originalOrder);
 		});
@@ -1226,9 +1300,9 @@ describe('TodoStore drag and drop', () => {
 				dataTransfer: { getData: () => '1' }
 			};
 
-			store.handleDragStart({ dataTransfer: { setData: vi.fn(), setDragImage: vi.fn() } }, 1);
+			store.handleDragStart({ dataTransfer: { setData: vi.fn(), setDragImage: vi.fn() } }, '1');
 			const originalOrder = [...store.todos];
-			store.handleDrop(mockEvent, 1);
+			store.handleDrop(mockEvent, '1');
 
 			expect(store.todos).toEqual(originalOrder);
 		});
@@ -1239,7 +1313,7 @@ describe('TodoStore drag and drop', () => {
 			const mockEvent = {
 				dataTransfer: { setData: vi.fn(), setDragImage: vi.fn() }
 			};
-			store.handleDragStart(mockEvent, 1);
+			store.handleDragStart(mockEvent, '1');
 
 			expect(store._dragGhost).not.toBeNull();
 
@@ -1253,7 +1327,7 @@ describe('TodoStore drag and drop', () => {
 			const mockEvent = {
 				dataTransfer: { setData: vi.fn(), setDragImage: vi.fn() }
 			};
-			store.handleDragStart(mockEvent, 1);
+			store.handleDragStart(mockEvent, '1');
 			store.handleDragOver(
 				{
 					preventDefault: vi.fn(),
@@ -1280,8 +1354,8 @@ describe('TodoStore drag and drop', () => {
 
 	describe('handleDragLeave', () => {
 		it('clears dragOverId and dragIndicatorPos', () => {
-			store.handleDragStart({ dataTransfer: { setData: vi.fn(), setDragImage: vi.fn() } }, 1);
-			store.dragOverId = 2;
+			store.handleDragStart({ dataTransfer: { setData: vi.fn(), setDragImage: vi.fn() } }, '1');
+			store.dragOverId = '2';
 			store.dragIndicatorPos = 'before';
 
 			store.handleDragLeave();
@@ -1348,7 +1422,7 @@ describe('recurring task edge cases', () => {
 		it('does not create copies for non-recurring tasks (completeSelected)', () => {
 			store.todos = [
 				{
-					id: 1,
+					id: '1',
 					title: 'One-time task',
 					completed: false,
 					dueDate: '2026-05-09',
@@ -1356,8 +1430,7 @@ describe('recurring task edge cases', () => {
 					createdAt: '2026-05-09T00:00:00.000Z'
 				}
 			];
-			store.nextId = 2;
-			store.selectedTodos = new SvelteSet([1]);
+			store.selectedTodos = new SvelteSet(['1']);
 
 			store.completeSelected();
 
@@ -1370,14 +1443,14 @@ describe('recurring task edge cases', () => {
 		it('does not create copies for tasks without recurring field', () => {
 			store.todos = [
 				{
-					id: 1,
+					id: '1',
 					title: 'No recurring field',
 					completed: false,
 					tags: [],
 					createdAt: '2026-05-09T00:00:00.000Z'
 				}
 			];
-			store.selectedTodos = new SvelteSet([1]);
+			store.selectedTodos = new SvelteSet(['1']);
 
 			store.completeSelected();
 
@@ -1390,7 +1463,7 @@ describe('recurring task edge cases', () => {
 		it('returns null for non-recurring tasks', () => {
 			store.todos = [
 				{
-					id: 1,
+					id: '1',
 					title: 'Non-recurring',
 					completed: false,
 					createdAt: '2026-05-09T00:00:00.000Z'
@@ -1403,7 +1476,7 @@ describe('recurring task edge cases', () => {
 		it('preserves all fields except completed and dueDate for recurring copy', () => {
 			store.todos = [
 				{
-					id: 1,
+					id: '1',
 					title: 'Daily task',
 					description: 'Task description',
 					dueDate: '2024-01-15',
@@ -1416,11 +1489,11 @@ describe('recurring task edge cases', () => {
 					createdAt: '2024-01-01'
 				}
 			];
-			store.nextId = 100;
 
 			const copy = store._createRecurringCopy(store.todos[0]);
 
-			expect(copy.id).toBe(100);
+			expect(copy.id).toBeTruthy();
+			expect(typeof copy.id).toBe('string');
 			expect(copy.title).toBe('Daily task');
 			expect(copy.description).toBe('Task description');
 			expect(copy.priority).toBe('high');

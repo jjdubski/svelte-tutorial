@@ -34,7 +34,8 @@ import {
 	permanentDeleteTodo,
 	batchArchive,
 	batchRestore,
-	migrateGuestData
+	migrateGuestData,
+	importData
 } from '../server/todoService.js';
 
 /**
@@ -45,7 +46,6 @@ function createMockUser(overrides = {}) {
 		authUserId: 'test-user-id',
 		email: 'test@example.com',
 		name: 'Test User',
-		nextId: 1,
 		todos: [],
 		archivedTodos: [],
 		customTags: [],
@@ -61,7 +61,6 @@ function createMockUser(overrides = {}) {
 		authUserId: user.authUserId,
 		email: user.email,
 		name: user.name,
-		nextId: user.nextId,
 		todos: user.todos,
 		archivedTodos: user.archivedTodos,
 		customTags: user.customTags,
@@ -91,7 +90,7 @@ describe('todoService', () => {
 
 		it('creates user if not found', async () => {
 			mockFindOne.mockResolvedValueOnce(null);
-			const newUser = createMockUser({ nextId: 1, todos: [] });
+			const newUser = createMockUser({ todos: [] });
 			mockCreate.mockResolvedValue(newUser);
 
 			const result = await getUserData('new-user');
@@ -154,9 +153,8 @@ describe('todoService', () => {
 	describe('getTodos', () => {
 		it('returns todos and user settings', async () => {
 			const mockUser = createMockUser({
-				todos: [{ id: 1, title: 'Task 1', completed: false, createdAt: '2025-01-01' }],
-				archivedTodos: [{ id: 2, title: 'Archived 1', completed: true, createdAt: '2025-01-01' }],
-				nextId: 3,
+				todos: [{ id: '1', title: 'Task 1', completed: false, createdAt: '2025-01-01' }],
+				archivedTodos: [{ id: '2', title: 'Archived 1', completed: true, createdAt: '2025-01-01' }],
 				darkMode: true
 			});
 			mockFindOne.mockResolvedValue(mockUser);
@@ -166,8 +164,9 @@ describe('todoService', () => {
 			expect(result.todos).toHaveLength(1);
 			expect(result.todos[0].title).toBe('Task 1');
 			expect(result.archivedTodos).toHaveLength(1);
-			expect(result.nextId).toBe(3);
 			expect(result.darkMode).toBe(true);
+			// nextId should NOT be in the response
+			expect(result).not.toHaveProperty('nextId');
 		});
 
 		it('throws when user is not found', async () => {
@@ -178,18 +177,35 @@ describe('todoService', () => {
 	});
 
 	describe('createTodo', () => {
-		it('creates a todo with auto-incremented id', async () => {
-			const mockUser = createMockUser({ nextId: 5 });
+		it('creates a todo with the provided UUID id', async () => {
+			const mockUser = createMockUser();
 			mockFindOne.mockResolvedValue(mockUser);
 
-			const todoData = { title: 'New Task', priority: 'high', category: 'Work' };
+			const uuid = '550e8400-e29b-41d4-a716-446655440000';
+			const todoData = { id: uuid, title: 'New Task', priority: 'high', category: 'Work' };
 			const result = await createTodo('test-user-id', todoData);
 
-			expect(result.id).toBe(5);
+			expect(result.id).toBe(uuid);
 			expect(result.title).toBe('New Task');
 			expect(result.completed).toBe(false);
 			expect(result.createdAt).toBeTruthy();
-			expect(mockUser.nextId).toBe(6);
+			expect(mockUser.todos).toHaveLength(1);
+			expect(mockUser.save).toHaveBeenCalled();
+		});
+
+		it('generates a UUID id when none is provided', async () => {
+			const mockUser = createMockUser();
+			mockFindOne.mockResolvedValue(mockUser);
+
+			const todoData = { title: 'No ID Task', priority: 'medium' };
+			const result = await createTodo('test-user-id', todoData);
+
+			expect(result.id).toBeTruthy();
+			expect(typeof result.id).toBe('string');
+			expect(result.id).toMatch(
+				/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+			);
+			expect(result.title).toBe('No ID Task');
 			expect(mockUser.todos).toHaveLength(1);
 			expect(mockUser.save).toHaveBeenCalled();
 		});
@@ -204,11 +220,11 @@ describe('todoService', () => {
 	describe('updateTodo', () => {
 		it('updates fields on an existing todo', async () => {
 			const mockUser = createMockUser({
-				todos: [{ id: 1, title: 'Old Title', completed: false, createdAt: '2025-01-01' }]
+				todos: [{ id: '1', title: 'Old Title', completed: false, createdAt: '2025-01-01' }]
 			});
 			mockFindOne.mockResolvedValue(mockUser);
 
-			const result = await updateTodo('test-user-id', 1, {
+			const result = await updateTodo('test-user-id', '1', {
 				title: 'New Title',
 				priority: 'high'
 			});
@@ -222,7 +238,7 @@ describe('todoService', () => {
 			const mockUser = createMockUser();
 			mockFindOne.mockResolvedValue(mockUser);
 
-			await expect(updateTodo('test-user-id', 999, { title: 'Nope' })).rejects.toThrow(
+			await expect(updateTodo('test-user-id', '999', { title: 'Nope' })).rejects.toThrow(
 				'Todo not found'
 			);
 		});
@@ -230,7 +246,7 @@ describe('todoService', () => {
 		it('throws when user is not found', async () => {
 			mockFindOne.mockResolvedValue(null);
 
-			await expect(updateTodo('nonexistent', 1, { title: 'Nope' })).rejects.toThrow(
+			await expect(updateTodo('nonexistent', '1', { title: 'Nope' })).rejects.toThrow(
 				'User not found'
 			);
 		});
@@ -239,11 +255,11 @@ describe('todoService', () => {
 	describe('archiveTodo', () => {
 		it('moves a todo from todos to archivedTodos', async () => {
 			const mockUser = createMockUser({
-				todos: [{ id: 1, title: 'To Archive', completed: false, createdAt: '2025-01-01' }]
+				todos: [{ id: '1', title: 'To Archive', completed: false, createdAt: '2025-01-01' }]
 			});
 			mockFindOne.mockResolvedValue(mockUser);
 
-			const result = await archiveTodo('test-user-id', 1);
+			const result = await archiveTodo('test-user-id', '1');
 
 			expect(result.title).toBe('To Archive');
 			expect(mockUser.todos).toHaveLength(0);
@@ -256,18 +272,18 @@ describe('todoService', () => {
 			const mockUser = createMockUser();
 			mockFindOne.mockResolvedValue(mockUser);
 
-			await expect(archiveTodo('test-user-id', 999)).rejects.toThrow('Todo not found');
+			await expect(archiveTodo('test-user-id', '999')).rejects.toThrow('Todo not found');
 		});
 	});
 
 	describe('restoreTodo', () => {
 		it('moves a todo from archivedTodos back to todos', async () => {
 			const mockUser = createMockUser({
-				archivedTodos: [{ id: 1, title: 'To Restore', completed: true, createdAt: '2025-01-01' }]
+				archivedTodos: [{ id: '1', title: 'To Restore', completed: true, createdAt: '2025-01-01' }]
 			});
 			mockFindOne.mockResolvedValue(mockUser);
 
-			const result = await restoreTodo('test-user-id', 1);
+			const result = await restoreTodo('test-user-id', '1');
 
 			expect(result.title).toBe('To Restore');
 			expect(mockUser.archivedTodos).toHaveLength(0);
@@ -280,18 +296,18 @@ describe('todoService', () => {
 			const mockUser = createMockUser();
 			mockFindOne.mockResolvedValue(mockUser);
 
-			await expect(restoreTodo('test-user-id', 999)).rejects.toThrow('Todo not found');
+			await expect(restoreTodo('test-user-id', '999')).rejects.toThrow('Todo not found');
 		});
 	});
 
 	describe('permanentDeleteTodo', () => {
 		it('removes a todo from archivedTodos', async () => {
 			const mockUser = createMockUser({
-				archivedTodos: [{ id: 1, title: 'To Delete', completed: true, createdAt: '2025-01-01' }]
+				archivedTodos: [{ id: '1', title: 'To Delete', completed: true, createdAt: '2025-01-01' }]
 			});
 			mockFindOne.mockResolvedValue(mockUser);
 
-			await permanentDeleteTodo('test-user-id', 1);
+			await permanentDeleteTodo('test-user-id', '1');
 
 			expect(mockUser.archivedTodos).toHaveLength(0);
 			expect(mockUser.save).toHaveBeenCalled();
@@ -301,7 +317,7 @@ describe('todoService', () => {
 			const mockUser = createMockUser();
 			mockFindOne.mockResolvedValue(mockUser);
 
-			await expect(permanentDeleteTodo('test-user-id', 999)).rejects.toThrow('Todo not found');
+			await expect(permanentDeleteTodo('test-user-id', '999')).rejects.toThrow('Todo not found');
 		});
 	});
 
@@ -309,14 +325,14 @@ describe('todoService', () => {
 		it('archives multiple todos at once', async () => {
 			const mockUser = createMockUser({
 				todos: [
-					{ id: 1, title: 'Task A', completed: false, createdAt: '2025-01-01' },
-					{ id: 2, title: 'Task B', completed: false, createdAt: '2025-01-01' },
-					{ id: 3, title: 'Task C', completed: false, createdAt: '2025-01-01' }
+					{ id: '1', title: 'Task A', completed: false, createdAt: '2025-01-01' },
+					{ id: '2', title: 'Task B', completed: false, createdAt: '2025-01-01' },
+					{ id: '3', title: 'Task C', completed: false, createdAt: '2025-01-01' }
 				]
 			});
 			mockFindOne.mockResolvedValue(mockUser);
 
-			const result = await batchArchive('test-user-id', [1, 3]);
+			const result = await batchArchive('test-user-id', ['1', '3']);
 
 			expect(result).toHaveLength(2);
 			expect(result.map((t) => t.title)).toEqual(['Task A', 'Task C']);
@@ -331,14 +347,14 @@ describe('todoService', () => {
 		it('restores multiple archived todos at once', async () => {
 			const mockUser = createMockUser({
 				archivedTodos: [
-					{ id: 1, title: 'Archived A', completed: true, createdAt: '2025-01-01' },
-					{ id: 2, title: 'Archived B', completed: true, createdAt: '2025-01-01' },
-					{ id: 3, title: 'Archived C', completed: true, createdAt: '2025-01-01' }
+					{ id: '1', title: 'Archived A', completed: true, createdAt: '2025-01-01' },
+					{ id: '2', title: 'Archived B', completed: true, createdAt: '2025-01-01' },
+					{ id: '3', title: 'Archived C', completed: true, createdAt: '2025-01-01' }
 				]
 			});
 			mockFindOne.mockResolvedValue(mockUser);
 
-			const result = await batchRestore('test-user-id', [1, 3]);
+			const result = await batchRestore('test-user-id', ['1', '3']);
 
 			expect(result).toHaveLength(2);
 			expect(result.map((t) => t.title)).toEqual(['Archived A', 'Archived C']);
@@ -352,17 +368,16 @@ describe('todoService', () => {
 	describe('migrateGuestData', () => {
 		it('merges guest todos and custom tags into existing user', async () => {
 			const mockUser = createMockUser({
-				todos: [{ id: 1, title: 'Existing', completed: false, createdAt: '2025-01-01' }],
+				todos: [{ id: '1', title: 'Existing', completed: false, createdAt: '2025-01-01' }],
 				customTags: ['urgent'],
-				tagColors: new Map(Object.entries({ urgent: '#ff0000' })),
-				nextId: 10
+				tagColors: new Map(Object.entries({ urgent: '#ff0000' }))
 			});
 			mockFindOne.mockResolvedValue(mockUser);
 
 			const guestData = {
-				todos: [{ id: 100, title: 'Guest Task', completed: false, createdAt: '2025-01-01' }],
+				todos: [{ id: '100', title: 'Guest Task', completed: false, createdAt: '2025-01-01' }],
 				archivedTodos: [
-					{ id: 200, title: 'Guest Archived', completed: true, createdAt: '2025-01-01' }
+					{ id: '200', title: 'Guest Archived', completed: true, createdAt: '2025-01-01' }
 				],
 				customTags: ['home', 'shopping'],
 				tagColors: { home: '#ff0', shopping: '#f0f' }
@@ -380,39 +395,23 @@ describe('todoService', () => {
 			// Tag colors merged
 			expect(mockUser.tagColors.get('urgent')).toBe('#ff0000');
 			expect(mockUser.tagColors.get('home')).toBe('#ff0');
-			// nextId updated if guest IDs are higher
-			expect(mockUser.nextId).toBe(201);
 			expect(mockUser.save).toHaveBeenCalled();
 			expect(result).toBeTruthy();
 		});
 
-		it('does not update nextId if guest IDs are lower', async () => {
-			const mockUser = createMockUser({ nextId: 50 });
-			mockFindOne.mockResolvedValue(mockUser);
-
-			const guestData = {
-				todos: [{ id: 10, title: 'Low ID', completed: false, createdAt: '2025-01-01' }]
-			};
-
-			await migrateGuestData('test-user-id', guestData);
-
-			expect(mockUser.nextId).toBe(50);
-		});
-
-		it('remaps guest IDs that conflict with existing user IDs', async () => {
+		it('remaps guest IDs that conflict with existing user IDs using UUIDs', async () => {
 			const mockUser = createMockUser({
-				nextId: 5,
-				todos: [{ id: 1, title: 'Existing', completed: false, createdAt: '2025-01-01' }],
+				todos: [{ id: '1', title: 'Existing', completed: false, createdAt: '2025-01-01' }],
 				archivedTodos: [
-					{ id: 2, title: 'Archived Existing', completed: true, createdAt: '2025-01-01' }
+					{ id: '2', title: 'Archived Existing', completed: true, createdAt: '2025-01-01' }
 				]
 			});
 			mockFindOne.mockResolvedValue(mockUser);
 
 			await migrateGuestData('test-user-id', {
-				todos: [{ id: 1, title: 'Guest Duplicate', completed: false, createdAt: '2025-01-02' }],
+				todos: [{ id: '1', title: 'Guest Duplicate', completed: false, createdAt: '2025-01-02' }],
 				archivedTodos: [
-					{ id: 2, title: 'Guest Archived Duplicate', completed: true, createdAt: '2025-01-03' }
+					{ id: '2', title: 'Guest Archived Duplicate', completed: true, createdAt: '2025-01-03' }
 				]
 			});
 
@@ -421,7 +420,10 @@ describe('todoService', () => {
 
 			const allIds = [...mockUser.todos, ...mockUser.archivedTodos].map((t) => t.id);
 			expect(new Set(allIds).size).toBe(allIds.length);
-			expect(mockUser.nextId).toBe(7);
+			// The duplicates should have been remapped to UUIDs
+			for (const id of allIds) {
+				expect(typeof id).toBe('string');
+			}
 		});
 
 		it('handles empty guest data gracefully', async () => {
@@ -432,6 +434,104 @@ describe('todoService', () => {
 
 			expect(mockUser.todos).toHaveLength(0);
 			expect(mockUser.save).toHaveBeenCalled();
+		});
+	});
+
+	describe('importData', () => {
+		function createMockUser() {
+			const tagColors = new Map();
+			tagColors.set('urgent', '#ef4444');
+			return {
+				todos: [{ id: '1', title: 'Existing Todo', completed: false, createdAt: '2024-01-01' }],
+				archivedTodos: [
+					{ id: 'a1', title: 'Existing Archived', completed: true, createdAt: '2024-01-01' }
+				],
+				customTags: ['work'],
+				tagColors,
+				save: vi.fn().mockResolvedValue({}),
+				toObject: vi.fn().mockReturnValue({})
+			};
+		}
+
+		it('updates existing todos by ID', async () => {
+			const mockUser = createMockUser();
+			mockFindOne.mockResolvedValue(mockUser);
+
+			await importData('test-user-id', {
+				todos: [{ id: '1', title: 'Updated Title', completed: true, createdAt: '2024-01-01' }]
+			});
+
+			expect(mockUser.todos).toHaveLength(1);
+			expect(mockUser.todos[0].title).toBe('Updated Title');
+			expect(mockUser.todos[0].completed).toBe(true);
+			expect(mockUser.save).toHaveBeenCalled();
+		});
+
+		it('adds new todos', async () => {
+			const mockUser = createMockUser();
+			mockFindOne.mockResolvedValue(mockUser);
+
+			await importData('test-user-id', {
+				todos: [{ id: '2', title: 'New Todo', completed: false, createdAt: '2024-01-02' }]
+			});
+
+			expect(mockUser.todos).toHaveLength(2);
+			expect(mockUser.todos.find((t) => t.id === '2').title).toBe('New Todo');
+		});
+
+		it('updates existing archived todos by ID', async () => {
+			const mockUser = createMockUser();
+			mockFindOne.mockResolvedValue(mockUser);
+
+			await importData('test-user-id', {
+				archivedTodos: [
+					{ id: 'a1', title: 'Updated Archived', completed: true, createdAt: '2024-01-01' }
+				]
+			});
+
+			expect(mockUser.archivedTodos).toHaveLength(1);
+			expect(mockUser.archivedTodos[0].title).toBe('Updated Archived');
+		});
+
+		it('adds new archived todos', async () => {
+			const mockUser = createMockUser();
+			mockFindOne.mockResolvedValue(mockUser);
+
+			await importData('test-user-id', {
+				archivedTodos: [
+					{ id: 'a2', title: 'New Archived', completed: true, createdAt: '2024-01-02' }
+				]
+			});
+
+			expect(mockUser.archivedTodos).toHaveLength(2);
+			expect(mockUser.archivedTodos.find((t) => t.id === 'a2').title).toBe('New Archived');
+		});
+
+		it('merges custom tags and tag colors', async () => {
+			const mockUser = createMockUser();
+			mockFindOne.mockResolvedValue(mockUser);
+
+			await importData('test-user-id', {
+				todos: [],
+				customTags: ['newtag'],
+				tagColors: { newtag: '#ff00ff' }
+			});
+
+			expect(mockUser.customTags).toEqual(['work', 'newtag']);
+			expect(mockUser.tagColors.get('newtag')).toBe('#ff00ff');
+			expect(mockUser.tagColors.get('urgent')).toBe('#ef4444');
+		});
+
+		it('skips invalid todo entries', async () => {
+			const mockUser = createMockUser();
+			mockFindOne.mockResolvedValue(mockUser);
+
+			await importData('test-user-id', {
+				todos: [null, { id: '2', title: 'Valid' }, { noId: true, title: 'Missing ID' }, { id: '3' }]
+			});
+
+			expect(mockUser.todos).toHaveLength(2);
+			expect(mockUser.todos.find((t) => t.id === '2').title).toBe('Valid');
 		});
 	});
 });
