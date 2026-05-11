@@ -75,7 +75,12 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
 						provider: token.provider
 					});
 				} catch (err) {
-					console.error('[auth] Failed to upsert user:', err);
+					const msg = /** @type {Error} */ (err).message || '';
+					console.error('[auth] Failed to upsert user:', msg);
+					// If this is a MongoDB connection issue, log the full error for debugging.
+					if (msg.includes('MongoDB') || msg.includes('connect')) {
+						console.error('[auth] Full error:', err);
+					}
 				}
 			}
 			return session;
