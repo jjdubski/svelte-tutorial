@@ -63,7 +63,7 @@ export async function upsertUser(authUserId, profile) {
 /**
  * Get all todos and user settings for a given user.
  * @param {string} authUserId
- * @returns {Promise<{ todos: Array, archivedTodos: Array, nextId: number, categories: string[], categoryColors: Record<string,string>, availableTags: string[], tagColors: Record<string,string>, templates: Array, darkMode: boolean }>}
+ * @returns {Promise<{ todos: Array, archivedTodos: Array, nextId: number, customTags: string[], tagColors: Record<string,string>, darkMode: boolean }>}
  */
 export async function getTodos(authUserId) {
 	const user = await _getUser(authUserId);
@@ -71,11 +71,8 @@ export async function getTodos(authUserId) {
 		todos: user.todos || [],
 		archivedTodos: user.archivedTodos || [],
 		nextId: user.nextId,
-		categories: user.categories,
-		categoryColors: Object.fromEntries(user.categoryColors || new Map()),
-		availableTags: user.availableTags,
+		customTags: user.customTags || [],
 		tagColors: Object.fromEntries(user.tagColors || new Map()),
-		templates: user.templates,
 		darkMode: user.darkMode
 	};
 }
@@ -206,7 +203,7 @@ export async function batchRestore(authUserId, todoIds) {
 
 /**
  * Migrate guest localStorage data into the user's MongoDB document.
- * Merges todos, archivedTodos, categories, tags, and settings.
+ * Merges todos, archivedTodos, customTags, and tag colors.
  * @param {string} authUserId
  * @param {Object} guestData - The guest data object from localStorage
  * @returns {Promise<Record<string, any>>} The updated user document as a plain object
@@ -224,45 +221,22 @@ export async function migrateGuestData(authUserId, guestData) {
 		user.archivedTodos.push(...guestData.archivedTodos);
 	}
 
-	// Merge categories (dedup)
-	if (Array.isArray(guestData.categories)) {
-		const existingCategories = new Set(user.categories);
-		for (const cat of guestData.categories) {
-			if (!existingCategories.has(cat)) {
-				user.categories.push(cat);
-				existingCategories.add(cat);
+	// Merge custom tags (dedup)
+	if (Array.isArray(guestData.customTags)) {
+		const existing = new Set(user.customTags);
+		for (const tag of guestData.customTags) {
+			if (!existing.has(tag)) {
+				user.customTags.push(tag);
+				existing.add(tag);
 			}
 		}
 	}
 
-	// Merge category colors
-	if (guestData.categoryColors && typeof guestData.categoryColors === 'object') {
-		for (const [key, value] of Object.entries(guestData.categoryColors)) {
-			user.categoryColors.set(key, value);
-		}
-	}
-
-	// Merge tags (dedup)
-	if (Array.isArray(guestData.availableTags)) {
-		const existingTags = new Set(user.availableTags);
-		for (const tag of guestData.availableTags) {
-			if (!existingTags.has(tag)) {
-				user.availableTags.push(tag);
-				existingTags.add(tag);
-			}
-		}
-	}
-
-	// Merge tag colors
+	// Merge tag colors (only for custom tags)
 	if (guestData.tagColors && typeof guestData.tagColors === 'object') {
 		for (const [key, value] of Object.entries(guestData.tagColors)) {
 			user.tagColors.set(key, value);
 		}
-	}
-
-	// Merge templates (replace with guest templates if provided)
-	if (Array.isArray(guestData.templates)) {
-		user.templates = guestData.templates;
 	}
 
 	// Update nextId if guest data has higher IDs

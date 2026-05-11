@@ -48,11 +48,8 @@ function createMockUser(overrides = {}) {
 		nextId: 1,
 		todos: [],
 		archivedTodos: [],
-		categories: ['Work', 'Personal'],
-		categoryColors: new Map(Object.entries({ Work: '#3b82f6', Personal: '#22c55e' })),
-		availableTags: ['urgent'],
-		tagColors: new Map(Object.entries({ urgent: '#ef4444' })),
-		templates: [],
+		customTags: [],
+		tagColors: new Map(),
 		darkMode: false,
 		lastLoginAt: new Date('2025-01-01'),
 		save: vi.fn().mockResolvedValue(true),
@@ -67,11 +64,8 @@ function createMockUser(overrides = {}) {
 		nextId: user.nextId,
 		todos: user.todos,
 		archivedTodos: user.archivedTodos,
-		categories: user.categories,
-		categoryColors: Object.fromEntries(user.categoryColors),
-		availableTags: user.availableTags,
+		customTags: user.customTags,
 		tagColors: Object.fromEntries(user.tagColors),
-		templates: user.templates,
 		darkMode: user.darkMode,
 		lastLoginAt: user.lastLoginAt
 	});
@@ -173,7 +167,6 @@ describe('todoService', () => {
 			expect(result.todos[0].title).toBe('Task 1');
 			expect(result.archivedTodos).toHaveLength(1);
 			expect(result.nextId).toBe(3);
-			expect(result.categories).toEqual(['Work', 'Personal']);
 			expect(result.darkMode).toBe(true);
 		});
 
@@ -357,12 +350,10 @@ describe('todoService', () => {
 	});
 
 	describe('migrateGuestData', () => {
-		it('merges guest todos and settings into existing user', async () => {
+		it('merges guest todos and custom tags into existing user', async () => {
 			const mockUser = createMockUser({
 				todos: [{ id: 1, title: 'Existing', completed: false, createdAt: '2025-01-01' }],
-				categories: ['Work'],
-				categoryColors: new Map(Object.entries({ Work: '#ff0000' })),
-				availableTags: ['urgent'],
+				customTags: ['urgent'],
 				tagColors: new Map(Object.entries({ urgent: '#ff0000' })),
 				nextId: 10
 			});
@@ -373,11 +364,8 @@ describe('todoService', () => {
 				archivedTodos: [
 					{ id: 200, title: 'Guest Archived', completed: true, createdAt: '2025-01-01' }
 				],
-				categories: ['Personal', 'Health'],
-				categoryColors: { Personal: '#00ff00', Health: '#0000ff' },
-				availableTags: ['home', 'shopping'],
-				tagColors: { home: '#ff0', shopping: '#f0f' },
-				templates: [{ name: 'Meeting' }]
+				customTags: ['home', 'shopping'],
+				tagColors: { home: '#ff0', shopping: '#f0f' }
 			};
 
 			const result = await migrateGuestData('test-user-id', guestData);
@@ -385,18 +373,13 @@ describe('todoService', () => {
 			// Should have both existing and guest todos
 			expect(mockUser.todos).toHaveLength(2);
 			expect(mockUser.archivedTodos).toHaveLength(1);
-			// Categories should be merged (dedup)
-			expect(mockUser.categories).toContain('Work');
-			expect(mockUser.categories).toContain('Personal');
-			expect(mockUser.categories).toContain('Health');
-			// Category colors merged
-			expect(mockUser.categoryColors.get('Work')).toBe('#ff0000');
-			expect(mockUser.categoryColors.get('Personal')).toBe('#00ff00');
-			// Tags merged (dedup)
-			expect(mockUser.availableTags).toContain('urgent');
-			expect(mockUser.availableTags).toContain('home');
-			// Templates replaced with guest templates
-			expect(mockUser.templates).toEqual([{ name: 'Meeting' }]);
+			// Custom tags merged (dedup)
+			expect(mockUser.customTags).toContain('urgent');
+			expect(mockUser.customTags).toContain('home');
+			expect(mockUser.customTags).toContain('shopping');
+			// Tag colors merged
+			expect(mockUser.tagColors.get('urgent')).toBe('#ff0000');
+			expect(mockUser.tagColors.get('home')).toBe('#ff0');
 			// nextId updated if guest IDs are higher
 			expect(mockUser.nextId).toBe(201);
 			expect(mockUser.save).toHaveBeenCalled();

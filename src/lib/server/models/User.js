@@ -56,84 +56,14 @@ const userSchema = new Schema(
 		nextId: { type: Number, default: 1 },
 		todos: { type: [Schema.Types.Mixed], default: [] },
 		archivedTodos: { type: [Schema.Types.Mixed], default: [] },
-		categories: {
+		customTags: {
 			type: [String],
-			default: ['Work', 'Personal', 'Ideas']
-		},
-		categoryColors: {
-			type: Map,
-			of: String,
-			default: {
-				Work: '#3b82f6',
-				Personal: '#22c55e',
-				Ideas: '#a855f7'
-			}
-		},
-		availableTags: {
-			type: [String],
-			default: ['urgent', 'meeting', 'home', 'shopping', 'health', 'in-progress']
+			default: []
 		},
 		tagColors: {
 			type: Map,
 			of: String,
-			default: {
-				urgent: '#ef4444',
-				meeting: '#f59e0b',
-				home: '#06b6d4',
-				shopping: '#ec4899',
-				health: '#22c55e',
-				'in-progress': '#f97316'
-			}
-		},
-		templates: {
-			type: [Schema.Types.Mixed],
-			default: [
-				{
-					name: 'None',
-					title: '',
-					description: '',
-					dueDate: '',
-					priority: 'medium',
-					category: '',
-					tags: []
-				},
-				{
-					name: 'Meeting',
-					title: 'Meeting with ',
-					description: 'Discuss ',
-					dueDate: '',
-					priority: 'medium',
-					category: 'Work',
-					tags: ['meeting']
-				},
-				{
-					name: 'Errand',
-					title: '',
-					description: 'Buy ',
-					dueDate: '',
-					priority: 'low',
-					category: 'Personal',
-					tags: ['shopping']
-				},
-				{
-					name: 'Urgent',
-					title: 'URGENT: ',
-					description: '',
-					dueDate: '',
-					priority: 'high',
-					category: 'Work',
-					tags: ['urgent']
-				},
-				{
-					name: 'Health',
-					title: 'Workout: ',
-					description: '',
-					dueDate: '',
-					priority: 'medium',
-					category: 'Personal',
-					tags: ['health']
-				}
-			]
+			default: {}
 		},
 		darkMode: { type: Boolean, default: false }
 	},

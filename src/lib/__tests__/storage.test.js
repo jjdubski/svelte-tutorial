@@ -158,22 +158,16 @@ describe('storage', () => {
 		it('returns all guest data fields', () => {
 			mockStore['todos'] = JSON.stringify([{ id: 1, title: 'Test' }]);
 			mockStore['archivedTodos'] = JSON.stringify([{ id: 2, title: 'Archived' }]);
-			mockStore['categories'] = JSON.stringify(['Work', 'Personal']);
-			mockStore['categoryColors'] = JSON.stringify({ Work: '#3b82f6' });
-			mockStore['availableTags'] = JSON.stringify(['urgent']);
-			mockStore['tagColors'] = JSON.stringify({ urgent: '#ef4444' });
-			mockStore['templates'] = JSON.stringify([{ name: 'Meeting' }]);
+			mockStore['customTags'] = JSON.stringify(['custom-tag']);
+			mockStore['tagColors'] = JSON.stringify({ 'custom-tag': '#ef4444' });
 			mockStore['darkMode'] = JSON.stringify(true);
 
 			const data = getGuestData();
 			expect(data).toEqual({
 				todos: [{ id: 1, title: 'Test' }],
 				archivedTodos: [{ id: 2, title: 'Archived' }],
-				categories: ['Work', 'Personal'],
-				categoryColors: { Work: '#3b82f6' },
-				availableTags: ['urgent'],
-				tagColors: { urgent: '#ef4444' },
-				templates: [{ name: 'Meeting' }],
+				customTags: ['custom-tag'],
+				tagColors: { 'custom-tag': '#ef4444' },
 				darkMode: true
 			});
 		});
@@ -184,9 +178,10 @@ describe('storage', () => {
 			expect(data.archivedTodos).toEqual([]);
 		});
 
-		it('returns null for missing optional fields', () => {
+		it('returns empty array/map for missing customTags/tagColors and null for darkMode', () => {
 			const data = getGuestData();
-			expect(data.categories).toBeNull();
+			expect(data.customTags).toEqual([]);
+			expect(data.tagColors).toEqual({});
 			expect(data.darkMode).toBeNull();
 		});
 
@@ -201,7 +196,8 @@ describe('storage', () => {
 			// Then || [] converts null to [] for todos/archivedTodos.
 			expect(data.todos).toEqual([]);
 			expect(data.archivedTodos).toEqual([]);
-			expect(data.categories).toBeNull();
+			expect(data.customTags).toEqual([]);
+			expect(data.tagColors).toEqual({});
 			expect(data.darkMode).toBeNull();
 		});
 	});
@@ -214,6 +210,7 @@ describe('storage', () => {
 			mockStore['categories'] = JSON.stringify(['Work']);
 			mockStore['categoryColors'] = JSON.stringify({});
 			mockStore['availableTags'] = JSON.stringify([]);
+			mockStore['customTags'] = JSON.stringify([]);
 			mockStore['tagColors'] = JSON.stringify({});
 			mockStore['templates'] = JSON.stringify([]);
 			mockStore['darkMode'] = JSON.stringify(false);
@@ -234,6 +231,7 @@ describe('storage', () => {
 			expect(mockStore['categories']).toBeUndefined();
 			expect(mockStore['categoryColors']).toBeUndefined();
 			expect(mockStore['availableTags']).toBeUndefined();
+			expect(mockStore['customTags']).toBeUndefined();
 			expect(mockStore['tagColors']).toBeUndefined();
 			expect(mockStore['templates']).toBeUndefined();
 			expect(mockStore['darkMode']).toBeUndefined();
@@ -288,7 +286,7 @@ describe('storage', () => {
 			// storageGet returns null when localStorage is undefined
 			expect(result.todos).toEqual([]); // null || [] = []
 			expect(result.archivedTodos).toEqual([]);
-			expect(result.categories).toBeNull();
+			expect(result.customTags).toEqual([]);
 			expect(result.darkMode).toBeNull();
 		});
 

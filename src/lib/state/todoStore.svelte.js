@@ -73,9 +73,11 @@ class TodoStore {
 		Ideas: '#a855f7'
 	});
 
-	// ── Tags ──
+	// ── Tags (app-defined defaults) ──
 	/** @type {string[]} */
 	availableTags = $state(['urgent', 'meeting', 'home', 'shopping', 'health', 'in-progress']);
+	/** @type {string[]} */
+	customTags = $state([]);
 	/** @type {Record<string,string>} */
 	tagColors = $state({
 		urgent: '#ef4444',

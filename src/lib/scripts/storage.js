@@ -83,11 +83,8 @@ export function getGuestData() {
 		return {
 			todos: storageGet('todos') || [],
 			archivedTodos: storageGet('archivedTodos') || [],
-			categories: storageGet('categories'),
-			categoryColors: storageGet('categoryColors'),
-			availableTags: storageGet('availableTags'),
-			tagColors: storageGet('tagColors'),
-			templates: storageGet('templates'),
+			customTags: storageGet('customTags') || [],
+			tagColors: storageGet('tagColors') || {},
 			darkMode: storageGet('darkMode')
 		};
 	} catch {
@@ -106,6 +103,7 @@ export function clearGuestData() {
 		localStorage.removeItem('categories');
 		localStorage.removeItem('categoryColors');
 		localStorage.removeItem('availableTags');
+		localStorage.removeItem('customTags');
 		localStorage.removeItem('tagColors');
 		localStorage.removeItem('templates');
 		localStorage.removeItem('darkMode');
