@@ -505,9 +505,7 @@ describe('TodoStore instance methods', () => {
 
 		it('returns JSON string with todos, archivedTodos, customTags, and tagColors', () => {
 			store.todos = [{ id: '1', title: 'Test', completed: false, createdAt: '2024-01-01' }];
-			store.archivedTodos = [
-				{ id: '2', title: 'Archived', completed: true, createdAt: '2024-01-01' }
-			];
+			store.archivedTodos = [{ id: '2', title: 'Archived', completed: true, createdAt: '2024-01-01' }];
 			store.customTags = ['work', 'personal'];
 			store.tagColors = { urgent: '#ef4444', work: '#3b82f6' };
 
@@ -621,9 +619,7 @@ describe('TodoStore instance methods', () => {
 		});
 
 		it('handles archived todos with update and add', () => {
-			store.archivedTodos = [
-				{ id: 'a1', title: 'Old Archive', completed: true, createdAt: '2024-01-01' }
-			];
+			store.archivedTodos = [{ id: 'a1', title: 'Old Archive', completed: true, createdAt: '2024-01-01' }];
 
 			const json = JSON.stringify({
 				todos: [],
@@ -657,6 +653,71 @@ describe('TodoStore instance methods', () => {
 			expect(store.customTags).toEqual(['existing', 'newtag']);
 			expect(store.tagColors.existing).toBe('#0000ff');
 			expect(store.tagColors.newtag).toBe('#ff00ff');
+		});
+	});
+
+	describe('undoMove', () => {
+		/** @type {import('../state/todoStore.svelte.js').default} */
+		let store;
+
+		beforeEach(() => {
+			vi.stubGlobal('localStorage', {
+				getItem: vi.fn(() => null),
+				setItem: vi.fn(),
+				removeItem: vi.fn(),
+				clear: vi.fn(),
+				get length() {
+					return 0;
+				},
+				key: vi.fn(() => null)
+			});
+			store = new TodoStore();
+			// Silence showToast (which uses setTimeout)
+			store.showToast = vi.fn();
+		});
+
+		afterEach(() => {
+			vi.unstubAllGlobals();
+		});
+
+		it('restores completed and tags from lastMovedStates', () => {
+			const todo = {
+				id: '1',
+				title: 'Test Task',
+				completed: false,
+				tags: ['personal', 'home'],
+				createdAt: '2026-01-01T00:00:00.000Z'
+			};
+			store.todos = [todo];
+			store.lastMovedTodos = [{ ...todo }];
+			store.lastMovedStates = [{ completed: false, tags: ['personal', 'home'] }];
+
+			// Simulate the move effect (e.g., moved to Done column — completed toggled, tags changed)
+			store.todos[0].completed = true;
+			store.todos[0].tags = [];
+
+			store.undoMove();
+
+			expect(store.todos[0].completed).toBe(false);
+			expect(store.todos[0].tags).toEqual(['personal', 'home']);
+		});
+
+		it('clears lastMovedTodos and lastMovedStates after undo', () => {
+			const todo = {
+				id: '1',
+				title: 'Test Task',
+				completed: false,
+				tags: [],
+				createdAt: '2026-01-01T00:00:00.000Z'
+			};
+			store.todos = [todo];
+			store.lastMovedTodos = [{ ...todo }];
+			store.lastMovedStates = [{ completed: false, tags: [] }];
+
+			store.undoMove();
+
+			expect(store.lastMovedTodos).toEqual([]);
+			expect(store.lastMovedStates).toEqual([]);
 		});
 	});
 });
@@ -856,34 +917,24 @@ describe('_computeFiltered', () => {
 		});
 
 		it('filters by single tag (AND logic)', () => {
-			const result = store._computeFiltered(store.todos, '', 'all', '', 'manual', 'all', [
-				'shopping'
-			]);
+			const result = store._computeFiltered(store.todos, '', 'all', '', 'manual', 'all', ['shopping']);
 			expect(result).toHaveLength(1);
 			expect(result[0].id).toBe('1');
 		});
 
 		it('filters by multiple tags (AND logic - all must be present)', () => {
-			const result = store._computeFiltered(store.todos, '', 'all', '', 'manual', 'all', [
-				'urgent',
-				'shopping'
-			]);
+			const result = store._computeFiltered(store.todos, '', 'all', '', 'manual', 'all', ['urgent', 'shopping']);
 			expect(result).toHaveLength(1);
 			expect(result[0].id).toBe('1');
 		});
 
 		it('returns empty when tags do not match', () => {
-			const result = store._computeFiltered(store.todos, '', 'all', '', 'manual', 'all', [
-				'nonexistent'
-			]);
+			const result = store._computeFiltered(store.todos, '', 'all', '', 'manual', 'all', ['nonexistent']);
 			expect(result).toHaveLength(0);
 		});
 
 		it('returns empty when only some tags match', () => {
-			const result = store._computeFiltered(store.todos, '', 'all', '', 'manual', 'all', [
-				'shopping',
-				'meeting'
-			]);
+			const result = store._computeFiltered(store.todos, '', 'all', '', 'manual', 'all', ['shopping', 'meeting']);
 			expect(result).toHaveLength(0); // No todo has both tags
 		});
 	});
@@ -891,33 +942,14 @@ describe('_computeFiltered', () => {
 	// ── Date Range Filter Tests ──
 	describe('date range filter', () => {
 		it('filters by date from (minimum due date)', () => {
-			const result = store._computeFiltered(
-				store.todos,
-				'',
-				'all',
-				'',
-				'manual',
-				'all',
-				[],
-				'2024-01-15'
-			);
+			const result = store._computeFiltered(store.todos, '', 'all', '', 'manual', 'all', [], '2024-01-15');
 			// id 1: 2024-01-15, id 2: 2024-01-20, id 4: 2024-01-18, id 5: 2024-01-22 (id 3 is 2024-01-10)
 			expect(result).toHaveLength(4);
 			expect(result.every((t) => t.dueDate >= '2024-01-15')).toBe(true);
 		});
 
 		it('filters by date to (maximum due date)', () => {
-			const result = store._computeFiltered(
-				store.todos,
-				'',
-				'all',
-				'',
-				'manual',
-				'all',
-				[],
-				'',
-				'2024-01-15'
-			);
+			const result = store._computeFiltered(store.todos, '', 'all', '', 'manual', 'all', [], '', '2024-01-15');
 			expect(result).toHaveLength(2);
 			expect(result.every((t) => t.dueDate <= '2024-01-15')).toBe(true);
 		});
@@ -935,9 +967,7 @@ describe('_computeFiltered', () => {
 				'2024-01-21'
 			);
 			expect(result).toHaveLength(2);
-			expect(result.every((t) => t.dueDate >= '2024-01-16' && t.dueDate <= '2024-01-21')).toBe(
-				true
-			);
+			expect(result.every((t) => t.dueDate >= '2024-01-16' && t.dueDate <= '2024-01-21')).toBe(true);
 		});
 
 		it('excludes todos without due dates when date filter is applied', () => {
@@ -1071,17 +1101,7 @@ describe('_computeFiltered', () => {
 
 		it('handles todos without optional fields', () => {
 			store.todos = [{ id: '1', title: 'Minimal todo', completed: false, createdAt: '2024-01-01' }];
-			const result = store._computeFiltered(
-				store.todos,
-				'',
-				'all',
-				'',
-				'manual',
-				'all',
-				[],
-				'',
-				''
-			);
+			const result = store._computeFiltered(store.todos, '', 'all', '', 'manual', 'all', [], '', '');
 			expect(result).toHaveLength(1);
 		});
 

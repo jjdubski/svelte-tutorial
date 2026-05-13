@@ -132,6 +132,37 @@ export function computeCategoryBreakdown(todos) {
 }
 
 /**
+ * Compute completion rate percentage combining active and archived todos.
+ * Mirrors the $derived.by logic in the stats page.
+ * @param {Array} todos - Active todos
+ * @param {Array} archivedTodos - Archived todos
+ * @returns {number} Completion rate as a rounded percentage (0-100)
+ */
+export function computeCombinedCompletionRate(todos, archivedTodos) {
+	const allTodos = [...todos, ...archivedTodos];
+	const total = allTodos.length;
+	const completed = allTodos.filter((t) => t.completed).length;
+	return total > 0 ? Math.round((completed / total) * 100) : 0;
+}
+
+/**
+ * Compute percentage distribution from a category breakdown object.
+ * Mirrors the template percentage logic in the stats page category card.
+ * Percentages use the sum of all category counts as denominator,
+ * so they always sum to 100% (subject to rounding).
+ * @param {Record<string, number>} breakdown - Category counts (e.g. from computeCategoryBreakdown)
+ * @returns {Record<string, number>} Category name to rounded percentage mapping
+ */
+export function computeCategoryPercentages(breakdown) {
+	const total = Object.values(breakdown).reduce((sum, c) => sum + c, 0);
+	const result = {};
+	for (const [cat, count] of Object.entries(breakdown)) {
+		result[cat] = total > 0 ? Math.round((count / total) * 100) : 0;
+	}
+	return result;
+}
+
+/**
  * Get array of overdue (active past-due) tasks.
  * @param {Array} todos - Array of todo objects
  * @returns {Array} Array of overdue todos
@@ -161,17 +192,7 @@ export function computeUpcomingDue(todos) {
  * @returns {string} A hex color string
  */
 export function getRandomTagColor() {
-	const colors = [
-		'#ef4444',
-		'#f59e0b',
-		'#06b6d4',
-		'#ec4899',
-		'#84cc16',
-		'#14b8a6',
-		'#f97316',
-		'#8b5cf6',
-		'#6366f1'
-	];
+	const colors = ['#ef4444', '#f59e0b', '#06b6d4', '#ec4899', '#84cc16', '#14b8a6', '#f97316', '#8b5cf6', '#6366f1'];
 	return colors[Math.floor(Math.random() * colors.length)];
 }
 
