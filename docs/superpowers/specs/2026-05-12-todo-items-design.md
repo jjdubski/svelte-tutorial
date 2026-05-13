@@ -19,6 +19,7 @@ Add `ArrowLeft` icon from `lucide-svelte` before "Back to Tasks" text, exactly m
 **State:** A `selectedDate` string (`$state(null)`) in the calendar page. Clicking a day cell sets it to `yyyy-MM-dd`. Clicking backdrop or close clears it.
 
 **Component (`DayDetailModal.svelte`):**
+
 - Overlay centered modal, max-width ~500px, scroll if overflow
 - Header: formatted date (e.g. "Wednesday, May 13, 2026") + close button
 - Task list using `store.todos` filtered by `todo.dueDate === selectedDate`
@@ -104,20 +105,21 @@ Add `<Toast />` component to the root layout so it renders on every page (it was
 
 No "Select" toggle button. Selection is always available via keyboard modifiers on card click:
 
-| Action | Behavior |
-| ------ | -------- |
-| Click (no modifier) | Selects that card, deselects all others |
-| Ctrl/Cmd+Click | Toggles that card's selection without affecting others |
-| Shift+Click | Selects a continuous range from last-clicked to this card (across columns) |
-| Click empty column space | Deselects all |
+| Action                   | Behavior                                                                   |
+| ------------------------ | -------------------------------------------------------------------------- |
+| Click (no modifier)      | Selects that card, deselects all others                                    |
+| Ctrl/Cmd+Click           | Toggles that card's selection without affecting others                     |
+| Shift+Click              | Selects a continuous range from last-clicked to this card (across columns) |
+| Click empty column space | Deselects all                                                              |
 
 **Visual feedback:**
+
 - Selected cards get a highlighted border (matching `.archived-card-selected` pattern — blue border + glow)
 - Floating batch action bar appears at bottom when ≥1 card selected:
-  - `"{n} selected"` count
-  - **Archive** button → `store.archiveSelected()`
-  - **Mark Done** button → `store.completeSelected()`
-  - **Cancel** button → deselects all
+    - `"{n} selected"` count
+    - **Archive** button → `store.archiveSelected()`
+    - **Mark Done** button → `store.completeSelected()`
+    - **Cancel** button → deselects all
 
 **Drag-and-drop:** Still works independently — drag starts on `dragstart` event, not `click`.
 
@@ -128,18 +130,20 @@ No "Select" toggle button. Selection is always available via keyboard modifiers 
 **File:** `src/routes/board/+page.svelte` and `src/lib/state/todoStore.svelte.js`
 
 **Toast on column drop:** After `handleColumnDrop()` completes, call `store.showToast()` with the move message:
-- Singular: "Moved task to 'In Progress'" 
+
+- Singular: "Moved task to 'In Progress'"
 - Plural (batch): "Moved 3 tasks to 'Done'"
 
 **Undo:** Track the pre-move state of each moved todo so the user can revert.
 
 - Add `lastMovedTodos = $state([])` and `lastMovedStates = $state([])` to the store
-  - `lastMovedTodos`: the todo objects before the move
-  - `lastMovedStates`: the pre-move `{completed, tags}` for each
+    - `lastMovedTodos`: the todo objects before the move
+    - `lastMovedStates`: the pre-move `{completed, tags}` for each
 - New method `undoMove()` that restores each todo's pre-move `completed` and `tags` values
 - Call `undoMove()` from the existing Undo button in `<Toast>`, which already checks for `lastArchivedTodos` / `lastCompletedTodos` patterns — extend it to also check `lastMovedTodos`
 
 **Toast component changes:**
+
 - `<Toast>` already has an Undo button conditional on `lastArchivedTodos.length > 0 || lastCompletedTodos.length > 0`
 - Extend condition to also check `lastMovedTodos.length > 0`
 - When `lastMovedTodos` is the source, the Undo button calls `store.undoMove()` instead
@@ -158,16 +162,14 @@ Replace the current `completedPct` derivation:
 
 ```javascript
 // Before
-let completedPct = $derived(
-    store.stats.total > 0 ? Math.round((store.stats.completed / store.stats.total) * 100) : 0
-);
+let completedPct = $derived(store.stats.total > 0 ? Math.round((store.stats.completed / store.stats.total) * 100) : 0);
 
 // After
 let completedPct = $derived.by(() => {
-    const allTodos = [...store.todos, ...store.archivedTodos];
-    const total = allTodos.length;
-    const completed = allTodos.filter(t => t.completed).length;
-    return total > 0 ? Math.round((completed / total) * 100) : 0;
+	const allTodos = [...store.todos, ...store.archivedTodos];
+	const total = allTodos.length;
+	const completed = allTodos.filter((t) => t.completed).length;
+	return total > 0 ? Math.round((completed / total) * 100) : 0;
 });
 ```
 
@@ -179,12 +181,11 @@ Replace the denominator used for category percentages:
 
 ```javascript
 // Add this derived
-let categoryTotal = $derived(
-    Object.values(store.categoryBreakdown).reduce((sum, c) => sum + c, 0)
-);
+let categoryTotal = $derived(Object.values(store.categoryBreakdown).reduce((sum, c) => sum + c, 0));
 ```
 
 Then in template change:
+
 ```
 // Before
 {@const pct = store.stats.total > 0 ? Math.round((count / store.stats.total) * 100) : 0}
@@ -209,12 +210,12 @@ SvelteKit's default error page is replaced with a single `+error.svelte` that pr
 - Status code displayed prominently (large text)
 - Contextual message based on `$page.status`:
 
-| Status | Message |
-| ------ | ------- |
-| 404 | "Page not found — the link you followed may be broken" |
-| 403 | "You don't have access to this page" |
-| 500 | "Server error — something went wrong on our end" |
-| Other | "Something went wrong, try again later!" |
+| Status | Message                                                |
+| ------ | ------------------------------------------------------ |
+| 404    | "Page not found — the link you followed may be broken" |
+| 403    | "You don't have access to this page"                   |
+| 500    | "Server error — something went wrong on our end"       |
+| Other  | "Something went wrong, try again later!"               |
 
 - "Back to Tasks" link (styled as a button) at the bottom
 - No nav bar rendered on error pages
