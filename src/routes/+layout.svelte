@@ -4,8 +4,10 @@
 	import { createTodoStore } from '$lib/state/todoStore.svelte.js';
 	import { createAuthStore } from '$lib/state/authStore.svelte.js';
 	import { storageGet } from '$lib/scripts/storage.js';
+	import { page } from '$app/stores';
 	import NavBar from '$lib/components/NavBar.svelte';
 	import MigrationDialog from '$lib/components/MigrationDialog.svelte';
+	import Toast from '$lib/components/Toast.svelte';
 
 	let { children } = $props();
 
@@ -42,8 +44,13 @@
 >
 	Skip to main content
 </a>
-<NavBar />
+{#if !$page.error}
+	<NavBar />
+{/if}
 <main id="main-content">
 	{@render children()}
 </main>
+{#if _todoStore.toast.show}
+	<Toast />
+{/if}
 <MigrationDialog />

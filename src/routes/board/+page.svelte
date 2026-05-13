@@ -3,16 +3,13 @@
 	import StatsBar from '$lib/components/StatsBar.svelte';
 	import { Check, Clock, ArrowLeft, Archive } from 'lucide-svelte';
 	import { localDateStr } from '$lib/utils/todoUtils.js';
+	import { SvelteSet } from 'svelte/reactivity';
 
 	const store = getTodoStore();
 
 	// Column groupings — derived from todo state
-	let pendingTodos = $derived(
-		store.todos.filter((t) => !t.completed && !(t.tags || []).includes('in-progress'))
-	);
-	let inProgressTodos = $derived(
-		store.todos.filter((t) => !t.completed && (t.tags || []).includes('in-progress'))
-	);
+	let pendingTodos = $derived(store.todos.filter((t) => !t.completed && !(t.tags || []).includes('in-progress')));
+	let inProgressTodos = $derived(store.todos.filter((t) => !t.completed && (t.tags || []).includes('in-progress')));
 	let doneTodos = $derived(store.todos.filter((t) => t.completed));
 
 	/** Reactive column definitions — recomputed when todo groupings change */
@@ -52,6 +49,38 @@
 	let dropTargetCardId = $state(null);
 	/** Track drop position relative to the hovered card ('before' or 'after') */
 	let dropIndicatorPos = $state(null);
+	let lastClickedId = $state(null);
+
+	function handleCardClick(e, todo) {
+		if (e.target.closest('input[type="checkbox"]') || e.target.closest('button')) return;
+
+		if (e.ctrlKey || e.metaKey) {
+			store.toggleSelect(todo.id);
+			lastClickedId = todo.id;
+		} else if (e.shiftKey && lastClickedId !== null) {
+			const allTodos = store.todos;
+			const lastIdx = allTodos.findIndex((t) => t.id === lastClickedId);
+			const currentIdx = allTodos.findIndex((t) => t.id === todo.id);
+			if (lastIdx !== -1 && currentIdx !== -1) {
+				const start = Math.min(lastIdx, currentIdx);
+				const end = Math.max(lastIdx, currentIdx);
+				for (let i = start; i <= end; i++) {
+					store.selectedTodos.add(allTodos[i].id);
+				}
+				store.selectedTodos = new SvelteSet(store.selectedTodos);
+			}
+		} else {
+			store.selectedTodos = new SvelteSet([todo.id]);
+			lastClickedId = todo.id;
+		}
+	}
+
+	function handleCardKeydown(e, todo) {
+		if (e.key === 'Enter' || e.key === ' ') {
+			e.preventDefault();
+			handleCardClick(e, todo);
+		}
+	}
 
 	/**
 	 * Handle dropping a card onto a column or another card.
@@ -70,6 +99,9 @@
 		if (draggedId === null) return;
 		const todo = store.todos.find((t) => t.id === draggedId);
 		if (!todo) return;
+
+		store.lastMovedTodos = [{ ...todo }];
+		store.lastMovedStates = [{ completed: todo.completed, tags: [...(todo.tags || [])] }];
 
 		// 1. First, update status/tags to place it in the right column
 		if (columnKey === 'pending') {
@@ -95,6 +127,10 @@
 				store.todos.splice(toIdx, 0, item);
 			}
 		}
+
+		const columnLabels = { pending: 'Pending', 'in-progress': 'In Progress', done: 'Done' };
+		const label = columnLabels[columnKey] || columnKey;
+		store.showToast(`Moved task to '${label}'`, 'info');
 	}
 
 	function formatDate(dateStr) {
@@ -125,9 +161,7 @@
 		style="background: var(--card-bg); box-shadow: 0 8px 32px var(--shadow); border-color: var(--border); transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;"
 	>
 		<div class="mb-4 flex items-center justify-between gap-2">
-			<h2 class="m-0 text-xl font-semibold sm:text-2xl" style="color: var(--text-heading);">
-				Kanban Board
-			</h2>
+			<h2 class="m-0 text-xl font-semibold sm:text-2xl" style="color: var(--text-heading);">Kanban Board</h2>
 			<a
 				href="/"
 				class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium no-underline transition-all hover:opacity-80 sm:text-base"
@@ -145,8 +179,7 @@
 					class="board-column flex flex-col rounded-xl border"
 					role="region"
 					aria-label={col.label + ' column'}
-					style="background: {col.bgColor}; border-color: {dropTargetColumn === col.key &&
-					!dropTargetCardId
+					style="background: {col.bgColor}; border-color: {dropTargetColumn === col.key && !dropTargetCardId
 						? col.color
 						: col.borderColor}; transition: border-color 0.2s;"
 					ondragover={(e) => {
@@ -171,10 +204,7 @@
 					>
 						<div class="flex items-center gap-2">
 							<col.icon size={16} style="color: {col.color};" />
-							<h3
-								class="m-0 text-sm font-semibold sm:text-base"
-								style="color: var(--text-heading);"
-							>
+							<h3 class="m-0 text-sm font-semibold sm:text-base" style="color: var(--text-heading);">
 								{col.label}
 							</h3>
 						</div>
@@ -187,7 +217,24 @@
 					</div>
 
 					<!-- Column body -->
-					<div class="flex flex-col gap-2 p-3">
+					<div
+						class="flex flex-col gap-2 p-3"
+						role="button"
+						tabindex="0"
+						onclick={(e) => {
+							if (e.target === e.currentTarget) {
+								store.selectedTodos = new SvelteSet();
+								lastClickedId = null;
+							}
+						}}
+						onkeydown={(e) => {
+							if (e.key === 'Enter' || e.key === ' ') {
+								e.preventDefault();
+								store.selectedTodos = new SvelteSet();
+								lastClickedId = null;
+							}
+						}}
+					>
 						{#if col.todos.length === 0}
 							<div class="flex flex-col items-center px-2 py-8 text-center">
 								<p class="m-0 text-sm sm:text-base" style="color: var(--text-muted);">No tasks</p>
@@ -196,15 +243,19 @@
 							{#each col.todos as todo (todo.id)}
 								<div
 									class="glow-card board-card flex items-start gap-2 rounded-xl border p-3"
-									role="listitem"
+									role="button"
+									tabindex="0"
 									class:dragging={store.draggedId === todo.id}
 									class:drag-over={dropTargetCardId === todo.id}
+									class:selected={store.selectedTodos.has(todo.id)}
 									class:drag-indicator-before={dropTargetCardId === todo.id &&
 										dropIndicatorPos === 'before'}
 									class:drag-indicator-after={dropTargetCardId === todo.id &&
 										dropIndicatorPos === 'after'}
 									draggable="true"
 									style="background: var(--todo-bg); border-color: var(--border);"
+									onclick={(e) => handleCardClick(e, todo)}
+									onkeydown={(e) => handleCardKeydown(e, todo)}
 									ondragstart={(e) => {
 										e.dataTransfer.effectAllowed = 'move';
 										e.dataTransfer.setData('text/plain', String(todo.id));
@@ -329,6 +380,43 @@
 				</div>
 			{/each}
 		</div>
+
+		{#if store.selectedTodos.size > 0}
+			<div class="fixed bottom-6 left-1/2 z-50 -translate-x-1/2">
+				<div
+					class="flex items-center gap-3 rounded-xl border px-4 py-3 shadow-lg"
+					style="background: var(--card-bg); border-color: var(--border);"
+				>
+					<span class="text-sm font-medium" style="color: var(--text-heading);">
+						{store.selectedTodos.size} selected
+					</span>
+					<button
+						onclick={() => store.archiveSelected()}
+						class="cursor-pointer rounded-lg border-none px-3 py-1.5 text-xs font-semibold text-white"
+						style="background: var(--priority-high);"
+					>
+						Archive
+					</button>
+					<button
+						onclick={() => store.completeSelected()}
+						class="cursor-pointer rounded-lg border-none px-3 py-1.5 text-xs font-semibold text-white"
+						style="background: var(--btn-save);"
+					>
+						Mark Done
+					</button>
+					<button
+						onclick={() => {
+							store.selectedTodos = new SvelteSet();
+							lastClickedId = null;
+						}}
+						class="cursor-pointer rounded-lg border-none px-3 py-1.5 text-xs font-semibold"
+						style="background: var(--input-bg); color: var(--text-heading);"
+					>
+						Cancel
+					</button>
+				</div>
+			</div>
+		{/if}
 	</div>
 </div>
 
@@ -362,6 +450,13 @@
 		box-shadow:
 			0 12px 40px rgba(37, 99, 235, 0.2),
 			0 0 0 2px rgba(37, 99, 235, 0.15);
+	}
+
+	.board-card.selected {
+		border-color: var(--btn-primary) !important;
+		box-shadow:
+			0 0 0 2px var(--btn-primary),
+			0 8px 24px rgba(37, 99, 235, 0.2);
 	}
 
 	.board-card.drag-indicator-before {

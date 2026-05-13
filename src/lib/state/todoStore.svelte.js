@@ -181,6 +181,10 @@ class TodoStore {
 	lastArchivedTodos = $state([]);
 	/** @type {Todo[]} */
 	lastCompletedTodos = $state([]);
+	/** @type {Todo[]} */
+	lastMovedTodos = $state([]);
+	/** @type {Array<{completed: boolean, tags: string[]}>} */
+	lastMovedStates = $state([]);
 
 	// ── Toast ──
 	toast = $state({ show: false, message: '', type: 'success' });
@@ -618,9 +622,7 @@ class TodoStore {
 				const data = await res.json();
 				// Replace local state with server data (deduped by ID)
 				this.todos = Array.isArray(data.todos) ? _dedupTodos(data.todos) : [];
-				this.archivedTodos = Array.isArray(data.archivedTodos)
-					? _dedupTodos(data.archivedTodos)
-					: [];
+				this.archivedTodos = Array.isArray(data.archivedTodos) ? _dedupTodos(data.archivedTodos) : [];
 
 				// Restore custom tags from server
 				if (Array.isArray(data.customTags)) {
@@ -835,6 +837,25 @@ class TodoStore {
 		}
 	}
 
+	undoMove() {
+		if (this.lastMovedTodos.length > 0) {
+			for (let i = 0; i < this.lastMovedTodos.length; i++) {
+				const todo = this.lastMovedTodos[i];
+				const state = this.lastMovedStates[i];
+				const current = this.todos.find((t) => t.id === todo.id);
+				if (current) {
+					current.completed = state.completed;
+					current.tags = [...state.tags];
+					this._syncUpdate(todo.id, { completed: state.completed, tags: [...state.tags] });
+				}
+			}
+			const count = this.lastMovedTodos.length;
+			this.lastMovedTodos = [];
+			this.lastMovedStates = [];
+			this.showToast(`${count} task${count > 1 ? 's' : ''} move undone`, 'success');
+		}
+	}
+
 	/**
 	 * @param {number} id
 	 */
@@ -1015,9 +1036,7 @@ class TodoStore {
 		this.lastCompletedTodos = this.todos.filter((t) => this.selectedTodos.has(t.id));
 		// Mark selected todos as completed
 		this.todos = this.todos.map((t) =>
-			this.selectedTodos.has(t.id)
-				? { ...t, completed: true, completedAt: new Date().toISOString() }
-				: t
+			this.selectedTodos.has(t.id) ? { ...t, completed: true, completedAt: new Date().toISOString() } : t
 		);
 		// Create recurring copies for any recurring tasks that were just completed
 		// (skip already-completed todos so double-clicking doesn't spawn duplicates)
@@ -1069,16 +1088,7 @@ class TodoStore {
 		const name = this.newCategoryName.trim();
 		if (name && !this.categories.includes(name)) {
 			this.categories = [...this.categories, name];
-			const colors = [
-				'#ef4444',
-				'#f59e0b',
-				'#06b6d4',
-				'#ec4899',
-				'#84cc16',
-				'#14b8a6',
-				'#f97316',
-				'#8b5cf6'
-			];
+			const colors = ['#ef4444', '#f59e0b', '#06b6d4', '#ec4899', '#84cc16', '#14b8a6', '#f97316', '#8b5cf6'];
 			const used = Object.values(this.categoryColors);
 			const avail = colors.find((c) => !used.includes(c));
 			this.categoryColors = { ...this.categoryColors, [name]: avail || '#64748b' };

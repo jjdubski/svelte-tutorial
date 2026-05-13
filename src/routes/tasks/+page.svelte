@@ -7,7 +7,6 @@
 	import TodoFilters from '$lib/components/TodoFilters.svelte';
 	import TodoList from '$lib/components/TodoList.svelte';
 	import StatsBar from '$lib/components/StatsBar.svelte';
-	import Toast from '$lib/components/Toast.svelte';
 	import TodoEditModal from '$lib/components/TodoEditModal.svelte';
 
 	const store = getTodoStore();
@@ -109,10 +108,6 @@
 		<TodoList />
 	</div>
 </div>
-
-{#if store.toast.show}
-	<Toast />
-{/if}
 
 {#if editingTodo}
 	<TodoEditModal todo={editingTodo} />
