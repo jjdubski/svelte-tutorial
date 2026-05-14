@@ -111,7 +111,7 @@
 				</div>
 			{/if}
 		</div>
-		<div class="absolute right-4 flex items-center gap-2">
+		<div class="absolute right-4 flex items-center gap-3">
 			<AuthButton />
 			<span
 				class="cursor-pointer"
