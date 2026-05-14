@@ -1,7 +1,7 @@
 <script>
 	import { getTodoStore } from '$lib/state/todoStore.svelte.js';
-	import { resolve } from '$app/paths';
-	import { ChevronLeft, ChevronRight, Check, ArrowLeft } from 'lucide-svelte';
+	import BackButton from '$lib/components/BackButton.svelte';
+	import { ChevronLeft, ChevronRight, Check } from 'lucide-svelte';
 	import { format, addMonths, subMonths, isToday } from 'date-fns';
 	import DayDetailModal from '$lib/components/DayDetailModal.svelte';
 
@@ -77,14 +77,7 @@
 					<ChevronRight size={24} />
 				</button>
 			</div>
-			<a
-				href={resolve('/')}
-				class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium no-underline transition-all hover:opacity-80 sm:text-base"
-				style="color: var(--btn-primary); background: var(--input-bg);"
-			>
-				<ArrowLeft size={14} />
-				Back to Tasks
-			</a>
+			<BackButton />
 		</div>
 
 		<div class="grid flex-1 grid-cols-7 gap-px sm:gap-1">

@@ -1,0 +1,38 @@
+<script>
+	/**
+	 * Shared bottom action bar for multi-selection.
+	 * @type {number} count  - Number of selected items
+	 * @type {Array<{label: string, onClick: Function, style: string}>} actions - Action buttons
+	 * @type {Function} onCancel - Clears selection state
+	 */
+	let { count, actions = [], onCancel } = $props();
+</script>
+
+{#if count > 0}
+	<div class="fixed bottom-6 left-1/2 z-50 -translate-x-1/2">
+		<div
+			class="flex items-center gap-3 rounded-xl border px-4 py-3 shadow-lg"
+			style="background: var(--card-bg); border-color: var(--border);"
+		>
+			<span class="text-sm font-medium" style="color: var(--text-heading);">
+				{count} selected
+			</span>
+			{#each actions as action (action.label)}
+				<button
+					onclick={action.onClick}
+					class="cursor-pointer rounded-lg border-none px-3 py-1.5 text-xs font-semibold text-white"
+					style="background: {action.style};"
+				>
+					{action.label}
+				</button>
+			{/each}
+			<button
+				onclick={onCancel}
+				class="cursor-pointer rounded-lg border-none px-3 py-1.5 text-xs font-semibold"
+				style="background: var(--input-bg); color: var(--text-heading);"
+			>
+				Cancel
+			</button>
+		</div>
+	</div>
+{/if}

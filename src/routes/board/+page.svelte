@@ -1,7 +1,10 @@
 <script>
 	import { getTodoStore } from '$lib/state/todoStore.svelte.js';
 	import StatsBar from '$lib/components/StatsBar.svelte';
-	import { Check, Clock, ArrowLeft, Archive } from 'lucide-svelte';
+	import BackButton from '$lib/components/BackButton.svelte';
+	import { handleSelectionClick, initSelection } from '$lib/utils/selection.js';
+	import SelectionBar from '$lib/components/SelectionBar.svelte';
+	import { Check, Clock, Archive } from 'lucide-svelte';
 	import { localDateStr } from '$lib/utils/todoUtils.js';
 	import { SvelteSet } from 'svelte/reactivity';
 
@@ -49,30 +52,20 @@
 	let dropTargetCardId = $state(null);
 	/** Track drop position relative to the hovered card ('before' or 'after') */
 	let dropIndicatorPos = $state(null);
-	let lastClickedId = $state(null);
+	let { lastClickedId: initialLastClickedId } = initSelection();
+	let lastClickedId = $state(initialLastClickedId);
 
 	function handleCardClick(e, todo) {
 		if (e.target.closest('input[type="checkbox"]') || e.target.closest('button')) return;
 
-		if (e.ctrlKey || e.metaKey) {
-			store.toggleSelect(todo.id);
-			lastClickedId = todo.id;
-		} else if (e.shiftKey && lastClickedId !== null) {
-			const allTodos = store.todos;
-			const lastIdx = allTodos.findIndex((t) => t.id === lastClickedId);
-			const currentIdx = allTodos.findIndex((t) => t.id === todo.id);
-			if (lastIdx !== -1 && currentIdx !== -1) {
-				const start = Math.min(lastIdx, currentIdx);
-				const end = Math.max(lastIdx, currentIdx);
-				for (let i = start; i <= end; i++) {
-					store.selectedTodos.add(allTodos[i].id);
-				}
-				store.selectedTodos = new SvelteSet(store.selectedTodos);
+		handleSelectionClick(e, todo, store, 'selectedTodos', {
+			get lastClickedId() {
+				return lastClickedId;
+			},
+			set lastClickedId(value) {
+				lastClickedId = value;
 			}
-		} else {
-			store.selectedTodos = new SvelteSet([todo.id]);
-			lastClickedId = todo.id;
-		}
+		});
 	}
 
 	function handleCardKeydown(e, todo) {
@@ -162,13 +155,7 @@
 	>
 		<div class="mb-4 flex items-center justify-between gap-2">
 			<h2 class="m-0 text-xl font-semibold sm:text-2xl" style="color: var(--text-heading);">Kanban Board</h2>
-			<a
-				href="/"
-				class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium no-underline transition-all hover:opacity-80 sm:text-base"
-				style="color: var(--btn-primary); background: var(--input-bg);"
-			>
-				<ArrowLeft size={14} /> Back to Tasks
-			</a>
+			<BackButton />
 		</div>
 
 		<StatsBar />
@@ -381,42 +368,17 @@
 			{/each}
 		</div>
 
-		{#if store.selectedTodos.size > 0}
-			<div class="fixed bottom-6 left-1/2 z-50 -translate-x-1/2">
-				<div
-					class="flex items-center gap-3 rounded-xl border px-4 py-3 shadow-lg"
-					style="background: var(--card-bg); border-color: var(--border);"
-				>
-					<span class="text-sm font-medium" style="color: var(--text-heading);">
-						{store.selectedTodos.size} selected
-					</span>
-					<button
-						onclick={() => store.archiveSelected()}
-						class="cursor-pointer rounded-lg border-none px-3 py-1.5 text-xs font-semibold text-white"
-						style="background: var(--priority-high);"
-					>
-						Archive
-					</button>
-					<button
-						onclick={() => store.completeSelected()}
-						class="cursor-pointer rounded-lg border-none px-3 py-1.5 text-xs font-semibold text-white"
-						style="background: var(--btn-save);"
-					>
-						Mark Done
-					</button>
-					<button
-						onclick={() => {
-							store.selectedTodos = new SvelteSet();
-							lastClickedId = null;
-						}}
-						class="cursor-pointer rounded-lg border-none px-3 py-1.5 text-xs font-semibold"
-						style="background: var(--input-bg); color: var(--text-heading);"
-					>
-						Cancel
-					</button>
-				</div>
-			</div>
-		{/if}
+		<SelectionBar
+			count={store.selectedTodos.size}
+			actions={[
+				{ label: 'Archive', onClick: () => store.archiveSelected(), style: 'var(--priority-high)' },
+				{ label: 'Mark Done', onClick: () => store.completeSelected(), style: 'var(--btn-save)' }
+			]}
+			onCancel={() => {
+				store.selectedTodos = new SvelteSet();
+				lastClickedId = null;
+			}}
+		/>
 	</div>
 </div>
 

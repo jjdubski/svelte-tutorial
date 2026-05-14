@@ -1,11 +1,35 @@
 <script>
-	import { slide } from 'svelte/transition';
 	import { getTodoStore } from '$lib/state/todoStore.svelte.js';
 	import StatsBar from '$lib/components/StatsBar.svelte';
-	import { Archive, RotateCcw, Trash2, Calendar, CheckSquare, Square, X } from 'lucide-svelte';
+	import BackButton from '$lib/components/BackButton.svelte';
+	import { handleSelectionClick, initSelection } from '$lib/utils/selection.js';
+	import SelectionBar from '$lib/components/SelectionBar.svelte';
+	import { Archive, RotateCcw, Trash2, Calendar, CheckSquare, Square } from 'lucide-svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 
 	const store = getTodoStore();
+	const selectionState = initSelection();
+	let lastClickedId = $state(selectionState.lastClickedId);
+
+	function handleArchivedCardClick(e, todo) {
+		if (e.target.closest('button')) return;
+
+		handleSelectionClick(e, todo, store, 'selectedArchived', {
+			get lastClickedId() {
+				return lastClickedId;
+			},
+			set lastClickedId(value) {
+				lastClickedId = value;
+			}
+		});
+	}
+
+	function handleArchivedCardKeydown(e, todo) {
+		if (e.key === 'Enter' || e.key === ' ') {
+			e.preventDefault();
+			handleArchivedCardClick(e, todo);
+		}
+	}
 </script>
 
 <svelte:window onkeydown={(e) => store.handleKeydown(e)} />
@@ -18,82 +42,29 @@
 		class="w-full max-w-[1080px] rounded-2xl border p-8 sm:rounded-xl sm:p-5 xl:max-w-[1100px] 2xl:max-w-[1300px]"
 		style="background: var(--card-bg); box-shadow: 0 8px 32px var(--shadow); border-color: var(--border); transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;"
 	>
+		<div class="mb-4 flex items-center justify-between gap-2">
+			<h2 class="m-0 text-lg font-semibold sm:text-xl" style="color: var(--text-heading);">Archived Tasks</h2>
+			<BackButton />
+		</div>
+
 		<StatsBar />
+
 		<div class="mb-4 flex items-center justify-between">
-			<h2 class="text-lg font-semibold sm:text-xl" style="color: var(--text-heading);">Archived Tasks</h2>
-			<span class="flex items-center gap-2">
-				<div class="relative">
-					<button
-						class="glow-btn flex h-9 cursor-pointer items-center gap-1 rounded-lg border-none px-3 py-1.5 text-xs font-semibold sm:text-sm"
-						style="background: var(--input-bg); border: 1px solid var(--border); color: var(--text-muted);"
-						class:active={store.archivedSelectMode}
-						onclick={() => (store.archivedSelectMode = !store.archivedSelectMode)}
-					>
-						{#if store.archivedSelectMode && store.selectedArchived.size > 0}
-							<span>{store.selectedArchived.size}</span>
-						{:else}
-							<CheckSquare size={14} />
-						{/if}
-					</button>
-					{#if store.archivedSelectMode}
-						<div
-							class="absolute top-full right-0 z-50 mt-2 flex gap-1.5 rounded-xl border p-2 whitespace-nowrap shadow-lg"
-							style="background: var(--card-bg); border-color: var(--border);"
-							transition:slide={{ duration: store.prefersReducedMotion ? 0 : 150 }}
-						>
-							{#if store.selectedArchived.size === store.archivedTodos.length && store.archivedTodos.length > 0}
-								<button
-									class="glow-btn flex cursor-pointer items-center gap-1 rounded-lg border-none px-2.5 py-2 text-xs font-medium sm:text-sm"
-									style="background: var(--input-bg); color: var(--text-heading);"
-									onclick={() => store.deselectAllArchived()}
-								>
-									<Square size={14} /> Deselect All
-								</button>
-							{:else}
-								<button
-									class="glow-btn flex cursor-pointer items-center gap-1 rounded-lg border-none px-2.5 py-2 text-xs font-medium sm:text-sm"
-									style="background: var(--input-bg); color: var(--text-heading);"
-									onclick={() => store.selectAllArchived()}
-								>
-									<CheckSquare size={14} /> Select All
-								</button>
-							{/if}
-							<button
-								class="glow-btn flex cursor-pointer items-center gap-1 rounded-lg border-none px-2.5 py-2 text-xs font-medium sm:text-sm"
-								style="background: var(--btn-save); color: white;"
-								data-btn="save"
-								onclick={() => store.restoreSelectedArchived()}
-								disabled={store.selectedArchived.size === 0}
-							>
-								<RotateCcw size={14} /> Restore
-							</button>
-							<button
-								class="glow-btn flex cursor-pointer items-center gap-1 rounded-lg border-none px-2.5 py-2 text-xs font-medium sm:text-sm"
-								style="background: var(--btn-delete); color: white;"
-								data-btn="delete"
-								onclick={() => store.permanentDeleteSelectedArchived()}
-								disabled={store.selectedArchived.size === 0}
-							>
-								<Trash2 size={14} /> Delete
-							</button>
-							<button
-								class="glow-btn flex cursor-pointer items-center gap-1 rounded-lg border-none px-2.5 py-2 text-xs font-medium sm:text-sm"
-								style="background: var(--btn-cancel); color: white;"
-								data-btn="cancel"
-								onclick={() => {
-									store.archivedSelectMode = false;
-									store.selectedArchived = new SvelteSet();
-								}}
-							>
-								<X size={14} /> Cancel
-							</button>
-						</div>
-					{/if}
-				</div>
-				<span class="text-sm sm:text-base" style="color: var(--text-muted);"
-					>{store.archivedTodos.length} archived</span
-				>
-			</span>
+			<span class="text-sm sm:text-base" style="color: var(--text-muted);"
+				>{store.archivedTodos.length} archived</span
+			>
+			<button
+				class="glow-btn flex h-9 cursor-pointer items-center gap-1 rounded-lg border-none px-3 py-1.5 text-xs font-semibold sm:text-sm"
+				style="background: var(--input-bg); border: 1px solid var(--border); color: var(--text-muted);"
+				class:active={store.archivedSelectMode}
+				onclick={() => (store.archivedSelectMode = !store.archivedSelectMode)}
+			>
+				{#if store.archivedSelectMode && store.selectedArchived.size > 0}
+					<span>{store.selectedArchived.size}</span>
+				{:else}
+					<CheckSquare size={14} />
+				{/if}
+			</button>
 		</div>
 		{#if store.archivedTodos.length === 0}
 			<div class="flex flex-col items-center justify-center px-4 py-24">
@@ -105,8 +76,12 @@
 				{#each store.archivedTodos as todo (todo.id)}
 					<div
 						class="archived-card flex items-stretch gap-3 rounded-xl border p-3"
+						role="button"
+						tabindex="0"
 						class:archived-card-selected={store.selectedArchived.has(todo.id)}
 						style="background: var(--todo-bg); border-color: var(--border);"
+						onclick={(e) => handleArchivedCardClick(e, todo)}
+						onkeydown={(e) => handleArchivedCardKeydown(e, todo)}
 					>
 						{#if store.archivedSelectMode}
 							<button
@@ -197,6 +172,19 @@
 				{/each}
 			</div>
 		{/if}
+
+		<SelectionBar
+			count={store.selectedArchived.size}
+			actions={[
+				{ label: 'Restore', onClick: () => store.restoreSelectedArchived(), style: 'var(--btn-save)' },
+				{ label: 'Delete', onClick: () => store.permanentDeleteSelectedArchived(), style: 'var(--btn-delete)' }
+			]}
+			onCancel={() => {
+				store.archivedSelectMode = false;
+				store.selectedArchived = new SvelteSet();
+				lastClickedId = null;
+			}}
+		/>
 	</div>
 </div>
 
