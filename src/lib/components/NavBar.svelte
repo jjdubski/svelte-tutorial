@@ -45,7 +45,7 @@
 <!-- Don't render nav on the login page -->
 {#if $page.url.pathname !== '/'}
 	<nav
-		class="relative flex items-center justify-start gap-1 border-b px-4 py-2 sm:justify-center"
+		class="relative flex items-center justify-center gap-1 border-b px-4 py-2"
 		style="background: var(--card-bg); border-color: var(--border); transition: background 0.3s, border-color 0.3s;"
 	>
 		<div class="hidden sm:flex">
@@ -54,7 +54,7 @@
 					<a
 						href={link.href}
 						data-sveltekit-preload-data
-						class="nav-link rounded-lg px-3 py-1.5 text-xs font-medium no-underline transition-all sm:text-base"
+						class="nav-link rounded-lg px-3 py-1.5 text-center text-xs font-medium no-underline transition-all sm:text-base"
 						class:active={$page.url.pathname === link.href}
 					>
 						{link.label}
