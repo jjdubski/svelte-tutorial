@@ -1,5 +1,4 @@
 <script>
-	import favicon from '$lib/assets/favicon.svg';
 	import '../app.css';
 	import { createTodoStore } from '$lib/state/todoStore.svelte.js';
 	import { createAuthStore } from '$lib/state/authStore.svelte.js';
@@ -8,6 +7,8 @@
 	import NavBar from '$lib/components/NavBar.svelte';
 	import MigrationDialog from '$lib/components/MigrationDialog.svelte';
 	import Toast from '$lib/components/Toast.svelte';
+	import InstallPrompt from '$lib/components/InstallPrompt.svelte';
+	import HelpButton from '$lib/components/HelpButton.svelte';
 
 	let { children } = $props();
 
@@ -34,10 +35,6 @@
 	});
 </script>
 
-<svelte:head>
-	<link rel="icon" href={favicon} />
-</svelte:head>
-
 {#if !$page.error}
 	<NavBar />
 {/if}
@@ -48,3 +45,5 @@
 	<Toast />
 {/if}
 <MigrationDialog />
+<InstallPrompt />
+<HelpButton />

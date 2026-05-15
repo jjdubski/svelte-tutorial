@@ -79,16 +79,11 @@
 				aria-label="Toggle mobile navigation menu"
 			>
 				<span class="text-sm font-medium max-sm:text-base">{currentPageLabel}</span>
-				<svg
-					width="10"
-					height="8"
-					viewBox="0 0 10 8"
-					class="origin-center transition-transform duration-200"
-					class:rotate-180={mobileMenuOpen}
-					aria-hidden="true"
-				>
-					<path d="M1 1L5 7L9 1H1Z" fill="currentColor" />
-				</svg>
+				<span class="inline-flex transition-transform duration-200" class:rotate-180={mobileMenuOpen} aria-hidden="true">
+					<svg width="10" height="8" viewBox="0 0 10 8">
+						<path d="M1 1L5 7L9 1H1Z" fill="currentColor" />
+					</svg>
+				</span>
 			</div>
 
 			{#if mobileMenuOpen}

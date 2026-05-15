@@ -9,8 +9,6 @@ class FormState {
 	newTags = $state([]);
 	newCustomTag = $state('');
 	newRecurring = $state('');
-	newCategoryName = $state('');
-	showAddCategory = $state(false);
 	showForm = $state(true);
 	selectedTemplate = $state('None');
 

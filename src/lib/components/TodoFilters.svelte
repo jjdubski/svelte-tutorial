@@ -3,6 +3,7 @@
 	import { Search, CheckSquare, Archive, X, Calendar, RotateCcw } from 'lucide-svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { getTodoStore } from '$lib/state/todoStore.svelte.js';
+	import { lightTap } from '$lib/utils/haptics.js';
 
 	const store = getTodoStore();
 
@@ -96,7 +97,7 @@
 					class="glow-btn flex cursor-pointer items-center gap-1 rounded-lg border-none px-2.5 py-2 text-xs font-medium sm:text-sm"
 					style="background: var(--btn-save); color: white;"
 					data-btn="save"
-					onclick={() => store.completeSelected()}
+					onclick={() => { store.completeSelected(); lightTap(); }}
 					disabled={store.selectedTodos.size === 0}
 				>
 					<CheckSquare size={14} /> Complete
@@ -105,7 +106,7 @@
 					class="glow-btn flex cursor-pointer items-center gap-1 rounded-lg border-none px-2.5 py-2 text-xs font-medium sm:text-sm"
 					style="background: var(--btn-delete); color: white;"
 					data-btn="delete"
-					onclick={() => store.archiveSelected()}
+					onclick={() => { store.archiveSelected(); lightTap(); }}
 					disabled={store.selectedTodos.size === 0}
 				>
 					<Archive size={14} /> Archive
@@ -210,42 +211,7 @@
 			{cat}
 		</button>
 	{/each}
-	{#if store.showAddCategory}
-		<form
-			class="flex items-center gap-1"
-			onsubmit={(e) => {
-				e.preventDefault();
-				store.addCategory();
-			}}
-		>
-			<input
-				class="w-[70px] rounded-md px-2 py-1 text-xs sm:text-sm"
-				style="border: 1px solid var(--border); background: var(--input-bg); color: var(--text);"
-				bind:value={store.newCategoryName}
-				placeholder="New"
-			/>
-			<button
-				type="submit"
-				class="cursor-pointer rounded-md border-none px-2 py-1 text-xs font-medium sm:text-sm"
-				style="background: var(--btn-save); color: white;"
-				data-btn="save">Add</button
-			>
-			<button
-				type="button"
-				class="cursor-pointer rounded-md border-none px-2 py-1 text-xs font-medium sm:text-sm"
-				style="background: var(--btn-cancel); color: white;"
-				data-btn="cancel"
-				onclick={() => (store.showAddCategory = false)}>X</button
-			>
-		</form>
-	{:else}
-		<button
-			class="cursor-pointer rounded-full border border-dashed bg-none px-2 py-1 text-xs sm:text-sm"
-			style="border-color: var(--border-input); color: var(--text-muted); transition: all 0.15s;"
-			data-btn="ghost"
-			onclick={() => (store.showAddCategory = true)}>+</button
-		>
-	{/if}
+
 </div>
 
 <!-- Tag Filter Pills -->

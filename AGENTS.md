@@ -49,3 +49,70 @@ Single-package Svelte 5 + SvelteKit 2 SPA. Plain JS (`checkJs: false` — JSDoc 
 - Unit tests in `src/lib/__tests__/` (8 files: `authIntegration`, `authStore`, `calendarFilter`, `markdown`, `statsComputation`, `storage`, `todoService`, `todoStore`) — Vitest with `environment: 'node'`.
 - E2E in `e2e/` — Playwright, single worker, 1 retry.
 - Pre-push hook runs full test suite.
+
+## **Agent Memory: Issue Hierarchy Checklist**
+
+When working on GitHub issues in this repository, always respect the full nested hierarchy of sub-issues. A parent's scope includes ALL descendants, not just direct children.
+
+## The Rule
+
+An issue owns bugs, features, and tasks that are:
+
+1. **Direct sub-issues** (children via GitHub sub-issue feature)
+2. **Indirect sub-issues** (grandchildren, great-grandchildren, etc. — any issue in the descendant tree)
+3. **Issues referenced as related** in the parent's body that logically belong
+
+## Example: Issue #177
+
+```text
+#177 Issue
+├── #138  Sub-issue 1
+├── #105  Sub-issue 2
+│   ├── #179  Sub-issue 2.1
+│   ├── #180  Sub-issue 2.2
+│   ├── #181  Sub-issue 2.3
+│   │   └── #183  Sub-issue 2.3.1
+│   └── #184  Sub-issue 2.4
+└── #185  Sub-issue 3
+```
+
+**Key lesson from #177 triage:** Issue #183 was not a direct child of #177 — it was a child of #181 (which is a child of #105). It was still in scope because it's in the descendant tree. Always walk the full tree.
+
+## The Workflow
+
+When given an issue number:
+
+```md
+1. Fetch the issue's sub-issues (direct children)
+2. For EACH child, recurse — fetch ITS sub-issues
+3. Continue until all leaf nodes are found
+4. Also scan the parent and grandparent issue bodies for "See also", "Related", "Dependencies" sections
+5. Compile the full tree before proposing scope
+```
+
+## GraphQL Query for Full Tree
+
+```graphql
+query {
+  repository(owner: "jjdubski", name: "svelte-todo") {
+    issue(number: PARENT_NUMBER) {
+      subIssues(first: 20) {
+        nodes {
+          number
+          title
+          state
+          subIssues(first: 20) {
+            nodes {
+              number
+              title
+              state
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+GitHub's API only returns one level of sub-issues per query, so you must iterate.

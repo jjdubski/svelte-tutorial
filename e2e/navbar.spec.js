@@ -64,12 +64,13 @@ test.describe('NavBar', () => {
 			// The toggle shows the current page label
 			const toggle = page.locator('.mobile-nav-toggle');
 			await expect(toggle).toBeVisible();
-			await expect(toggle.locator('span')).toHaveText('Tasks');
+			await expect(toggle.locator('span.text-sm')).toHaveText('Tasks');
 
 			// The triangle SVG is present inside the toggle
 			const triangle = toggle.locator('svg');
 			await expect(triangle).toBeVisible();
-			await expect(triangle).toHaveAttribute('aria-hidden', 'true');
+			// The aria-hidden attribute is on the span wrapping the SVG
+			await expect(page.locator('.mobile-nav-toggle span[aria-hidden="true"]')).toBeVisible();
 
 			// The auth button and theme toggle are visible on the right
 			await expect(page.locator('[aria-label="Switch to dark mode"]')).toBeVisible();
@@ -94,16 +95,17 @@ test.describe('NavBar', () => {
 		});
 
 		test('triangle rotates 180 degrees when dropdown is open', async ({ page }) => {
-			const triangle = page.locator('.mobile-nav-toggle svg');
+			// The rotate-180 class is on the span wrapping the SVG
+			const triangleWrapper = page.locator('.mobile-nav-toggle span[aria-hidden="true"]');
 
-			// Initially, the triangle should NOT have the rotate-180 class
-			await expect(triangle).not.toHaveClass(/rotate-180/);
+			// Initially, the triangle wrapper should NOT have the rotate-180 class
+			await expect(triangleWrapper).not.toHaveClass(/rotate-180/);
 
 			// Open the dropdown
 			await page.locator('.mobile-nav-toggle').click();
 
-			// Now the triangle should have the rotate-180 class
-			await expect(triangle).toHaveClass(/rotate-180/);
+			// Now the triangle wrapper should have the rotate-180 class
+			await expect(triangleWrapper).toHaveClass(/rotate-180/);
 		});
 
 		test('clicking outside closes the dropdown', async ({ page }) => {
@@ -111,8 +113,8 @@ test.describe('NavBar', () => {
 			await page.locator('.mobile-nav-toggle').click();
 			await expect(page.locator('.mobile-nav-dropdown')).toBeVisible();
 
-			// Click outside (on the main heading area)
-			await page.locator('h1').click();
+			// Click outside (on the main content area, which is not overlapped by the dropdown)
+			await page.locator('main').click();
 
 			// Dropdown should close
 			await expect(page.locator('.mobile-nav-dropdown')).not.toBeVisible();
@@ -141,7 +143,7 @@ test.describe('NavBar', () => {
 			await page.waitForURL(/\/board/);
 
 			// The toggle should now show "Board"
-			const toggle = page.locator('.mobile-nav-toggle span');
+			const toggle = page.locator('.mobile-nav-toggle span.text-sm');
 			await expect(toggle).toHaveText('Board');
 		});
 
@@ -166,7 +168,7 @@ test.describe('NavBar', () => {
 				await expect(page.locator('h2')).toContainText(heading);
 
 				// Verify toggle shows new current page
-				await expect(page.locator('.mobile-nav-toggle span')).toHaveText(label);
+				await expect(page.locator('.mobile-nav-toggle span.text-sm')).toHaveText(label);
 
 				// Verify dropdown is closed
 				await expect(page.locator('.mobile-nav-dropdown')).not.toBeVisible();

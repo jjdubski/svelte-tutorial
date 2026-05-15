@@ -14,6 +14,7 @@ import {
 	getNextDueDate,
 	getRandomTagColor
 } from '$lib/utils/todoUtils.js';
+import { lightTap } from '$lib/utils/haptics.js';
 
 /**
  * @typedef {Object} Todo
@@ -85,12 +86,13 @@ class TodoStore {
 
 	// ── Categories ──
 	/** @type {string[]} */
-	categories = $state(['Work', 'Personal', 'Ideas']);
+	categories = $state(['Work', 'Personal', 'Ideas', 'Other']);
 	/** @type {Record<string,string>} */
 	categoryColors = $state({
 		Work: '#3b82f6',
 		Personal: '#22c55e',
-		Ideas: '#a855f7'
+		Ideas: '#a855f7',
+		Other: '#6b7280'
 	});
 
 	// ── Tags (app-defined defaults) ──
@@ -1087,19 +1089,6 @@ class TodoStore {
 		this.filterDateTo = '';
 	}
 
-	addCategory() {
-		const name = this.newCategoryName.trim();
-		if (name && !this.categories.includes(name)) {
-			this.categories = [...this.categories, name];
-			const colors = ['#ef4444', '#f59e0b', '#06b6d4', '#ec4899', '#84cc16', '#14b8a6', '#f97316', '#8b5cf6'];
-			const used = Object.values(this.categoryColors);
-			const avail = colors.find((c) => !used.includes(c));
-			this.categoryColors = { ...this.categoryColors, [name]: avail || '#64748b' };
-			this.newCategoryName = '';
-			this.showAddCategory = false;
-		}
-	}
-
 	// ── Tag management ──
 
 	_getRandomTagColor() {
@@ -1350,10 +1339,12 @@ class TodoStore {
 			if (this.selectMode) {
 				this.selectMode = false;
 				this.selectedTodos = new SvelteSet();
+				lightTap();
 			}
 			if (this.archivedSelectMode) {
 				this.archivedSelectMode = false;
 				this.selectedArchived = new SvelteSet();
+				lightTap();
 			}
 		}
 	}

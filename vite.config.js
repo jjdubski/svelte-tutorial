@@ -29,16 +29,26 @@ export default defineConfig({
 				short_name: 'Todo',
 				description: 'A modern Todo application built with Svelte 5',
 				theme_color: '#3b82f6',
+				background_color: '#ffffff',
+				display: 'standalone',
 				icons: [
 					{
-						src: 'favicon.svg',
+						src: 'app-icon.svg',
 						sizes: '192x192',
-						type: 'image/svg+xml'
+						type: 'image/svg+xml',
+						purpose: 'any'
 					},
 					{
-						src: 'favicon.svg',
+						src: 'app-icon.svg',
 						sizes: '512x512',
-						type: 'image/svg+xml'
+						type: 'image/svg+xml',
+						purpose: 'any'
+					},
+					{
+						src: 'app-icon.svg',
+						sizes: '512x512',
+						type: 'image/svg+xml',
+						purpose: 'maskable'
 					}
 				]
 			}

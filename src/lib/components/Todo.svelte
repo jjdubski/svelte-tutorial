@@ -4,6 +4,7 @@
 	import { getTodoStore } from '$lib/state/todoStore.svelte.js';
 	import { renderMarkdown } from '$lib/scripts/markdown.js';
 	import { format, localDateStr } from '$lib/utils/todoUtils.js';
+	import { lightTap } from '$lib/utils/haptics.js';
 
 	/** @type {import('./state/todoStore.svelte.js').Todo} */
 	let { todo } = $props();
@@ -88,7 +89,7 @@
 				id="todo-{todo.id}"
 				class="todo-check mt-0.5 h-[18px] w-[18px] shrink-0 cursor-pointer"
 				checked={todo.completed}
-				onchange={() => store.toggleTodo(todo.id)}
+				onchange={() => { store.toggleTodo(todo.id); lightTap(); }}
 				aria-label={todo.completed ? 'Mark as incomplete' : 'Mark as complete'}
 			/>
 			<div class="min-w-0 flex-1">
@@ -192,7 +193,7 @@
 							<Edit2 size={16} />
 						</button>
 						<button
-							onclick={() => store.deleteTodo(todo.id)}
+							onclick={() => { store.deleteTodo(todo.id); lightTap(); }}
 							class="glow-btn flex cursor-pointer items-center justify-center rounded-md border-0 p-1"
 							style="color: var(--text-muted);"
 							aria-label="Archive task"

@@ -11,7 +11,7 @@
 
 This document captures the output of a full brainstorming session (Issue #24) exploring the next wave of features for the svelte-todo app. The session covered 6 areas of core deepening — filtering/search UX, keyboard shortcuts, PWA enhancements, custom themes, UX polish, and data tools — then merged the results with the existing open issue backlog into a dependency-ordered execution plan.
 
-**Scope: 10 existing open issues + 18 brainstormed features, organized into 5 phases.**
+**Scope: 10 existing open issues (with 5 subissues) + 18 brainstormed features, organized into 5 phases.**
 
 A significant feature (#23 — multiple user profiles) is deferred to a separate design cycle.
 
@@ -42,6 +42,7 @@ Deferred: #23 Multiple Profiles     (separate design cycle)
 **Current state:** Commit `7f7b51c` added `origin-center` to the SVG triangle, but user reports the fix didn't persist — the triangle still snaps back after animation.
 
 **Proposed fix:** Investigate root cause. The SVG `<path>` uses coordinates `M1 1L5 7L9 1` within viewBox `0 0 10 8`. Rotation may fail because:
+
 - `origin-center` maps to `50% 50%` of the SVG's bounding box, which may not match the visual center of the triangle
 - Alternative: wrap the SVG in a `<span>` and apply `class:rotate-180` + `transform-origin: center` to the span instead
 - Alternative 2: use a CSS `rotate` transition directly on the SVG's `transform` via Tailwind's `rotate-180`
@@ -53,6 +54,7 @@ Deferred: #23 Multiple Profiles     (separate design cycle)
 **File:** `src/lib/components/TodoFilters.svelte` (lines ~183–249)
 
 **Changes:**
+
 1. Remove the "Add category" button/input UI (the `+` button that triggers category creation)
 2. Remove any associated store methods for adding categories (likely `addCategory` or similar)
 3. Add an "Other" category to the existing category list as a catch-all for tasks that don't fit the main categories
@@ -65,6 +67,7 @@ Deferred: #23 Multiple Profiles     (separate design cycle)
 **Scope:** Audit all interactive buttons across the app for missing animations.
 
 **Pattern:** CSS transitions only (no JS animation libraries):
+
 ```css
 /* Hover */
 transition: transform 0.15s ease, box-shadow 0.15s ease;
@@ -87,6 +90,7 @@ active:scale-95
 **File:** `vite.config.js` (PWA manifest), `static/` directory
 
 **Changes:**
+
 1. Design a proper app icon (replace the generic "V" currently shown on iOS)
 2. Generate icons at required sizes: 192x192, 512x512 (PNG), plus Apple touch icon sizes
 3. Update `vite.config.js` PWA manifest icon entries
@@ -100,6 +104,7 @@ active:scale-95
 **File:** New component `src/lib/components/InstallPrompt.svelte`
 
 **Behavior:**
+
 - Listen for `beforeinstallprompt` event on `window`
 - If the event fires (browser supports install), show an in-app "Install App" button/banner
 - If the user dismisses, track it to avoid re-prompting for 30 days
@@ -107,6 +112,7 @@ active:scale-95
 - Use a small banner at the bottom or a card in the header area (not a modal)
 
 **State management:**
+
 - Store in localStorage: `installPromptDismissedAt` timestamp
 - Re-show after 30 days if dismissed
 - Store in session if not applicable: `installPromptNotAvailable`
@@ -131,6 +137,7 @@ export function lightTap(duration = 10) {
 ```
 
 **Integration points:**
+
 - Completing a todo (checkbox tap)
 - Archiving a todo
 - Board card drag complete (drop)
@@ -143,6 +150,7 @@ export function lightTap(duration = 10) {
 **New file:** `src/lib/components/HelpButton.svelte`
 
 **Layout:**
+
 - Fixed-position `?` floating button in the bottom-right corner of every page
 - Circular, 40x40px, semi-transparent background, subtle shadow
 - On click: opens a modal/overlay showing:
@@ -151,6 +159,7 @@ export function lightTap(duration = 10) {
   - Link to `/settings`
 
 **State:**
+
 - `showHelp = $state(false)` — toggles the overlay
 - Click-outside or Escape closes the overlay
 
@@ -165,6 +174,7 @@ export function lightTap(duration = 10) {
 **Proposed approach:** As noted in the issue, the board, stats, and archived pages share the same layout structure (title + StatsBar + BackButton in the same positions). Extract a shared layout component to avoid re-mounting StatsBar on every navigation.
 
 **New file:** `src/routes/(app)/+layout.svelte` — create a route group `(app)` that contains board, stats, and archived routes. The layout renders the shared header (title + StatsBar + BackButton) and `{@render children()}` for page content.
+
 - Move the `board/`, `stats/`, and `archived/` page directories into the `(app)/` route group (i.e., `src/routes/(app)/board/`, `src/routes/(app)/stats/`, `src/routes/(app)/archived/`)
 - Move the common header area (title + StatsBar + BackButton) into `(app)/+layout.svelte`
 - Pages only provide their unique content below the shared area
@@ -193,6 +203,7 @@ The settings page is organized into clearly separated sections, each collapsible
 4. **Data** (import/export buttons — already exist in header, could be moved here)
 
 **Layout:**
+
 - Centered card layout, max-width ~600px, matching app style
 - Each section has a heading and divider
 - Settings persist to localStorage and sync to MongoDB for authenticated users
@@ -205,20 +216,21 @@ The settings page is organized into clearly separated sections, each collapsible
 class ThemeStore {
   // Selected preset name or 'custom'
   themePreset = $state('default');
-  
+
   // Custom overrides (only used when themePreset === 'custom')
   accentColor = $state('#3b82f6');
   bgColor = $state('#ffffff');
   cardColor = $state('#f8fafc');
   textColor = $state('#1e293b');
   borderColor = $state('#e2e8f0');
-  
+
   // Font
   fontFamily = $state('system-ui'); // 'system-ui' | 'inter' | 'serif' | 'mono'
 }
 ```
 
 **Preset themes (5-10):**
+
 - Default (current light/dark)
 - Forest (green accents, warm background)
 - Ocean (blue accents, cool background)
@@ -228,6 +240,7 @@ class ThemeStore {
 - Each preset defines a full CSS variable palette for light AND dark mode
 
 **Integration:**
+
 - Theme store applies CSS variable overrides on `<html>` via `style:` directives or a `<style>` tag
 - Dark mode toggle continues to work independently (it flips the `.dark` class; theme presets define colors for both modes)
 - Settings page shows a visual theme preview for each preset
@@ -235,12 +248,14 @@ class ThemeStore {
 - Full custom picker shows individual color inputs for each CSS variable
 
 **Persistence:**
+
 - Theme preferences saved to localStorage
 - Synced to MongoDB user settings when signed in
 
 ### 2.3 Notification Preferences in Settings
 
 **Settings page section:**
+
 - Toggle: "Enable due date reminders" → controls the existing `requestNotificationPermission()` flow
 - Toggle: "Remind me of overdue tasks" → controls whether overdue notifications fire
 - Toggle: "Remind me of today's tasks" → controls today notifications
@@ -255,6 +270,7 @@ class ThemeStore {
 **File:** `src/lib/state/todoStore.svelte.js` (lines 112–158) — templates are inline objects with `name`, `title`, `description`, `dueDate`, `priority`, `category`, `tags`.
 
 **Changes:**
+
 1. **#25** — At least one template uses bold (`**text**`), italic (`*text*`), and a URL (`[link](url)`)
 2. **#26** — One template includes a bullet list using `-` syntax
 3. **#27** — One template uses the "Ideas" category instead of its current category
@@ -265,6 +281,7 @@ class ThemeStore {
 **Files:** `src/routes/calendar/+page.svelte`, new CSS for mobile
 
 **Design (Apple Calendar-inspired):**
+
 - Day cells remain square on mobile (no stretching into rectangles)
 - Tasks shown as thin horizontal lines colored by tag color
   - Lines occupy the bottom portion of the cell (leaving the day number visible)
@@ -285,22 +302,24 @@ class ThemeStore {
 
 **Syntax tokens (all 6):**
 
-| Token | Example | Maps to store property |
-|-------|---------|----------------------|
-| `tag:` | `tag:work tag:urgent` | `filterTags` (AND logic) |
-| `priority:` | `priority:high` | `filterPriority` |
-| `is:` | `is:active` | `filterStatus` |
-| `due:` | `due:05-15-2026` or `due:overdue` | `filterDateFrom` / `filterDateTo` |
-| `category:` | `category:Work` | `filterCategory` |
-| `sort:` | `sort:priority` | `sortBy` |
+| Token       | Example                           | Maps to store property            |
+| ----------- | --------------------------------- | --------------------------------- |
+| `tag:`      | `tag:work tag:urgent`             | `filterTags` (AND logic)          |
+| `priority:` | `priority:high`                   | `filterPriority`                  |
+| `is:`       | `is:active`                       | `filterStatus`                    |
+| `due:`      | `due:05-15-2026` or `due:overdue` | `filterDateFrom` / `filterDateTo` |
+| `category:` | `category:Work`                   | `filterCategory`                  |
+| `sort:`     | `sort:priority`                   | `sortBy`                          |
 
 **Token chip behavior:**
+
 - As user types, `key:value` remains as plain text in the input
 - When they hit **space** after a complete `key:value`, the token crystallizes into a colored chip (visually distinct from plain text)
 - **Backspace** at the start of a chip removes the entire token (not character-by-character)
 - Plain text (non-token portions) continues to fuzzy-match against title/description
 
 **Parsing (`queryParser.js`):**
+
 ```js
 /**
  * Parse search text into structured tokens and plain text.
@@ -315,6 +334,7 @@ export function isAtTokenBoundary(text, cursorPos) {}
 ```
 
 **Bidirectional UI sync:**
+
 - When tokens are added/removed in the search bar, the corresponding filter controls update:
   - `tag:work` → "Work" tag pill becomes selected
   - `priority:high` → priority dropdown switches to "High"
@@ -325,12 +345,14 @@ export function isAtTokenBoundary(text, cursorPos) {}
   - Removing a tag pill → corresponding token chip is removed from search bar
 
 **Integration with `_computeFiltered()`:**
+
 - The parser runs in the filter effect before calling `_computeFiltered()`
 - Extracted tokens set the corresponding filter state on the store
 - Plain text portion becomes the fuzzy search input
 - This means the filter controls AND the search bar both drive the same underlying state
 
 **Verification:**
+
 - [ ] Typing `priority:high` filters to high-priority tasks
 - [ ] Typing `tag:work tag:urgent` filters to tasks with both tags
 - [ ] Typing `due:overdue` shows only overdue tasks
@@ -344,27 +366,29 @@ export function isAtTokenBoundary(text, cursorPos) {}
 **New file:** `src/lib/utils/keyboardShortcuts.js`
 
 **Architecture:**
+
 - Centralized keyboard shortcut manager registered once in the root layout (`+layout.svelte`)
 - Shortcuts are context-aware — they only fire when not focused on an input/textarea element
 - A `ShortcutScope` pattern allows pages to register page-specific shortcuts alongside global ones
 
 **Defined shortcuts:**
 
-| Key | Scope | Action |
-|-----|-------|--------|
-| `q` | Global | Open quick-add dialog (compact modal from any page) |
-| `/` | Global | Focus the search/filter bar |
-| `Space` | Todo list | Toggle complete on focused/highlighted todo |
-| `e` | Todo list | Open edit modal for selected todo |
-| `a` | Todo list | Archive selected todo |
-| `Ctrl+A` | Todo list | Select all visible todos |
-| `Ctrl+Shift+A` | Todo list | Deselect all |
-| `Shift+Space` | Todo list | Range select (already implemented on some pages) |
-| `Ctrl+Z` | Global | Undo last action |
-| `Ctrl+Shift+Z` | Global | Redo last action |
-| `?` | Global | Open help overlay (also accessible via floating button) |
+| Key            | Scope     | Action                                                  |
+| -------------- | --------- | ------------------------------------------------------- |
+| `q`            | Global    | Open quick-add dialog (compact modal from any page)     |
+| `/`            | Global    | Focus the search/filter bar                             |
+| `Space`        | Todo list | Toggle complete on focused/highlighted todo             |
+| `e`            | Todo list | Open edit modal for selected todo                       |
+| `a`            | Todo list | Archive selected todo                                   |
+| `Ctrl+A`       | Todo list | Select all visible todos                                |
+| `Ctrl+Shift+A` | Todo list | Deselect all                                            |
+| `Shift+Space`  | Todo list | Range select (already implemented on some pages)        |
+| `Ctrl+Z`       | Global    | Undo last action                                        |
+| `Ctrl+Shift+Z` | Global    | Redo last action                                        |
+| `?`            | Global    | Open help overlay (also accessible via floating button) |
 
 **Undo/Redo architecture:**
+
 - Extend `TodoStore` with a history stack:
   - `_undoStack = $state([])` — array of { action, snapshot, timestamp }
   - `_redoStack = $state([])`
@@ -375,6 +399,7 @@ export function isAtTokenBoundary(text, cursorPos) {}
 - The existing toast/undo pattern (which handles archive/complete/move) can feed into this generic stack
 
 **Help overlay (cheat sheet):**
+
 - Accessible via `?` key or floating button (from Phase 1)
 - Shows all shortcuts grouped by category
 - Also documents the multi-select flow (Ctrl/Cmd+Click, Shift+Click) for board and archived pages
@@ -401,6 +426,7 @@ export function isAtTokenBoundary(text, cursorPos) {}
 **Files:** Board page drag logic
 
 **Improvements:**
+
 - Ghost image customization during drag (semi-transparent clone of the card)
 - Drop zone highlighting (border/background change on valid drop targets)
 - Smooth reorder animation on drop
@@ -411,6 +437,7 @@ export function isAtTokenBoundary(text, cursorPos) {}
 **File:** `src/lib/state/todoStore.svelte.js`
 
 **Integration:**
+
 - In the existing notification effect (which already computes overdue counts), add:
   ```js
   if ('setAppBadge' in navigator) {
@@ -430,6 +457,7 @@ export function isAtTokenBoundary(text, cursorPos) {}
 **New file:** `src/service-worker.js` — does not exist yet. Must be created with a `fetch` event listener and periodic sync registration. SvelteKit auto-detects this file at `src/service-worker.js` per its conventions; no config change needed.
 
 **Architecture:**
+
 - The existing notification system works when the app is open (fires on mount)
 - Background sync requires a service worker that:
   1. Registers a periodic sync event (`periodicSync`) or uses the `sync` event for one-time reconnection
@@ -448,6 +476,7 @@ export function isAtTokenBoundary(text, cursorPos) {}
 **Files:** `src/lib/__tests__/` (new test file)
 
 **Test scenarios:**
+
 1. localStorage CRUD operations: read, write, delete, cache invalidation
 2. Guest mode: data persists across page reloads in localStorage
 3. Migration flow: guest data correctly moves to MongoDB on first sign-in
@@ -461,6 +490,7 @@ export function isAtTokenBoundary(text, cursorPos) {}
 **Scope:** Audit every `.svelte` file and `.svelte.js`/`.svelte.ts` file for legacy Svelte 4 patterns.
 
 **Checklist:**
+
 - [ ] Replace `export let` with `$props()`
 - [ ] Replace `let count = 0` (implicit reactivity) with `$state(0)`
 - [ ] Replace `$:` assignments with `$derived()` or `$effect()` as appropriate
@@ -519,14 +549,14 @@ Deferred (separate design cycle)
 
 ## Effort Summary
 
-| Phase | Items | Est. Effort |
-|-------|-------|-------------|
-| Quick Wins + Bugs | 8 | ~13 hours |
-| Settings Infrastructure | 3 | ~9 hours |
-| Existing Feature Backlog | 2 parents (5 sub-issues) | ~8 hours |
-| Power Features | 2 | ~11 hours |
-| Polish & Finishing | 6 | ~22 hours |
-| **Total** | **21** | **~63 hours** |
+| Phase                    | Items                    | Est. Effort   |
+| ------------------------ | ------------------------ | ------------- |
+| Quick Wins + Bugs        | 8                        | ~13 hours     |
+| Settings Infrastructure  | 3                        | ~9 hours      |
+| Existing Feature Backlog | 2 parents (5 sub-issues) | ~8 hours      |
+| Power Features           | 2                        | ~11 hours     |
+| Polish & Finishing       | 6                        | ~22 hours     |
+| **Total**                | **21**                   | **~63 hours** |
 
 Effort estimates are rough order-of-magnitude. Each item will get a precise implementation plan when its phase begins.
 
@@ -535,38 +565,41 @@ Effort estimates are rough order-of-magnitude. Each item will get a precise impl
 ## Files & Components Summary
 
 ### New Files
-| File | Phase | Purpose |
-|------|-------|---------|
-| `src/lib/components/InstallPrompt.svelte` | 1 | Custom PWA install banner |
-| `src/lib/utils/haptics.js` | 1 | Vibration API utility |
-| `src/lib/components/HelpButton.svelte` | 1 | Floating `?` + cheat sheet overlay |
-| `src/routes/settings/+page.svelte` | 2 | Settings page |
-| `src/lib/state/themeStore.svelte.js` | 2 | Theme state management |
-| `src/lib/utils/queryParser.js` | 4 | Query syntax tokenizer |
-| `src/lib/utils/keyboardShortcuts.js` | 4 | Centralized shortcut manager |
+
+| File                                      | Phase | Purpose                            |
+| ----------------------------------------- | ----- | ---------------------------------- |
+| `src/lib/components/InstallPrompt.svelte` | 1     | Custom PWA install banner          |
+| `src/lib/utils/haptics.js`                | 1     | Vibration API utility              |
+| `src/lib/components/HelpButton.svelte`    | 1     | Floating `?` + cheat sheet overlay |
+| `src/routes/settings/+page.svelte`        | 2     | Settings page                      |
+| `src/lib/state/themeStore.svelte.js`      | 2     | Theme state management             |
+| `src/lib/utils/queryParser.js`            | 4     | Query syntax tokenizer             |
+| `src/lib/utils/keyboardShortcuts.js`      | 4     | Centralized shortcut manager       |
 
 ### Modified Files
-| File | Phase | Change |
-|------|-------|--------|
-| `src/lib/components/NavBar.svelte` | 1 | #15 triangle fix; add Settings nav link |
-| `src/lib/components/TodoFilters.svelte` | 1, 4 | #19 remove add category; query syntax integration |
-| Various `.svelte` files | 1 | #22 button animation CSS |
-| `vite.config.js`, `static/` | 1 | New app icons |
-| `src/routes/(app)/+layout.svelte` (new group) | 1 | #17 shared layout for board/stats/archived |
-| `src/routes/board/+page.svelte` | 1, 5 | #17 shared layout; drag polish |
-| `src/routes/stats/+page.svelte` | 1 | #17 shared layout |
-| `src/routes/archived/+page.svelte` | 1 | #17 shared layout |
-| `src/lib/state/todoStore.svelte.js` | 4, 5 | Query syntax; undo/redo; app badge; background sync |
-| `src/routes/calendar/+page.svelte` | 3 | #28/#29 mobile calendar redesign |
-| Template data files | 3 | #25/#26/#27 template improvements |
-| `src/service-worker.js` (new if absent) | 5 | Background sync handler |
-| `src/routes/+layout.svelte` | 4, 5 | Keyboard shortcut registration; page transitions |
+
+| File                                          | Phase | Change                                              |
+| --------------------------------------------- | ----- | --------------------------------------------------- |
+| `src/lib/components/NavBar.svelte`            | 1     | #15 triangle fix; add Settings nav link             |
+| `src/lib/components/TodoFilters.svelte`       | 1, 4  | #19 remove add category; query syntax integration   |
+| Various `.svelte` files                       | 1     | #22 button animation CSS                            |
+| `vite.config.js`, `static/`                   | 1     | New app icons                                       |
+| `src/routes/(app)/+layout.svelte` (new group) | 1     | #17 shared layout for board/stats/archived          |
+| `src/routes/board/+page.svelte`               | 1, 5  | #17 shared layout; drag polish                      |
+| `src/routes/stats/+page.svelte`               | 1     | #17 shared layout                                   |
+| `src/routes/archived/+page.svelte`            | 1     | #17 shared layout                                   |
+| `src/lib/state/todoStore.svelte.js`           | 4, 5  | Query syntax; undo/redo; app badge; background sync |
+| `src/routes/calendar/+page.svelte`            | 3     | #28/#29 mobile calendar redesign                    |
+| Template data files                           | 3     | #25/#26/#27 template improvements                   |
+| `src/service-worker.js` (new if absent)       | 5     | Background sync handler                             |
+| `src/routes/+layout.svelte`                   | 4, 5  | Keyboard shortcut registration; page transitions    |
 
 ---
 
 ## Verification Strategy
 
 Each phase ends with:
+
 1. All items in the phase pass their acceptance criteria
 2. Full test suite passes (`npm run test`)
 3. Lint and format clean (`npm run lint:fix`)
