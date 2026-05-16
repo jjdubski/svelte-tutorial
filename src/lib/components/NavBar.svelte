@@ -142,8 +142,4 @@
 		background: var(--btn-primary);
 		color: white;
 	}
-
-	.rotate-180 {
-		transform: rotate(180deg);
-	}
 </style>
