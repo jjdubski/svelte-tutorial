@@ -27,6 +27,7 @@ import {
 	getUserData,
 	upsertUser,
 	getTodos,
+	getSettings,
 	createTodo,
 	updateTodo,
 	archiveTodo,
@@ -34,6 +35,7 @@ import {
 	permanentDeleteTodo,
 	batchArchive,
 	batchRestore,
+	updateSettings,
 	migrateGuestData,
 	importData
 } from '../server/todoService.js';
@@ -51,6 +53,7 @@ function createMockUser(overrides = {}) {
 		customTags: [],
 		tagColors: new Map(),
 		darkMode: false,
+		settings: {},
 		lastLoginAt: new Date('2025-01-01'),
 		save: vi.fn().mockResolvedValue(true),
 		markModified: vi.fn(),
@@ -67,6 +70,7 @@ function createMockUser(overrides = {}) {
 		customTags: user.customTags,
 		tagColors: Object.fromEntries(user.tagColors),
 		darkMode: user.darkMode,
+		settings: user.settings,
 		lastLoginAt: user.lastLoginAt
 	});
 	return user;
@@ -156,7 +160,8 @@ describe('todoService', () => {
 			const mockUser = createMockUser({
 				todos: [{ id: '1', title: 'Task 1', completed: false, createdAt: '2025-01-01' }],
 				archivedTodos: [{ id: '2', title: 'Archived 1', completed: true, createdAt: '2025-01-01' }],
-				darkMode: true
+				darkMode: true,
+				settings: { notifications: { dueDateRemindersEnabled: true } }
 			});
 			mockFindOne.mockResolvedValue(mockUser);
 
@@ -166,6 +171,7 @@ describe('todoService', () => {
 			expect(result.todos[0].title).toBe('Task 1');
 			expect(result.archivedTodos).toHaveLength(1);
 			expect(result.darkMode).toBe(true);
+			expect(result.settings).toEqual({ notifications: { dueDateRemindersEnabled: true } });
 			// nextId should NOT be in the response
 			expect(result).not.toHaveProperty('nextId');
 		});
@@ -174,6 +180,40 @@ describe('todoService', () => {
 			mockFindOne.mockResolvedValue(null);
 
 			await expect(getTodos('nonexistent')).rejects.toThrow('User not found');
+		});
+	});
+
+	describe('settings', () => {
+		it('returns settings payload for a user', async () => {
+			const mockUser = createMockUser({
+				settings: { theme: { themePreset: 'forest' } }
+			});
+			mockFindOne.mockResolvedValue(mockUser);
+
+			const settings = await getSettings('test-user-id');
+			expect(settings).toEqual({ theme: { themePreset: 'forest' } });
+		});
+
+		it('merges settings payload into existing settings', async () => {
+			const mockUser = createMockUser({
+				settings: {
+					theme: { themePreset: 'default' },
+					notifications: { dueDateRemindersEnabled: true }
+				}
+			});
+			mockFindOne.mockResolvedValue(mockUser);
+
+			await updateSettings('test-user-id', {
+				theme: { themePreset: 'ocean' },
+				display: { fontFamily: 'inter' }
+			});
+
+			expect(mockUser.settings).toEqual({
+				theme: { themePreset: 'ocean' },
+				notifications: { dueDateRemindersEnabled: true },
+				display: { fontFamily: 'inter' }
+			});
+			expect(mockUser.save).toHaveBeenCalled();
 		});
 	});
 
@@ -360,7 +400,7 @@ describe('todoService', () => {
 		});
 	});
 
-	describe('migrateGuestData', () => {
+		describe('migrateGuestData', () => {
 		it('merges guest todos and custom tags into existing user', async () => {
 			const mockUser = createMockUser({
 				todos: [{ id: '1', title: 'Existing', completed: false, createdAt: '2025-01-01' }],
@@ -373,7 +413,8 @@ describe('todoService', () => {
 				todos: [{ id: '100', title: 'Guest Task', completed: false, createdAt: '2025-01-01' }],
 				archivedTodos: [{ id: '200', title: 'Guest Archived', completed: true, createdAt: '2025-01-01' }],
 				customTags: ['home', 'shopping'],
-				tagColors: { home: '#ff0', shopping: '#f0f' }
+				tagColors: { home: '#ff0', shopping: '#f0f' },
+				settings: { notifications: { remindOverdueTasks: false } }
 			};
 
 			const result = await migrateGuestData('test-user-id', guestData);
@@ -388,6 +429,7 @@ describe('todoService', () => {
 			// Tag colors merged
 			expect(mockUser.tagColors.get('urgent')).toBe('#ff0000');
 			expect(mockUser.tagColors.get('home')).toBe('#ff0');
+			expect(mockUser.settings.notifications.remindOverdueTasks).toBe(false);
 			expect(mockUser.save).toHaveBeenCalled();
 			expect(result).toBeTruthy();
 		});
@@ -436,11 +478,12 @@ describe('todoService', () => {
 			await migrateGuestData('test-user-id', {});
 
 			expect(mockUser.todos).toHaveLength(0);
+			expect(mockUser.settings).toEqual({});
 			expect(mockUser.save).toHaveBeenCalled();
 		});
 	});
 
-	describe('importData', () => {
+		describe('importData', () => {
 		function createMockUser() {
 			const tagColors = new Map();
 			tagColors.set('urgent', '#ef4444');
@@ -456,6 +499,7 @@ describe('todoService', () => {
 				],
 				customTags: ['work'],
 				tagColors,
+				settings: { notifications: { dueDateRemindersEnabled: true } },
 				save: vi.fn().mockResolvedValue({}),
 				markModified: vi.fn(),
 				toObject: vi.fn().mockReturnValue({})
@@ -532,6 +576,25 @@ describe('todoService', () => {
 			expect(mockUser.customTags).toEqual(['work', 'newtag']);
 			expect(mockUser.tagColors.get('newtag')).toBe('#ff00ff');
 			expect(mockUser.tagColors.get('urgent')).toBe('#ef4444');
+		});
+
+		it('merges settings payload when provided', async () => {
+			const mockUser = createMockUser();
+			mockFindOne.mockResolvedValue(mockUser);
+
+			await importData('test-user-id', {
+				todos: [],
+				settings: {
+					theme: { themePreset: 'midnight' },
+					display: { fontFamily: 'mono' }
+				}
+			});
+
+			expect(mockUser.settings).toEqual({
+				notifications: { dueDateRemindersEnabled: true },
+				theme: { themePreset: 'midnight' },
+				display: { fontFamily: 'mono' }
+			});
 		});
 
 		it('skips invalid todo entries', async () => {

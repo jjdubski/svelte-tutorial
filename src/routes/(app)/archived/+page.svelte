@@ -40,9 +40,7 @@
 </div>
 
 <div class="mb-4 flex items-center justify-between">
-	<span class="text-sm sm:text-base" style="color: var(--text-muted);"
-		>{store.archivedTodos.length} archived</span
-	>
+	<span class="text-sm sm:text-base" style="color: var(--text-muted);">{store.archivedTodos.length} archived</span>
 	<button
 		class="glow-btn flex h-9 cursor-pointer items-center gap-1 rounded-lg border-none px-3 py-1.5 text-xs font-semibold sm:text-sm"
 		style="background: var(--input-bg); border: 1px solid var(--border); color: var(--text-muted);"
@@ -144,7 +142,10 @@
 							class="glow-btn flex cursor-pointer items-center gap-1 rounded-lg border-none px-3 py-1.5 text-xs font-semibold text-white sm:text-sm"
 							style="background: var(--btn-save);"
 							data-btn="save"
-							onclick={() => { store.restoreTodo(todo.id); lightTap(); }}
+							onclick={() => {
+								store.restoreTodo(todo.id);
+								lightTap();
+							}}
 						>
 							<RotateCcw size={12} /> Restore
 						</button>
@@ -152,7 +153,10 @@
 							class="glow-btn flex cursor-pointer items-center gap-1 rounded-lg border-none px-3 py-1.5 text-xs font-semibold text-white sm:text-sm"
 							style="background: var(--btn-delete);"
 							data-btn="delete"
-							onclick={() => { store.permanentDeleteTodo(todo.id); lightTap(); }}
+							onclick={() => {
+								store.permanentDeleteTodo(todo.id);
+								lightTap();
+							}}
 						>
 							<Trash2 size={12} /> Delete
 						</button>

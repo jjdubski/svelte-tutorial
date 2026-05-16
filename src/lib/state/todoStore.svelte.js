@@ -73,6 +73,12 @@ class TodoStore {
 	requestedNotification = $state(false);
 	/** @type {boolean} */
 	notificationsEnabled = $state(false);
+	/** @type {boolean} */
+	dueDateRemindersEnabled = $state(true);
+	/** @type {boolean} */
+	remindOverdueTasks = $state(true);
+	/** @type {boolean} */
+	remindTodayTasks = $state(true);
 
 	// ── Upcoming due tasks (computed in effect) ──
 	/** @type {Todo[]} */
@@ -345,6 +351,17 @@ class TodoStore {
 			this._syncDarkMode(dm);
 		});
 
+		// Effect: persist + sync notification preferences
+		$effect(() => {
+			const dueDateRemindersEnabled = this.dueDateRemindersEnabled;
+			const remindOverdueTasks = this.remindOverdueTasks;
+			const remindTodayTasks = this.remindTodayTasks;
+
+			storageSet('dueDateRemindersEnabled', dueDateRemindersEnabled);
+			storageSet('remindOverdueTasks', remindOverdueTasks);
+			storageSet('remindTodayTasks', remindTodayTasks);
+		});
+
 		// ── Notification setup (runs once after mount) ──
 		if (typeof window !== 'undefined') {
 			setTimeout(() => {
@@ -360,6 +377,7 @@ class TodoStore {
 	 */
 	_setupNotifications() {
 		if (typeof window === 'undefined' || !('Notification' in window)) return;
+		if (!this.dueDateRemindersEnabled) return;
 
 		// Already granted — notify on load
 		if (Notification.permission === 'granted') {
@@ -408,6 +426,22 @@ class TodoStore {
 		}
 
 		this.darkMode = this._getInitialDarkMode();
+
+		const savedDueDateRemindersEnabled = storageGet('dueDateRemindersEnabled');
+		if (typeof savedDueDateRemindersEnabled === 'boolean') {
+			this.dueDateRemindersEnabled = savedDueDateRemindersEnabled;
+		}
+
+		const savedRemindOverdueTasks = storageGet('remindOverdueTasks');
+		if (typeof savedRemindOverdueTasks === 'boolean') {
+			this.remindOverdueTasks = savedRemindOverdueTasks;
+		}
+
+		const savedRemindTodayTasks = storageGet('remindTodayTasks');
+		if (typeof savedRemindTodayTasks === 'boolean') {
+			this.remindTodayTasks = savedRemindTodayTasks;
+		}
+
 		this.isLoading = false;
 	}
 
@@ -641,6 +675,19 @@ class TodoStore {
 				if (typeof data.darkMode === 'boolean') {
 					this.darkMode = data.darkMode;
 				}
+
+				const notificationSettings = data.settings?.notifications;
+				if (notificationSettings && typeof notificationSettings === 'object') {
+					if (typeof notificationSettings.dueDateRemindersEnabled === 'boolean') {
+						this.dueDateRemindersEnabled = notificationSettings.dueDateRemindersEnabled;
+					}
+					if (typeof notificationSettings.remindOverdueTasks === 'boolean') {
+						this.remindOverdueTasks = notificationSettings.remindOverdueTasks;
+					}
+					if (typeof notificationSettings.remindTodayTasks === 'boolean') {
+						this.remindTodayTasks = notificationSettings.remindTodayTasks;
+					}
+				}
 			}
 		} catch (e) {
 			console.warn('[todoStore] Failed to load data from API:', e);
@@ -742,6 +789,22 @@ class TodoStore {
 			body: JSON.stringify({ darkMode })
 		}).catch(() => {
 			// Silently ignore — dark mode is non-critical and saved locally
+		});
+	}
+
+	/**
+	 * Sync settings payload to the server.
+	 * Uses a dedicated endpoint and intentionally fails silently.
+	 * @param {Record<string, unknown>} settings
+	 */
+	_syncSettings(settings) {
+		if (!this._auth?.isLoggedIn) return;
+		fetch('/api/todos/settings', {
+			method: 'PATCH',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ settings })
+		}).catch(() => {
+			// Silently ignore — settings are saved locally and can retry later
 		});
 	}
 
@@ -1274,6 +1337,7 @@ class TodoStore {
 	requestNotificationPermission() {
 		this.requestedNotification = true;
 		if (typeof window === 'undefined' || !('Notification' in window)) return;
+		if (!this.dueDateRemindersEnabled) return;
 		if (Notification.permission === 'granted') {
 			this.notificationsEnabled = true;
 			return;
@@ -1298,21 +1362,61 @@ class TodoStore {
 	notifyDueTasks() {
 		if (typeof window === 'undefined' || !('Notification' in window)) return;
 		if (Notification.permission !== 'granted') return;
+		if (!this.dueDateRemindersEnabled) return;
 
 		const today = localDateStr();
 		const dueToday = this.todos.filter((t) => !t.completed && t.dueDate === today);
 		const overdue = this.todos.filter((t) => !t.completed && t.dueDate && t.dueDate < today);
 
-		if (dueToday.length > 0) {
+		if (this.remindTodayTasks && dueToday.length > 0) {
 			new Notification('Tasks Due Today', {
 				body: `You have ${dueToday.length} task${dueToday.length === 1 ? '' : 's'} due today:\n${dueToday.map((t) => '• ' + t.title).join('\n')}`
 			});
 		}
-		if (overdue.length > 0) {
+		if (this.remindOverdueTasks && overdue.length > 0) {
 			new Notification('Overdue Tasks', {
 				body: `You have ${overdue.length} overdue task${overdue.length === 1 ? '' : 's'}:\n${overdue.map((t) => '• ' + t.title).join('\n')}`
 			});
 		}
+	}
+
+	/**
+	 * @param {boolean} enabled
+	 */
+	setDueDateRemindersEnabled(enabled) {
+		this.dueDateRemindersEnabled = enabled;
+		this._syncSettings({
+			notifications: {
+				dueDateRemindersEnabled: enabled
+			}
+		});
+		if (enabled) {
+			this.requestNotificationPermission();
+		}
+	}
+
+	/**
+	 * @param {boolean} enabled
+	 */
+	setRemindOverdueTasks(enabled) {
+		this.remindOverdueTasks = enabled;
+		this._syncSettings({
+			notifications: {
+				remindOverdueTasks: enabled
+			}
+		});
+	}
+
+	/**
+	 * @param {boolean} enabled
+	 */
+	setRemindTodayTasks(enabled) {
+		this.remindTodayTasks = enabled;
+		this._syncSettings({
+			notifications: {
+				remindTodayTasks: enabled
+			}
+		});
 	}
 
 	// ── Notifications ──
@@ -1370,6 +1474,21 @@ class TodoStore {
 			const dm = storageGet('darkMode');
 			if (dm !== null) {
 				this.darkMode = dm;
+			}
+		} else if (e.key === 'dueDateRemindersEnabled') {
+			const enabled = storageGet('dueDateRemindersEnabled');
+			if (typeof enabled === 'boolean') {
+				this.dueDateRemindersEnabled = enabled;
+			}
+		} else if (e.key === 'remindOverdueTasks') {
+			const enabled = storageGet('remindOverdueTasks');
+			if (typeof enabled === 'boolean') {
+				this.remindOverdueTasks = enabled;
+			}
+		} else if (e.key === 'remindTodayTasks') {
+			const enabled = storageGet('remindTodayTasks');
+			if (typeof enabled === 'boolean') {
+				this.remindTodayTasks = enabled;
 			}
 		}
 	}

@@ -5,6 +5,44 @@
 
 /* ── Theme custom properties (runtime-switchable) ── */
 :root {
+	--app-font-family:
+		'Outfit',
+		-apple-system,
+		BlinkMacSystemFont,
+		'Segoe UI',
+		sans-serif;
+
+	--theme-light-bg: #e8effb;
+	--theme-light-gradient-1: #e2e8f0;
+	--theme-light-gradient-2: #f8fafc;
+	--theme-light-card-bg: #ffffff;
+	--theme-light-text: #1f2937;
+	--theme-light-text-heading: #0f172a;
+	--theme-light-text-secondary: #475569;
+	--theme-light-text-muted: #94a3b8;
+	--theme-light-border: #dbe4f2;
+	--theme-light-border-input: #cbd5e1;
+	--theme-light-input-bg: #f8fafc;
+	--theme-light-todo-bg: #f8fafc;
+	--theme-light-shadow: rgba(31, 41, 55, 0.12);
+
+	--theme-dark-bg: #0b1120;
+	--theme-dark-gradient-1: #0b1120;
+	--theme-dark-gradient-2: #1a2332;
+	--theme-dark-card-bg: #1a2332;
+	--theme-dark-text: #e2e8f0;
+	--theme-dark-text-heading: #f1f5f9;
+	--theme-dark-text-secondary: #94a3b8;
+	--theme-dark-text-muted: #64748b;
+	--theme-dark-border: #2d3a4e;
+	--theme-dark-border-input: #3b4a62;
+	--theme-dark-input-bg: #0b1120;
+	--theme-dark-todo-bg: #0f1729;
+	--theme-dark-shadow: rgba(0, 0, 0, 0.5);
+
+	--theme-accent: #2563eb;
+	--theme-accent-hover: #1d4ed8;
+
 	--bg: #e8effb;
 	--bg-gradient-1: #e2e8f0;
 	--bg-gradient-2: #f8fafc;
@@ -35,21 +73,21 @@
 }
 
 .dark {
-	--bg: #0b1120;
-	--bg-gradient-1: #0b1120;
-	--bg-gradient-2: #1a2332;
-	--card-bg: #1a2332;
-	--text: #e2e8f0;
-	--text-heading: #f1f5f9;
-	--text-secondary: #94a3b8;
-	--text-muted: #64748b;
-	--border: #2d3a4e;
-	--border-input: #3b4a62;
-	--input-bg: #0b1120;
-	--todo-bg: #0f1729;
-	--shadow: rgba(0, 0, 0, 0.5);
-	--btn-primary: #3b82f6;
-	--btn-primary-hover: #2563eb;
+	--bg: var(--theme-dark-bg);
+	--bg-gradient-1: var(--theme-dark-gradient-1);
+	--bg-gradient-2: var(--theme-dark-gradient-2);
+	--card-bg: var(--theme-dark-card-bg);
+	--text: var(--theme-dark-text);
+	--text-heading: var(--theme-dark-text-heading);
+	--text-secondary: var(--theme-dark-text-secondary);
+	--text-muted: var(--theme-dark-text-muted);
+	--border: var(--theme-dark-border);
+	--border-input: var(--theme-dark-border-input);
+	--input-bg: var(--theme-dark-input-bg);
+	--todo-bg: var(--theme-dark-todo-bg);
+	--shadow: var(--theme-dark-shadow);
+	--btn-primary: var(--theme-accent);
+	--btn-primary-hover: var(--theme-accent-hover);
 	--btn-edit: #38bdf8;
 	--btn-delete: #f87171;
 	--btn-delete-hover: #ef4444;
@@ -62,6 +100,24 @@
 	--priority-low: #4ade80;
 	--drag-handle: #475569;
 	--completed-text: #64748b;
+}
+
+:root:not(.dark) {
+	--bg: var(--theme-light-bg);
+	--bg-gradient-1: var(--theme-light-gradient-1);
+	--bg-gradient-2: var(--theme-light-gradient-2);
+	--card-bg: var(--theme-light-card-bg);
+	--text: var(--theme-light-text);
+	--text-heading: var(--theme-light-text-heading);
+	--text-secondary: var(--theme-light-text-secondary);
+	--text-muted: var(--theme-light-text-muted);
+	--border: var(--theme-light-border);
+	--border-input: var(--theme-light-border-input);
+	--input-bg: var(--theme-light-input-bg);
+	--todo-bg: var(--theme-light-todo-bg);
+	--shadow: var(--theme-light-shadow);
+	--btn-primary: var(--theme-accent);
+	--btn-primary-hover: var(--theme-accent-hover);
 }
 
 @layer base {
@@ -80,12 +136,7 @@
 
 	body {
 		margin: 0;
-		font-family:
-			'Outfit',
-			-apple-system,
-			BlinkMacSystemFont,
-			'Segoe UI',
-			sans-serif;
+		font-family: var(--app-font-family);
 		background: var(--bg);
 		color: var(--text);
 		transition:

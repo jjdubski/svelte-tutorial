@@ -11,7 +11,8 @@ const links = [
 	{ href: '/board', label: 'Board' },
 	{ href: '/calendar', label: 'Calendar' },
 	{ href: '/stats', label: 'Analytics' },
-	{ href: '/archived', label: 'Archived' }
+	{ href: '/archived', label: 'Archived' },
+	{ href: '/settings', label: 'Settings' }
 ];
 
 /**
@@ -96,6 +97,10 @@ describe('NavBar — currentPageLabel', () => {
 
 	it('returns correct label for /archived route', () => {
 		expect(getCurrentPageLabel('/archived')).toBe('Archived');
+	});
+
+	it('returns correct label for /settings route', () => {
+		expect(getCurrentPageLabel('/settings')).toBe('Settings');
 	});
 
 	it('defaults to "Tasks" for unknown route', () => {

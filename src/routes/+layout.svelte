@@ -2,6 +2,7 @@
 	import '../app.css';
 	import { createTodoStore } from '$lib/state/todoStore.svelte.js';
 	import { createAuthStore } from '$lib/state/authStore.svelte.js';
+	import { createThemeStore } from '$lib/state/themeStore.svelte.js';
 	import { storageGet } from '$lib/scripts/storage.js';
 	import { page } from '$app/stores';
 	import NavBar from '$lib/components/NavBar.svelte';
@@ -15,6 +16,7 @@
 	// Initialize stores and wire auth into todo store for API sync
 	const _todoStore = createTodoStore();
 	const _authStore = createAuthStore();
+	createThemeStore(_authStore);
 	_todoStore.setAuthStore(_authStore);
 
 	// If the user has local data (todos in localStorage), the MigrationDialog handles

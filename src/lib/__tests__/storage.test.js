@@ -154,13 +154,23 @@ describe('storage', () => {
 		});
 	});
 
-	describe('getGuestData', () => {
+		describe('getGuestData', () => {
 		it('returns all guest data fields', () => {
 			mockStore['todos'] = JSON.stringify([{ id: 1, title: 'Test' }]);
 			mockStore['archivedTodos'] = JSON.stringify([{ id: 2, title: 'Archived' }]);
 			mockStore['customTags'] = JSON.stringify(['custom-tag']);
 			mockStore['tagColors'] = JSON.stringify({ 'custom-tag': '#ef4444' });
 			mockStore['darkMode'] = JSON.stringify(true);
+			mockStore['dueDateRemindersEnabled'] = JSON.stringify(false);
+			mockStore['remindOverdueTasks'] = JSON.stringify(false);
+			mockStore['remindTodayTasks'] = JSON.stringify(true);
+			mockStore['themePreset'] = JSON.stringify('ocean');
+			mockStore['accentColor'] = JSON.stringify('#0ea5e9');
+			mockStore['bgColor'] = JSON.stringify('#ffffff');
+			mockStore['cardColor'] = JSON.stringify('#f8fafc');
+			mockStore['textColor'] = JSON.stringify('#1e293b');
+			mockStore['borderColor'] = JSON.stringify('#e2e8f0');
+			mockStore['fontFamily'] = JSON.stringify('serif');
 
 			const data = getGuestData();
 			expect(data).toEqual({
@@ -168,7 +178,26 @@ describe('storage', () => {
 				archivedTodos: [{ id: 2, title: 'Archived' }],
 				customTags: ['custom-tag'],
 				tagColors: { 'custom-tag': '#ef4444' },
-				darkMode: true
+				darkMode: true,
+				settings: {
+					notifications: {
+						dueDateRemindersEnabled: false,
+						remindOverdueTasks: false,
+						remindTodayTasks: true
+					},
+					theme: {
+						themePreset: 'ocean',
+						accentColor: '#0ea5e9',
+						bgColor: '#ffffff',
+						cardColor: '#f8fafc',
+						textColor: '#1e293b',
+						borderColor: '#e2e8f0',
+						fontFamily: 'serif'
+					},
+					display: {
+						fontFamily: 'serif'
+					}
+				}
 			});
 		});
 
@@ -183,6 +212,11 @@ describe('storage', () => {
 			expect(data.customTags).toEqual([]);
 			expect(data.tagColors).toEqual({});
 			expect(data.darkMode).toBeNull();
+			expect(data.settings.notifications.dueDateRemindersEnabled).toBeNull();
+			expect(data.settings.notifications.remindOverdueTasks).toBeNull();
+			expect(data.settings.notifications.remindTodayTasks).toBeNull();
+			expect(data.settings.theme.themePreset).toBeNull();
+			expect(data.settings.display.fontFamily).toBeNull();
 		});
 
 		it('handles localStorage errors gracefully (storageGet catches internally)', () => {
@@ -201,6 +235,8 @@ describe('storage', () => {
 			expect(data.customTags).toEqual([]);
 			expect(data.tagColors).toEqual({});
 			expect(data.darkMode).toBeNull();
+			expect(data.settings.notifications.dueDateRemindersEnabled).toBeNull();
+			expect(data.settings.theme.themePreset).toBeNull();
 			expect(warnSpy).toHaveBeenCalled();
 			warnSpy.mockRestore();
 		});
@@ -219,6 +255,16 @@ describe('storage', () => {
 			mockStore['tagColors'] = JSON.stringify({});
 			mockStore['templates'] = JSON.stringify([]);
 			mockStore['darkMode'] = JSON.stringify(false);
+			mockStore['themePreset'] = JSON.stringify('forest');
+			mockStore['accentColor'] = JSON.stringify('#22c55e');
+			mockStore['bgColor'] = JSON.stringify('#ffffff');
+			mockStore['cardColor'] = JSON.stringify('#f8fafc');
+			mockStore['textColor'] = JSON.stringify('#1e293b');
+			mockStore['borderColor'] = JSON.stringify('#e2e8f0');
+			mockStore['fontFamily'] = JSON.stringify('mono');
+			mockStore['dueDateRemindersEnabled'] = JSON.stringify(true);
+			mockStore['remindOverdueTasks'] = JSON.stringify(false);
+			mockStore['remindTodayTasks'] = JSON.stringify(true);
 			mockStore['filterText'] = JSON.stringify('');
 			mockStore['filterStatus'] = JSON.stringify('all');
 			mockStore['filterCategory'] = JSON.stringify('');
@@ -241,6 +287,16 @@ describe('storage', () => {
 			expect(mockStore['tagColors']).toBeUndefined();
 			expect(mockStore['templates']).toBeUndefined();
 			expect(mockStore['darkMode']).toBeUndefined();
+			expect(mockStore['themePreset']).toBeUndefined();
+			expect(mockStore['accentColor']).toBeUndefined();
+			expect(mockStore['bgColor']).toBeUndefined();
+			expect(mockStore['cardColor']).toBeUndefined();
+			expect(mockStore['textColor']).toBeUndefined();
+			expect(mockStore['borderColor']).toBeUndefined();
+			expect(mockStore['fontFamily']).toBeUndefined();
+			expect(mockStore['dueDateRemindersEnabled']).toBeUndefined();
+			expect(mockStore['remindOverdueTasks']).toBeUndefined();
+			expect(mockStore['remindTodayTasks']).toBeUndefined();
 			expect(mockStore['filterText']).toBeUndefined();
 			expect(mockStore['filterStatus']).toBeUndefined();
 			expect(mockStore['filterCategory']).toBeUndefined();
@@ -294,6 +350,9 @@ describe('storage', () => {
 			expect(result.archivedTodos).toEqual([]);
 			expect(result.customTags).toEqual([]);
 			expect(result.darkMode).toBeNull();
+			expect(result.settings.notifications.dueDateRemindersEnabled).toBeNull();
+			expect(result.settings.theme.themePreset).toBeNull();
+			expect(result.settings.display.fontFamily).toBeNull();
 		});
 
 		it('clearGuestData does not throw when localStorage is undefined (SSR)', () => {

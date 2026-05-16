@@ -64,7 +64,8 @@ const userSchema = new Schema(
 			of: String,
 			default: {}
 		},
-		darkMode: { type: Boolean, default: false }
+		darkMode: { type: Boolean, default: false },
+		settings: { type: Schema.Types.Mixed, default: {} }
 	},
 	{
 		// Minimize version key noise

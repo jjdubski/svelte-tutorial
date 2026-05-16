@@ -85,7 +85,26 @@ export function getGuestData() {
 			archivedTodos: storageGet('archivedTodos') || [],
 			customTags: storageGet('customTags') || [],
 			tagColors: storageGet('tagColors') || {},
-			darkMode: storageGet('darkMode')
+			darkMode: storageGet('darkMode'),
+			settings: {
+				notifications: {
+					dueDateRemindersEnabled: storageGet('dueDateRemindersEnabled'),
+					remindOverdueTasks: storageGet('remindOverdueTasks'),
+					remindTodayTasks: storageGet('remindTodayTasks')
+				},
+				theme: {
+					themePreset: storageGet('themePreset'),
+					accentColor: storageGet('accentColor'),
+					bgColor: storageGet('bgColor'),
+					cardColor: storageGet('cardColor'),
+					textColor: storageGet('textColor'),
+					borderColor: storageGet('borderColor'),
+					fontFamily: storageGet('fontFamily')
+				},
+				display: {
+					fontFamily: storageGet('fontFamily')
+				}
+			}
 		};
 	} catch {
 		return {};
@@ -108,6 +127,16 @@ export function clearGuestData() {
 		localStorage.removeItem('tagColors');
 		localStorage.removeItem('templates');
 		localStorage.removeItem('darkMode');
+		localStorage.removeItem('themePreset');
+		localStorage.removeItem('accentColor');
+		localStorage.removeItem('bgColor');
+		localStorage.removeItem('cardColor');
+		localStorage.removeItem('textColor');
+		localStorage.removeItem('borderColor');
+		localStorage.removeItem('fontFamily');
+		localStorage.removeItem('dueDateRemindersEnabled');
+		localStorage.removeItem('remindOverdueTasks');
+		localStorage.removeItem('remindTodayTasks');
 		localStorage.removeItem('filterText');
 		localStorage.removeItem('filterStatus');
 		localStorage.removeItem('filterCategory');

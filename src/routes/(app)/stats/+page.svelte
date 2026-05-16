@@ -79,10 +79,7 @@
 			{/if}
 		</div>
 
-		<div
-			class="mt-2 flex items-center justify-between text-xs sm:text-sm"
-			style="color: var(--text-muted);"
-		>
+		<div class="mt-2 flex items-center justify-between text-xs sm:text-sm" style="color: var(--text-muted);">
 			<span>{store.stats.completed} done</span>
 			<span>{store.stats.active} active</span>
 		</div>
@@ -215,24 +212,19 @@
 
 			<div class="flex items-center justify-between text-sm sm:text-base">
 				<div class="flex items-center gap-1.5">
-					<span
-						class="inline-block h-2.5 w-2.5 rounded-full"
-						style="background: var(--priority-high);"
+					<span class="inline-block h-2.5 w-2.5 rounded-full" style="background: var(--priority-high);"
 					></span>
 					<span style="color: var(--text-secondary);">High</span>
 					<strong style="color: var(--text-heading);">{store.priorityDistribution.high}</strong>
 				</div>
 				<div class="flex items-center gap-1.5">
-					<span
-						class="inline-block h-2.5 w-2.5 rounded-full"
-						style="background: var(--priority-medium);"
+					<span class="inline-block h-2.5 w-2.5 rounded-full" style="background: var(--priority-medium);"
 					></span>
 					<span style="color: var(--text-secondary);">Medium</span>
 					<strong style="color: var(--text-heading);">{store.priorityDistribution.medium}</strong>
 				</div>
 				<div class="flex items-center gap-1.5">
-					<span class="inline-block h-2.5 w-2.5 rounded-full" style="background: var(--priority-low);"
-					></span>
+					<span class="inline-block h-2.5 w-2.5 rounded-full" style="background: var(--priority-low);"></span>
 					<span style="color: var(--text-secondary);">Low</span>
 					<strong style="color: var(--text-heading);">{store.priorityDistribution.low}</strong>
 				</div>
@@ -259,20 +251,14 @@
 
 		<div class="space-y-2">
 			{#if Object.keys(store.categoryBreakdown).length === 0}
-				<p class="m-0 py-4 text-center text-sm" style="color: var(--text-muted);">
-					No categories assigned yet
-				</p>
+				<p class="m-0 py-4 text-center text-sm" style="color: var(--text-muted);">No categories assigned yet</p>
 			{:else}
 				{#each Object.entries(store.categoryBreakdown) as [category, count] (category)}
 					{@const color = store.categoryColors[category] || '#64748b'}
 					{@const pct = categoryTotal > 0 ? Math.round((count / categoryTotal) * 100) : 0}
 					<div class="flex items-center gap-3">
-						<span class="inline-block h-3 w-3 shrink-0 rounded-full" style="background: {color};"
-						></span>
-						<span
-							class="flex-1 text-sm font-medium sm:text-base"
-							style="color: var(--text-secondary);"
-						>
+						<span class="inline-block h-3 w-3 shrink-0 rounded-full" style="background: {color};"></span>
+						<span class="flex-1 text-sm font-medium sm:text-base" style="color: var(--text-secondary);">
 							{category}
 						</span>
 						<span class="text-sm font-semibold sm:text-base" style="color: var(--text-heading);"

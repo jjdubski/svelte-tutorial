@@ -22,7 +22,7 @@ test.describe('NavBar', () => {
 
 		test('displays all nav links horizontally', async ({ page }) => {
 			const navLinks = page.locator('nav a.nav-link');
-			await expect(navLinks).toHaveText(['Tasks', 'Board', 'Calendar', 'Analytics', 'Archived']);
+			await expect(navLinks).toHaveText(['Tasks', 'Board', 'Calendar', 'Analytics', 'Archived', 'Settings']);
 		});
 
 		test('highlights the current page link with .active class', async ({ page }) => {
@@ -91,7 +91,7 @@ test.describe('NavBar', () => {
 
 			// Should show all nav links except the current page (Tasks)
 			const dropdownLinks = dropdown.locator('a');
-			await expect(dropdownLinks).toHaveText(['Board', 'Calendar', 'Analytics', 'Archived']);
+			await expect(dropdownLinks).toHaveText(['Board', 'Calendar', 'Analytics', 'Archived', 'Settings']);
 		});
 
 		test('triangle rotates 180 degrees when dropdown is open', async ({ page }) => {
@@ -152,7 +152,8 @@ test.describe('NavBar', () => {
 				{ label: 'Board', url: /\/board/, heading: 'Kanban Board' },
 				{ label: 'Calendar', url: /\/calendar/, heading: 'Calendar View' },
 				{ label: 'Analytics', url: /\/stats/, heading: 'Analytics' },
-				{ label: 'Archived', url: /\/archived/, heading: 'Archived Tasks' }
+				{ label: 'Archived', url: /\/archived/, heading: 'Archived Tasks' },
+				{ label: 'Settings', url: /\/settings/, heading: 'Settings' }
 			];
 
 			for (const { label, url, heading } of pages) {
@@ -165,7 +166,11 @@ test.describe('NavBar', () => {
 				await page.waitForURL(url);
 
 				// Verify heading
-				await expect(page.locator('h2')).toContainText(heading);
+				if (label === 'Settings') {
+					await expect(page.locator('h1')).toContainText(heading);
+				} else {
+					await expect(page.locator('h2')).toContainText(heading);
+				}
 
 				// Verify toggle shows new current page
 				await expect(page.locator('.mobile-nav-toggle span.text-sm')).toHaveText(label);

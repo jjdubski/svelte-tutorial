@@ -79,7 +79,7 @@
 		style="background: var(--card-bg); box-shadow: 0 8px 32px var(--shadow); border-color: var(--border); transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;"
 	>
 		<TodoHeader />
-		{#if !store.requestedNotification && typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default'}
+		{#if store.dueDateRemindersEnabled && !store.requestedNotification && typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default'}
 			<div
 				class="notif-banner mb-4 flex items-center gap-3 rounded-lg border px-4 py-2.5 text-sm sm:text-base"
 				style="background: var(--input-bg); border-color: var(--border); color: var(--text-secondary);"

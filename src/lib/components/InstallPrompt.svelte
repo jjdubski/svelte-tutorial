@@ -72,7 +72,7 @@
 
 {#if showBanner}
 	<div
-		class="fixed bottom-4 left-4 right-4 z-50 flex items-center justify-between gap-3 rounded-xl border px-4 py-3 shadow-lg sm:left-auto sm:right-4 sm:max-w-md"
+		class="fixed right-4 bottom-4 left-4 z-50 flex items-center justify-between gap-3 rounded-xl border px-4 py-3 shadow-lg sm:right-4 sm:left-auto sm:max-w-md"
 		style="background: var(--card-bg); border-color: var(--border); box-shadow: 0 8px 32px var(--shadow);"
 	>
 		<div class="flex items-center gap-3">

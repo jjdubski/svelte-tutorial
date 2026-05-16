@@ -17,6 +17,33 @@ async function _getUser(authUserId) {
 }
 
 /**
+ * Deep-merge settings while skipping null/undefined values.
+ * Arrays are replaced wholesale.
+ * @param {Record<string, any>} base
+ * @param {Record<string, any>} incoming
+ * @returns {Record<string, any>}
+ */
+function _mergeSettings(base, incoming) {
+	const result = { ...(base || {}) };
+
+	for (const [key, value] of Object.entries(incoming || {})) {
+		if (value === null || value === undefined) continue;
+		if (Array.isArray(value)) {
+			result[key] = value;
+			continue;
+		}
+		if (typeof value === 'object') {
+			const current = result[key] && typeof result[key] === 'object' && !Array.isArray(result[key]) ? result[key] : {};
+			result[key] = _mergeSettings(current, value);
+			continue;
+		}
+		result[key] = value;
+	}
+
+	return result;
+}
+
+/**
  * Get or create a user document, return full user data as a plain object.
  * Updates lastLoginAt on each call.
  * @param {string} authUserId
@@ -64,7 +91,7 @@ export async function upsertUser(authUserId, profile) {
 /**
  * Get all todos and user settings for a given user.
  * @param {string} authUserId
- * @returns {Promise<{ todos: Array, archivedTodos: Array, customTags: string[], tagColors: Record<string,string>, darkMode: boolean }>}
+ * @returns {Promise<{ todos: Array, archivedTodos: Array, customTags: string[], tagColors: Record<string,string>, darkMode: boolean, settings: Record<string, any> }>}
  */
 export async function getTodos(authUserId) {
 	const user = await _getUser(authUserId);
@@ -97,7 +124,8 @@ export async function getTodos(authUserId) {
 		archivedTodos: dedupedArchived,
 		customTags: user.customTags || [],
 		tagColors: Object.fromEntries(user.tagColors || new Map()),
-		darkMode: user.darkMode
+		darkMode: user.darkMode,
+		settings: user.settings || {}
 	};
 }
 
@@ -248,12 +276,36 @@ export async function updateDarkMode(authUserId, darkMode) {
 }
 
 /**
- * Bulk-import data (todos, archivedTodos, customTags, tagColors) into the user's document.
- * Existing items are updated by matching ID; new items are appended.
+ * Merge settings payload into user's stored settings.
  * @param {string} authUserId
- * @param {{ todos?: Array, archivedTodos?: Array, customTags?: string[], tagColors?: Record<string,string> }} data
- * @returns {Promise<Record<string, any>>} The updated user document as a plain object
+ * @param {Record<string, any>} settings
+ * @returns {Promise<Record<string, any>>}
  */
+export async function updateSettings(authUserId, settings) {
+	const user = await _getUser(authUserId);
+	const current = user.settings && typeof user.settings === 'object' ? user.settings : {};
+	user.settings = _mergeSettings(current, settings);
+	await user.save();
+	return user.toObject();
+}
+
+/**
+ * Get settings object for a user.
+ * @param {string} authUserId
+ * @returns {Promise<Record<string, any>>}
+ */
+export async function getSettings(authUserId) {
+	const user = await _getUser(authUserId);
+	return user.settings && typeof user.settings === 'object' ? user.settings : {};
+}
+
+/**
+	 * Bulk-import data (todos, archivedTodos, customTags, tagColors) into the user's document.
+	 * Existing items are updated by matching ID; new items are appended.
+	 * @param {string} authUserId
+	 * @param {{ todos?: Array, archivedTodos?: Array, customTags?: string[], tagColors?: Record<string,string>, settings?: Record<string, any> }} data
+	 * @returns {Promise<Record<string, any>>} The updated user document as a plain object
+	 */
 export async function importData(authUserId, data) {
 	const user = await _getUser(authUserId);
 
@@ -297,6 +349,11 @@ export async function importData(authUserId, data) {
 		for (const [key, value] of Object.entries(data.tagColors)) {
 			user.tagColors.set(key, value);
 		}
+	}
+
+	if (data.settings && typeof data.settings === 'object') {
+		const current = user.settings && typeof user.settings === 'object' ? user.settings : {};
+		user.settings = _mergeSettings(current, data.settings);
 	}
 
 	await user.save();
@@ -382,6 +439,11 @@ export async function migrateGuestData(authUserId, guestData) {
 	// Persist dark mode preference from guest data
 	if (typeof guestData.darkMode === 'boolean') {
 		user.darkMode = guestData.darkMode;
+	}
+
+	if (guestData.settings && typeof guestData.settings === 'object') {
+		const current = user.settings && typeof user.settings === 'object' ? user.settings : {};
+		user.settings = _mergeSettings(current, guestData.settings);
 	}
 
 	await user.save();

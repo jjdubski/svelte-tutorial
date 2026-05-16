@@ -1,5 +1,6 @@
 <script>
 	import { page } from '$app/stores';
+	import { resolve } from '$app/paths';
 	import { Sun, Moon } from 'lucide-svelte';
 	import { getTodoStore } from '$lib/state/todoStore.svelte.js';
 	import AuthButton from '$lib/components/AuthButton.svelte';
@@ -11,7 +12,8 @@
 		{ href: '/board', label: 'Board' },
 		{ href: '/calendar', label: 'Calendar' },
 		{ href: '/stats', label: 'Analytics' },
-		{ href: '/archived', label: 'Archived' }
+		{ href: '/archived', label: 'Archived' },
+		{ href: '/settings', label: 'Settings' }
 	];
 
 	let mobileMenuOpen = $state(false);
@@ -52,7 +54,7 @@
 			<div class="flex gap-1">
 				{#each links as link (link.href)}
 					<a
-						href={link.href}
+						href={resolve(link.href)}
 						data-sveltekit-preload-data
 						class="nav-link rounded-lg px-3 py-1.5 text-center text-xs font-medium no-underline transition-all sm:text-base"
 						class:active={$page.url.pathname === link.href}
@@ -79,7 +81,11 @@
 				aria-label="Toggle mobile navigation menu"
 			>
 				<span class="text-sm font-medium max-sm:text-base">{currentPageLabel}</span>
-				<span class="inline-flex transition-transform duration-200" class:rotate-180={mobileMenuOpen} aria-hidden="true">
+				<span
+					class="inline-flex transition-transform duration-200"
+					class:rotate-180={mobileMenuOpen}
+					aria-hidden="true"
+				>
 					<svg width="10" height="8" viewBox="0 0 10 8">
 						<path d="M1 1L5 7L9 1H1Z" fill="currentColor" />
 					</svg>
@@ -94,7 +100,7 @@
 					{#each links as link (link.href)}
 						{#if link.href !== $page.url.pathname}
 							<a
-								href={link.href}
+								href={resolve(link.href)}
 								data-sveltekit-preload-data
 								onclick={() => (mobileMenuOpen = false)}
 								class="nav-link block rounded px-3 py-2 text-sm font-medium no-underline max-sm:text-base"

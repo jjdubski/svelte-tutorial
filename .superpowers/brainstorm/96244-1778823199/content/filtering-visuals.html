@@ -1,0 +1,155 @@
+<h2>🔍 Filtering &amp; Search — Visual Mockups</h2>
+<p class="subtitle">Scroll down to see each option. Click to select the ones you want.</p>
+
+<!-- A: Search Bar -->
+<div class="section">
+  <div class="option" data-choice="search-bar" onclick="toggleSelect(this)" style="cursor:pointer;border:2px solid var(--border-color);border-radius:12px;padding:1rem;margin-bottom:1rem">
+    <div class="letter" style="float:left;margin-right:1rem">A</div>
+    <div class="content">
+      <h3>Full-text Search Bar</h3>
+      <p>Search titles &amp; descriptions in real-time</p>
+
+      <div style="background:var(--card-bg);border:1px solid var(--border-color);border-radius:8px;padding:12px;margin-top:8px">
+        <div style="display:flex;gap:8px;align-items:center">
+          <span>🔍</span>
+          <input placeholder="Search tasks..." style="flex:1;border:1px solid var(--border-color);border-radius:6px;padding:8px 12px;background:var(--bg-color);color:var(--text-color);font-size:14px">
+        </div>
+        <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;font-size:13px">
+          <div style="display:flex;gap:8px;align-items:center;padding:6px 8px;border-radius:4px;background:var(--bg-color)">
+            <span style="opacity:0.6">☐</span>
+            <span>Buy grocer<strong>ies</strong></span>
+            <span style="margin-left:auto;font-size:11px;background:#e2e8f0;padding:2px 6px;border-radius:4px;color:#666">Today</span>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;padding:6px 8px;border-radius:4px;background:var(--bg-color)">
+            <span style="opacity:0.6">☐</span>
+            <span>Plan dinn<strong>er</strong> party</span>
+            <span style="margin-left:auto;font-size:11px;background:#e2e8f0;padding:2px 6px;border-radius:4px;color:#666">Wed</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- B: Multi-tag Filter -->
+<div class="section">
+  <div class="option" data-choice="tag-filter" onclick="toggleSelect(this)" style="cursor:pointer;border:2px solid var(--border-color);border-radius:12px;padding:1rem;margin-bottom:1rem">
+    <div class="letter" style="float:left;margin-right:1rem">B</div>
+    <div class="content">
+      <h3>Multi-tag Filter</h3>
+      <p>Click tag pills to filter by one or more tags</p>
+
+      <div style="background:var(--card-bg);border:1px solid var(--border-color);border-radius:8px;padding:12px;margin-top:8px">
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span style="background:#3b82f6;color:white;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer">Work ✓</span>
+          <span style="background:#e2e8f0;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer">Personal</span>
+          <span style="background:#e2e8f0;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer">Health</span>
+          <span style="background:#e2e8f0;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer">Ideas</span>
+          <span style="background:#10b981;color:white;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer">Urgent ✓</span>
+        </div>
+        <div style="margin-top:8px;color:var(--text-muted);font-size:12px">Filtered: 3 tasks tagged with Work + Urgent</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- C: Date Range Filter -->
+<div class="section">
+  <div class="option" data-choice="date-filter" onclick="toggleSelect(this)" style="cursor:pointer;border:2px solid var(--border-color);border-radius:12px;padding:1rem;margin-bottom:1rem">
+    <div class="letter" style="float:left;margin-right:1rem">C</div>
+    <div class="content">
+      <h3>Date Range Filter</h3>
+      <p>Filter by due date windows or custom ranges</p>
+
+      <div style="background:var(--card-bg);border:1px solid var(--border-color);border-radius:8px;padding:12px;margin-top:8px">
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span style="background:#e2e8f0;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer">Any time</span>
+          <span style="background:#3b82f6;color:white;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer">Today</span>
+          <span style="background:#e2e8f0;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer">Next 7 days</span>
+          <span style="background:#e2e8f0;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer">This month</span>
+          <span style="background:#e2e8f0;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer">Overdue</span>
+          <span style="background:#e2e8f0;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer">Custom...</span>
+        </div>
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <input type="date" value="2026-05-15" style="flex:1;border:1px solid var(--border-color);border-radius:6px;padding:6px;background:var(--bg-color);color:var(--text-color);font-size:12px">
+          <span style="padding:6px;color:var(--text-muted)">→</span>
+          <input type="date" value="2026-05-22" style="flex:1;border:1px solid var(--border-color);border-radius:6px;padding:6px;background:var(--bg-color);color:var(--text-color);font-size:12px">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- D: Status & Priority -->
+<div class="section">
+  <div class="option" data-choice="status-filter" onclick="toggleSelect(this)" style="cursor:pointer;border:2px solid var(--border-color);border-radius:12px;padding:1rem;margin-bottom:1rem">
+    <div class="letter" style="float:left;margin-right:1rem">D</div>
+    <div class="content">
+      <h3>Status &amp; Priority Filter</h3>
+      <p>Toggle between All / Active / Completed + priority level</p>
+
+      <div style="background:var(--card-bg);border:1px solid var(--border-color);border-radius:8px;padding:12px;margin-top:8px">
+        <div style="display:flex;gap:4px;margin-bottom:8px">
+          <span style="background:#3b82f6;color:white;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:500">All</span>
+          <span style="background:#e2e8f0;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer">Active</span>
+          <span style="background:#e2e8f0;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer">Completed</span>
+        </div>
+        <div style="display:flex;gap:6px">
+          <span style="background:#e2e8f0;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer">Any priority</span>
+          <span style="background:#ef4444;color:white;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer">🔴 High</span>
+          <span style="background:#e2e8f0;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer">🟡 Medium</span>
+          <span style="background:#e2e8f0;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer">🟢 Low</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- E: Saved Filters -->
+<div class="section">
+  <div class="option" data-choice="saved-filters" onclick="toggleSelect(this)" style="cursor:pointer;border:2px solid var(--border-color);border-radius:12px;padding:1rem;margin-bottom:1rem">
+    <div class="letter" style="float:left;margin-right:1rem">E</div>
+    <div class="content">
+      <h3>Saved / Smart Filters</h3>
+      <p>Save filter combos as named views that appear as quick-access tabs</p>
+
+      <div style="background:var(--card-bg);border:1px solid var(--border-color);border-radius:8px;padding:12px;margin-top:8px">
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span style="background:#e2e8f0;padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer">All Tasks</span>
+          <span style="background:#3b82f6;color:white;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:500">Work This Week</span>
+          <span style="background:#e2e8f0;padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer">Urgent + Overdue</span>
+          <span style="border:1px dashed #3b82f6;color:#3b82f6;padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer">+ Save Current</span>
+        </div>
+        <div style="margin-top:8px;font-size:11px;color:var(--text-muted)">"Work This Week" = tag:Work + due:Next 7 days</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- F: Query Syntax -->
+<div class="section">
+  <div class="option" data-choice="query-syntax" onclick="toggleSelect(this)" style="cursor:pointer;border:2px solid var(--border-color);border-radius:12px;padding:1rem;margin-bottom:1rem">
+    <div class="letter" style="float:left;margin-right:1rem">F</div>
+    <div class="content">
+      <h3>Advanced Query Syntax</h3>
+      <p>Power-user search bar with structured commands</p>
+
+      <div style="background:var(--card-bg);border:1px solid var(--border-color);border-radius:8px;padding:12px;margin-top:8px">
+        <div style="display:flex;gap:8px;align-items:center">
+          <span>🔍</span>
+          <input value="tag:work priority:high due:today" style="flex:1;border:1px solid var(--border-color);border-radius:6px;padding:8px 12px;background:var(--bg-color);color:var(--text-color);font-size:14px;font-family:monospace">
+        </div>
+        <div style="margin-top:8px;display:flex;gap:4px;flex-wrap:wrap;font-size:11px;color:var(--text-muted)">
+          <code style="background:var(--bg-color);padding:2px 6px;border-radius:4px">tag:</code>
+          <code style="background:var(--bg-color);padding:2px 6px;border-radius:4px">priority:</code>
+          <code style="background:var(--bg-color);padding:2px 6px;border-radius:4px">due:</code>
+          <code style="background:var(--bg-color);padding:2px 6px;border-radius:4px">status:</code>
+          <code style="background:var(--bg-color);padding:2px 6px;border-radius:4px">created:</code>
+          <span style="margin-left:auto">Auto-suggests as you type</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:2rem">Click any option to select/deselect it. Let me know which ones you want in the plan!</p>

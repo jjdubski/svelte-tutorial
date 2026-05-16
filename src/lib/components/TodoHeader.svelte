@@ -1,51 +1,5 @@
 <script>
-	import { getTodoStore } from '$lib/state/todoStore.svelte.js';
-	import { createEventDispatcher } from 'svelte';
-
-	const store = getTodoStore();
-	const dispatch = createEventDispatcher();
-
-	/**
-	 * Trigger export of todos and download as JSON file.
-	 */
-	function handleExport() {
-		const data = store.exportTodos();
-		const blob = new Blob([data], { type: 'application/json' });
-		const url = URL.createObjectURL(blob);
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = `todos-${new Date().toISOString().split('T')[0]}.json`;
-		document.body.appendChild(a);
-		a.click();
-		document.body.removeChild(a);
-		URL.revokeObjectURL(url);
-		store.showToast('Exported todos successfully', 'success');
-	}
-
-	/**
-	 * Handle file selection for import.
-	 */
-	function handleImport() {
-		const input = document.createElement('input');
-		input.type = 'file';
-		input.accept = '.json,application/json';
-		input.onchange = (e) => {
-			const file = e.target.files[0];
-			if (!file) return;
-
-			const reader = new FileReader();
-			reader.onload = (event) => {
-				const result = store.importTodos(event.target.result);
-				if (result.success) {
-					store.showToast(result.message, 'success');
-				} else {
-					store.showToast(result.message, 'warning');
-				}
-			};
-			reader.readAsText(file);
-		};
-		input.click();
-	}
+	import { resolve } from '$app/paths';
 </script>
 
 <div class="mb-3 grid w-full grid-cols-1 items-center gap-3 sm:grid-cols-3">
@@ -57,57 +11,16 @@
 		Todo List
 	</h1>
 
-	<!-- Export/Import buttons -->
+	<!-- Data controls moved to /settings -->
 	<div class="flex flex-wrap items-center justify-center gap-2 sm:justify-end">
-		<button
-			type="button"
-			class="flex items-center gap-1 rounded-md px-3 py-1.5 text-sm transition-colors"
-			style="background: var(--btn-secondary-bg, #f3f4f6); color: var(--btn-secondary-text, #374151); border: 1px solid var(--border, #d1d5db);"
-			onclick={handleImport}
-			title="Import todos from JSON file"
+		<a
+			href={resolve('/settings')}
+			data-sveltekit-preload-data
+			class="rounded-md px-3 py-1.5 text-sm font-medium no-underline"
+			style="background: var(--input-bg); color: var(--text-secondary); border: 1px solid var(--border);"
 		>
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				width="16"
-				height="16"
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="2"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-			>
-				<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-				<polyline points="17 8 12 3 7 8" />
-				<line x1="12" y1="3" x2="12" y2="15" />
-			</svg>
-			Import
-		</button>
-
-		<button
-			type="button"
-			class="flex items-center gap-1 rounded-md px-3 py-1.5 text-sm transition-colors"
-			style="background: var(--btn-primary-bg, #2563eb); color: var(--btn-primary-text, #ffffff); border: 1px solid var(--btn-primary-bg, #2563eb);"
-			onclick={handleExport}
-			title="Export todos to JSON file"
-		>
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				width="16"
-				height="16"
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="2"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-			>
-				<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-				<polyline points="7 10 12 15 17 10" />
-				<line x1="12" y1="15" x2="12" y2="3" />
-			</svg>
-			Export
-		</button>
+			Open Settings
+		</a>
 	</div>
 </div>
 

@@ -97,7 +97,10 @@
 					class="glow-btn flex cursor-pointer items-center gap-1 rounded-lg border-none px-2.5 py-2 text-xs font-medium sm:text-sm"
 					style="background: var(--btn-save); color: white;"
 					data-btn="save"
-					onclick={() => { store.completeSelected(); lightTap(); }}
+					onclick={() => {
+						store.completeSelected();
+						lightTap();
+					}}
 					disabled={store.selectedTodos.size === 0}
 				>
 					<CheckSquare size={14} /> Complete
@@ -106,7 +109,10 @@
 					class="glow-btn flex cursor-pointer items-center gap-1 rounded-lg border-none px-2.5 py-2 text-xs font-medium sm:text-sm"
 					style="background: var(--btn-delete); color: white;"
 					data-btn="delete"
-					onclick={() => { store.archiveSelected(); lightTap(); }}
+					onclick={() => {
+						store.archiveSelected();
+						lightTap();
+					}}
 					disabled={store.selectedTodos.size === 0}
 				>
 					<Archive size={14} /> Archive
@@ -211,7 +217,6 @@
 			{cat}
 		</button>
 	{/each}
-
 </div>
 
 <!-- Tag Filter Pills -->

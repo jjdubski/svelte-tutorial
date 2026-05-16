@@ -225,10 +225,8 @@
 							class:dragging={store.draggedId === todo.id}
 							class:drag-over={dropTargetCardId === todo.id}
 							class:selected={store.selectedTodos.has(todo.id)}
-							class:drag-indicator-before={dropTargetCardId === todo.id &&
-								dropIndicatorPos === 'before'}
-							class:drag-indicator-after={dropTargetCardId === todo.id &&
-								dropIndicatorPos === 'after'}
+							class:drag-indicator-before={dropTargetCardId === todo.id && dropIndicatorPos === 'before'}
+							class:drag-indicator-after={dropTargetCardId === todo.id && dropIndicatorPos === 'after'}
 							draggable="true"
 							style="background: var(--todo-bg); border-color: var(--border);"
 							onclick={(e) => handleCardClick(e, todo)}
@@ -280,7 +278,10 @@
 								type="checkbox"
 								class="todo-check mt-0.5 h-[18px] w-[18px] shrink-0 cursor-pointer"
 								checked={todo.completed}
-								onchange={() => { store.toggleTodo(todo.id); lightTap(); }}
+								onchange={() => {
+									store.toggleTodo(todo.id);
+									lightTap();
+								}}
 								aria-label={todo.completed ? 'Mark as incomplete' : 'Mark as complete'}
 							/>
 
@@ -341,7 +342,10 @@
 
 							<div class="flex items-center self-stretch">
 								<button
-									onclick={() => { store.deleteTodo(todo.id); lightTap(); }}
+									onclick={() => {
+										store.deleteTodo(todo.id);
+										lightTap();
+									}}
 									class="flex cursor-pointer items-center gap-0.5 rounded border-none p-0.5 text-xs"
 									style="color: var(--text-muted);"
 									aria-label="Archive task"

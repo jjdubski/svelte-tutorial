@@ -79,10 +79,7 @@
 						Keyboard Shortcuts
 					</h3>
 				</div>
-				<div
-					class="rounded-xl border p-4"
-					style="background: var(--todo-bg); border-color: var(--border);"
-				>
+				<div class="rounded-xl border p-4" style="background: var(--todo-bg); border-color: var(--border);">
 					<p class="m-0 text-sm sm:text-base" style="color: var(--text-muted);">
 						Coming soon! Full keyboard shortcut support is planned for a future update (Phase 4).
 					</p>
@@ -97,10 +94,7 @@
 						Multi-Select
 					</h3>
 				</div>
-				<div
-					class="rounded-xl border p-4"
-					style="background: var(--todo-bg); border-color: var(--border);"
-				>
+				<div class="rounded-xl border p-4" style="background: var(--todo-bg); border-color: var(--border);">
 					<ul class="m-0 space-y-2 pl-5 text-sm sm:text-base" style="color: var(--text-secondary);">
 						<li>
 							<strong style="color: var(--text-heading);">Ctrl/Cmd + Click</strong>
