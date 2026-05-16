@@ -1,8 +1,10 @@
 <script>
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { fade, scale } from 'svelte/transition';
 	import { X, Check } from 'lucide-svelte';
 	import { getTodoStore } from '$lib/state/todoStore.svelte.js';
+	import { materialEasing } from '$lib/utils/motion.js';
 
 	let { selectedDate, onclose } = $props();
 
@@ -29,13 +31,22 @@
 {#if selectedDate}
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<div class="fixed inset-0 z-50 bg-black/50 p-4" onclick={onclose}>
+	<div
+		class="fixed inset-0 z-50 bg-black/50 p-4"
+		onclick={onclose}
+		transition:fade={{ duration: store.prefersReducedMotion ? 0 : 150, easing: materialEasing }}
+	>
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
 			class="mx-auto mt-[10vh] w-full max-w-[500px] overflow-hidden rounded-xl border"
 			style="background: var(--card-bg); border-color: var(--border);"
 			onclick={(e) => e.stopPropagation()}
+			transition:scale={{
+				duration: store.prefersReducedMotion ? 0 : 150,
+				start: 0.95,
+				easing: materialEasing
+			}}
 		>
 			<div class="flex items-center justify-between border-b p-5" style="border-color: var(--border);">
 				<h3 class="m-0 text-lg font-semibold" style="color: var(--text-heading);">

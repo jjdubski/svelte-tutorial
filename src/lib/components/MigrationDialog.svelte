@@ -1,7 +1,9 @@
 <script>
+	import { fade, scale } from 'svelte/transition';
 	import { getAuthStore } from '$lib/state/authStore.svelte.js';
 	import { getTodoStore } from '$lib/state/todoStore.svelte.js';
 	import { storageGet, getGuestData, clearGuestData } from '$lib/scripts/storage.js';
+	import { materialEasing } from '$lib/utils/motion.js';
 
 	const auth = getAuthStore();
 	const store = getTodoStore();
@@ -9,6 +11,7 @@
 	let showMigration = $state(false);
 	let isSyncing = $state(false);
 	let syncError = $state('');
+	let prefersReducedMotion = $state(false);
 
 	/**
 	 * Show the migration dialog when:
@@ -30,6 +33,11 @@
 				showMigration = false;
 			}
 		}
+	});
+
+	$effect(() => {
+		if (typeof window === 'undefined') return;
+		prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 	});
 
 	async function handleSync() {
@@ -70,13 +78,22 @@
 {#if showMigration}
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<div class="fixed inset-0 z-[999] flex items-center justify-center bg-black/50 p-4" onclick={() => {}}>
+	<div
+		class="fixed inset-0 z-[999] flex items-center justify-center bg-black/50 p-4"
+		onclick={() => {}}
+		transition:fade={{ duration: prefersReducedMotion ? 0 : 150, easing: materialEasing }}
+	>
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
 			class="w-full max-w-md rounded-2xl border p-6 shadow-xl"
 			style="background: var(--card-bg); border-color: var(--border);"
 			onclick={(e) => e.stopPropagation()}
+			transition:scale={{
+				duration: prefersReducedMotion ? 0 : 150,
+				start: 0.95,
+				easing: materialEasing
+			}}
 		>
 			<h2 class="mb-2 text-lg font-bold" style="color: var(--text-heading);">Sync your data?</h2>
 			<p class="mb-6 text-sm leading-relaxed" style="color: var(--text-secondary);">

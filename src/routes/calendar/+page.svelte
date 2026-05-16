@@ -152,7 +152,9 @@
 								class="flex items-center gap-1 truncate rounded px-1 py-0.5 text-[10px] sm:px-2 sm:py-1 sm:text-xs"
 								style="background: var(--input-bg); color: {task.completed
 									? 'var(--text-muted)'
-									: 'var(--text-heading)'}; text-decoration: {task.completed ? 'line-through' : 'none'};"
+									: 'var(--text-heading)'}; text-decoration: {task.completed
+									? 'line-through'
+									: 'none'};"
 								onmouseenter={(e) => {
 									tooltipTask = task;
 									tooltipTarget = e.currentTarget;

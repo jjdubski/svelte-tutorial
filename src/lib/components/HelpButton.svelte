@@ -1,7 +1,10 @@
 <script>
+	import { fade, scale } from 'svelte/transition';
 	import { HelpCircle, X, Settings, Keyboard, MousePointer2 } from 'lucide-svelte';
+	import { materialEasing } from '$lib/utils/motion.js';
 
 	let showHelp = $state(false);
+	let prefersReducedMotion = $state(false);
 
 	function openHelp() {
 		showHelp = true;
@@ -29,6 +32,11 @@
 			return () => document.removeEventListener('keydown', handleKeydown);
 		}
 	});
+
+	$effect(() => {
+		if (typeof window === 'undefined') return;
+		prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+	});
 </script>
 
 <!-- Floating help button -->
@@ -53,10 +61,12 @@
 		aria-modal="true"
 		aria-label="Help"
 		onclick={handleBackdropClick}
+		transition:fade={{ duration: prefersReducedMotion ? 0 : 150, easing: materialEasing }}
 	>
 		<div
-			class="animate-scale-in relative w-full max-w-md rounded-2xl border p-6 shadow-2xl"
+			class="relative w-full max-w-md rounded-2xl border p-6 shadow-2xl"
 			style="background: var(--card-bg); border-color: var(--border); max-height: 80vh; overflow-y: auto;"
+			transition:scale={{ duration: prefersReducedMotion ? 0 : 150, start: 0.95, easing: materialEasing }}
 		>
 			<!-- Header -->
 			<div class="mb-5 flex items-center justify-between">

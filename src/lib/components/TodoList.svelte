@@ -1,7 +1,7 @@
 <script>
-	import { fade, scale, slide } from 'svelte/transition';
+	import { fade, slide } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
-	import { elasticOut, cubicOut } from 'svelte/easing';
+	import { materialEasing } from '$lib/utils/motion.js';
 	import {
 		Layers,
 		Plus,
@@ -51,7 +51,10 @@
 	{#if store.isLoading}
 		<SkeletonLoader />
 	{:else if store.filteredTodos.length === 0}
-		<div class="flex flex-col items-center px-4 py-12" in:fade={{ duration: store.prefersReducedMotion ? 0 : 300 }}>
+		<div
+			class="flex flex-col items-center px-4 py-12"
+			in:fade={{ duration: store.prefersReducedMotion ? 0 : 300, easing: materialEasing }}
+		>
 			{#if store.todos.length === 0}
 				<!-- No tasks ever -->
 				<div
@@ -149,7 +152,10 @@
 		{#if (store.filterStatus === 'all' || store.filterStatus === 'active') && store.upcomingDueTasks.length > 0}
 			<div
 				class="upcoming-section glow-card mb-4 rounded-xl border p-3"
-				transition:slide={{ duration: store.prefersReducedMotion ? 0 : 200 }}
+				transition:slide={{
+					duration: store.prefersReducedMotion ? 0 : 200,
+					easing: materialEasing
+				}}
 			>
 				<button
 					class="upcoming-toggle flex w-full cursor-pointer items-center gap-2 border-none bg-none p-0 text-sm font-semibold sm:text-base"
@@ -202,13 +208,12 @@
 		{/if}
 		{#each store.filteredTodos as todo, i (todo.id)}
 			<div
-				animate:flip={{ duration: store.prefersReducedMotion ? 0 : 300, easing: cubicOut }}
-				in:scale={{
-					duration: store.prefersReducedMotion ? 0 : 220,
-					easing: elasticOut,
-					delay: store.prefersReducedMotion ? 0 : i * 40
+				animate:flip={{ duration: store.prefersReducedMotion ? 0 : 300, easing: materialEasing }}
+				transition:slide={{
+					duration: store.prefersReducedMotion ? 0 : 200,
+					easing: materialEasing,
+					delay: store.prefersReducedMotion ? 0 : i * 20
 				}}
-				out:fade={{ duration: store.prefersReducedMotion ? 0 : 150 }}
 			>
 				<Todo {todo} />
 			</div>

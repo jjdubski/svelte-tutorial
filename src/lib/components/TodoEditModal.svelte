@@ -1,6 +1,6 @@
 <script>
 	import { fade, scale } from 'svelte/transition';
-	import { elasticOut } from 'svelte/easing';
+	import { materialEasing } from '$lib/utils/motion.js';
 	import { Tag, X } from 'lucide-svelte';
 	import { getTodoStore } from '$lib/state/todoStore.svelte.js';
 
@@ -80,12 +80,19 @@
 	tabindex="-1"
 	onclick={(e) => e.target === e.currentTarget && cancel()}
 	onkeydown={(e) => e.key === 'Escape' && cancel()}
-	in:fade={{ duration: store.prefersReducedMotion ? 0 : 150 }}
+	transition:fade={{
+		duration: store.prefersReducedMotion ? 0 : 150,
+		easing: materialEasing
+	}}
 >
 	<div
 		class="w-full max-w-4xl rounded-xl border p-4 sm:p-5"
 		style="background: var(--card-bg); border-color: var(--border); box-shadow: 0 20px 60px rgba(0,0,0,0.3);"
-		in:scale={{ duration: store.prefersReducedMotion ? 0 : 200, easing: elasticOut }}
+		transition:scale={{
+			duration: store.prefersReducedMotion ? 0 : 150,
+			start: 0.95,
+			easing: materialEasing
+		}}
 	>
 		<form
 			class="flex flex-col gap-3"

@@ -15,6 +15,7 @@ import {
 	getRandomTagColor
 } from '$lib/utils/todoUtils.js';
 import { lightTap } from '$lib/utils/haptics.js';
+import { parseQuery, stringifyQuery } from '$lib/utils/queryParser.js';
 
 /**
  * @typedef {Object} Todo
@@ -60,6 +61,67 @@ function _dedupTodos(todos) {
 		seen.add(t.id);
 		return true;
 	});
+}
+
+/**
+ * @template T
+ * @param {T} value
+ * @returns {T}
+ */
+function _deepClone(value) {
+	if (typeof structuredClone === 'function') {
+		return structuredClone(value);
+	}
+	return JSON.parse(JSON.stringify(value));
+}
+
+const HISTORY_STACK_LIMIT = 50;
+
+/**
+ * @param {string} value
+ * @returns {string}
+ */
+function _normalizeDateTokenValue(value) {
+	const raw = (value || '').trim();
+	if (!raw) return '';
+
+	if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+
+	const slashMatch = raw.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+	if (slashMatch) {
+		const month = slashMatch[1].padStart(2, '0');
+		const day = slashMatch[2].padStart(2, '0');
+		const year = slashMatch[3];
+		return `${year}-${month}-${day}`;
+	}
+
+	return '';
+}
+
+/**
+ * @param {string} value
+ * @returns {'all'|'active'|'done'}
+ */
+function _normalizeStatusTokenValue(value) {
+	const normalized = (value || '').trim().toLowerCase();
+	if (normalized === 'active') return 'active';
+	if (normalized === 'done' || normalized === 'completed') return 'done';
+	if (normalized === 'all') return 'all';
+	return 'all';
+}
+
+/**
+ * @param {string} value
+ * @returns {'manual'|'priority'|'date'|'alpha-asc'|'alpha-desc'|'category'}
+ */
+function _normalizeSortTokenValue(value) {
+	const normalized = (value || '').trim().toLowerCase();
+	if (normalized === 'priority') return 'priority';
+	if (normalized === 'date') return 'date';
+	if (normalized === 'alpha-asc' || normalized === 'a-z' || normalized === 'az') return 'alpha-asc';
+	if (normalized === 'alpha-desc' || normalized === 'z-a' || normalized === 'za') return 'alpha-desc';
+	if (normalized === 'category') return 'category';
+	return 'manual';
 }
 
 class TodoStore {
@@ -140,8 +202,7 @@ class TodoStore {
 		{
 			name: 'Errand',
 			title: 'Saturday essentials run',
-			description:
-				'- Buy pantry staples\n- Pick up household supplies\n- Drop off package returns',
+			description: '- Buy pantry staples\n- Pick up household supplies\n- Drop off package returns',
 			dueDate: '',
 			priority: 'low',
 			category: 'Personal',
@@ -177,6 +238,11 @@ class TodoStore {
 	filterPriority = $state('all');
 	filterDateFrom = $state('');
 	filterDateTo = $state('');
+	filterDueKeyword = $state('');
+	queryTokens = $state([]);
+	queryPlainText = $state('');
+	_isSyncingFilterText = false;
+	_isApplyingQueryTokens = false;
 	activeFilterCount = $state(0);
 
 	// ── Select mode ──
@@ -196,6 +262,8 @@ class TodoStore {
 	lastMovedTodos = $state([]);
 	/** @type {Array<{completed: boolean, tags: string[]}>} */
 	lastMovedStates = $state([]);
+	_undoStack = $state([]);
+	_redoStack = $state([]);
 
 	// ── Toast ──
 	toast = $state({ show: false, message: '', type: 'success' });
@@ -305,7 +373,6 @@ class TodoStore {
 			const ct = this.customTags;
 			const tc = this.tagColors;
 			this.stats = this._computeStats(t);
-			this.filteredTodos = this._computeFiltered(t);
 			this.upcomingDueTasks = this._computeUpcomingDue(t);
 			this.streak = this._computeStreak([...t, ...a]);
 			this.completionsByDay = this._computeCompletionsByDay([...t, ...a]);
@@ -320,8 +387,17 @@ class TodoStore {
 
 		// Effect: recompute filteredTodos when filters/sort change
 		$effect(() => {
-			// Read filter/sort deps to track them
+			const todos = this.todos;
 			const ft = this.filterText;
+
+			if (!this._isSyncingFilterText) {
+				const parsed = parseQuery(ft);
+				this.queryTokens = parsed.tokens;
+				this.queryPlainText = parsed.plainText;
+				this._applyQueryTokens(parsed.tokens);
+			}
+
+			const textQuery = this.queryPlainText;
 			const fs = this.filterStatus;
 			const fc = this.filterCategory;
 			const sb = this.sortBy;
@@ -329,18 +405,45 @@ class TodoStore {
 			const ftags = this.filterTags;
 			const fdf = this.filterDateFrom;
 			const fdt = this.filterDateTo;
-			// Recompute filtered from current todos + these filters
-			this.filteredTodos = this._computeFiltered(this.todos, ft, fs, fc, sb, fp, ftags, fdf, fdt);
+
+			this.filteredTodos = this._computeFiltered(todos, textQuery, fs, fc, sb, fp, ftags, fdf, fdt);
+
 			// Compute active filter count
 			let count = 0;
-			if (ft) count++;
+			if (textQuery) count++;
 			if (fs !== 'all') count++;
 			if (fc) count++;
 			if (fp !== 'all') count++;
 			if (ftags.length > 0) count++;
+			if (this.filterDueKeyword) count++;
 			if (fdf) count++;
 			if (fdt) count++;
 			this.activeFilterCount = count;
+		});
+
+		// Effect: when UI controls change, keep query tokens/text in sync
+		$effect(() => {
+			if (this._isApplyingQueryTokens) return;
+
+			const fs = this.filterStatus;
+			const fc = this.filterCategory;
+			const sb = this.sortBy;
+			const fp = this.filterPriority;
+			const ftags = this.filterTags;
+			const fdf = this.filterDateFrom;
+			const fdt = this.filterDateTo;
+			const dueKeyword = this.filterDueKeyword;
+			const plainText = this.queryPlainText;
+
+			const nextTokens = this._buildQueryTokensFromFilters(fs, fc, sb, fp, ftags, fdf, fdt, dueKeyword);
+			const nextFilterText = stringifyQuery(nextTokens, plainText);
+
+			this.queryTokens = nextTokens;
+			if (nextFilterText !== this.filterText) {
+				this._isSyncingFilterText = true;
+				this.filterText = nextFilterText;
+				this._isSyncingFilterText = false;
+			}
 		});
 
 		// Effect: sync dark mode to DOM, localStorage, and server (when signed in)
@@ -541,6 +644,7 @@ class TodoStore {
 	 * @param {string[]} [filterTags]
 	 * @param {string} [filterDateFrom]
 	 * @param {string} [filterDateTo]
+	 * @param {string} [filterDueKeyword]
 	 * @returns {Todo[]}
 	 */
 	_computeFiltered(
@@ -552,7 +656,8 @@ class TodoStore {
 		filterPriority,
 		filterTags,
 		filterDateFrom,
-		filterDateTo
+		filterDateTo,
+		filterDueKeyword
 	) {
 		// Use instance values if not explicitly passed
 		const ft = filterText ?? this.filterText;
@@ -563,6 +668,7 @@ class TodoStore {
 		const ftags = filterTags ?? this.filterTags;
 		const fdf = filterDateFrom ?? this.filterDateFrom;
 		const fdt = filterDateTo ?? this.filterDateTo;
+		const dueKeyword = filterDueKeyword ?? this.filterDueKeyword;
 
 		let result = todos;
 
@@ -602,6 +708,11 @@ class TodoStore {
 		}
 
 		// Date range filter
+		if (dueKeyword === 'overdue') {
+			const today = localDateStr();
+			result = result.filter((t) => !t.completed && t.dueDate && t.dueDate < today);
+		}
+
 		if (fdf) {
 			result = result.filter((t) => t.dueDate && t.dueDate >= fdf);
 		}
@@ -634,6 +745,251 @@ class TodoStore {
 		}
 
 		return result;
+	}
+
+	/**
+	 * @returns {{
+	 * 	todos: Todo[],
+	 * 	archivedTodos: Todo[],
+	 * 	lastArchivedTodos: Todo[],
+	 * 	lastCompletedTodos: Todo[],
+	 * 	lastMovedTodos: Todo[],
+	 * 	lastMovedStates: Array<{completed:boolean, tags:string[]}>
+	 * }}
+	 */
+	_createHistorySnapshot() {
+		return {
+			todos: _deepClone(this.todos),
+			archivedTodos: _deepClone(this.archivedTodos),
+			lastArchivedTodos: _deepClone(this.lastArchivedTodos),
+			lastCompletedTodos: _deepClone(this.lastCompletedTodos),
+			lastMovedTodos: _deepClone(this.lastMovedTodos),
+			lastMovedStates: _deepClone(this.lastMovedStates)
+		};
+	}
+
+	/**
+	 * @param {ReturnType<TodoStore['_createHistorySnapshot']>} snapshot
+	 */
+	_restoreHistorySnapshot(snapshot) {
+		if (!snapshot) return;
+		this.todos = _deepClone(snapshot.todos || []);
+		this.archivedTodos = _deepClone(snapshot.archivedTodos || []);
+		this.lastArchivedTodos = _deepClone(snapshot.lastArchivedTodos || []);
+		this.lastCompletedTodos = _deepClone(snapshot.lastCompletedTodos || []);
+		this.lastMovedTodos = _deepClone(snapshot.lastMovedTodos || []);
+		this.lastMovedStates = _deepClone(snapshot.lastMovedStates || []);
+	}
+
+	/**
+	 * @param {string} action
+	 */
+	_pushUndoSnapshot(action) {
+		const entry = {
+			action,
+			snapshot: this._createHistorySnapshot(),
+			timestamp: Date.now()
+		};
+		this._undoStack = [...this._undoStack, entry].slice(-HISTORY_STACK_LIMIT);
+		this._redoStack = [];
+	}
+
+	undo() {
+		if (this._undoStack.length === 0) return false;
+		const entry = this._undoStack[this._undoStack.length - 1];
+		const current = this._createHistorySnapshot();
+
+		this._undoStack = this._undoStack.slice(0, -1);
+		this._redoStack = [...this._redoStack, { action: entry.action, snapshot: current, timestamp: Date.now() }].slice(
+			-HISTORY_STACK_LIMIT
+		);
+
+		this._restoreHistorySnapshot(entry.snapshot);
+		this.showToast(`Undid ${entry.action}`, 'success');
+		return true;
+	}
+
+	redo() {
+		if (this._redoStack.length === 0) return false;
+		const entry = this._redoStack[this._redoStack.length - 1];
+		const current = this._createHistorySnapshot();
+
+		this._redoStack = this._redoStack.slice(0, -1);
+		this._undoStack = [...this._undoStack, { action: entry.action, snapshot: current, timestamp: Date.now() }].slice(
+			-HISTORY_STACK_LIMIT
+		);
+
+		this._restoreHistorySnapshot(entry.snapshot);
+		this.showToast(`Redid ${entry.action}`, 'success');
+		return true;
+	}
+
+	/**
+	 * @param {Array<{key:string, value:string}>} tokens
+	 */
+	_applyQueryTokens(tokens) {
+		this._isApplyingQueryTokens = true;
+
+		let nextFilterTags = [];
+		let nextFilterPriority = 'all';
+		let nextFilterStatus = 'all';
+		let nextFilterCategory = '';
+		let nextSortBy = 'manual';
+		let dueMode = 'none';
+		let dueDates = [];
+
+		for (const token of tokens) {
+			if (!token || !token.key) continue;
+			const value = (token.value || '').trim();
+			if (!value) continue;
+
+			if (token.key === 'tag') {
+				const normalizedTag = value.toLowerCase();
+				if (!nextFilterTags.includes(normalizedTag)) {
+					nextFilterTags = [...nextFilterTags, normalizedTag];
+				}
+				continue;
+			}
+
+			if (token.key === 'priority') {
+				const priorityValue = value.toLowerCase();
+				if (priorityValue === 'high' || priorityValue === 'medium' || priorityValue === 'low') {
+					nextFilterPriority = priorityValue;
+				}
+				continue;
+			}
+
+			if (token.key === 'is') {
+				nextFilterStatus = _normalizeStatusTokenValue(value);
+				continue;
+			}
+
+			if (token.key === 'category') {
+				const categoryMatch = this.categories.find((cat) => cat.toLowerCase() === value.toLowerCase());
+				nextFilterCategory = categoryMatch || value;
+				continue;
+			}
+
+			if (token.key === 'sort') {
+				nextSortBy = _normalizeSortTokenValue(value);
+				continue;
+			}
+
+			if (token.key === 'due') {
+				if (value.toLowerCase() === 'overdue') {
+					dueMode = 'overdue';
+					dueDates = [];
+					continue;
+				}
+
+				const normalizedDate = _normalizeDateTokenValue(value);
+				if (!normalizedDate) continue;
+
+				if (dueMode !== 'dates') {
+					dueMode = 'dates';
+					dueDates = [];
+				}
+				dueDates = [...dueDates, normalizedDate];
+			}
+		}
+
+		let nextFilterDateFrom = '';
+		let nextFilterDateTo = '';
+		let nextFilterDueKeyword = '';
+
+		if (dueMode === 'overdue') {
+			nextFilterDueKeyword = 'overdue';
+		} else if (dueMode === 'dates' && dueDates.length > 0) {
+			const sortedDates = [...dueDates].sort();
+			nextFilterDateFrom = sortedDates[0];
+			nextFilterDateTo = sortedDates[sortedDates.length - 1];
+		}
+
+		this.filterTags = nextFilterTags;
+		this.filterPriority = nextFilterPriority;
+		this.filterStatus = nextFilterStatus;
+		this.filterCategory = nextFilterCategory;
+		this.sortBy = nextSortBy;
+		this.filterDateFrom = nextFilterDateFrom;
+		this.filterDateTo = nextFilterDateTo;
+		this.filterDueKeyword = nextFilterDueKeyword;
+
+		this._isApplyingQueryTokens = false;
+	}
+
+	/**
+	 * @param {string} filterStatus
+	 * @param {string} filterCategory
+	 * @param {string} sortBy
+	 * @param {string} filterPriority
+	 * @param {string[]} filterTags
+	 * @param {string} filterDateFrom
+	 * @param {string} filterDateTo
+	 * @param {string} filterDueKeyword
+	 * @returns {Array<{key:string, value:string}>}
+	 */
+	_buildQueryTokensFromFilters(
+		filterStatus,
+		filterCategory,
+		sortBy,
+		filterPriority,
+		filterTags,
+		filterDateFrom,
+		filterDateTo,
+		filterDueKeyword
+	) {
+		const tokens = [];
+
+		for (const tag of filterTags || []) {
+			if (tag) tokens.push({ key: 'tag', value: tag });
+		}
+
+		if (filterPriority && filterPriority !== 'all') {
+			tokens.push({ key: 'priority', value: filterPriority });
+		}
+
+		if (filterStatus && filterStatus !== 'all') {
+			tokens.push({ key: 'is', value: filterStatus });
+		}
+
+		if (filterDueKeyword === 'overdue') {
+			tokens.push({ key: 'due', value: 'overdue' });
+		} else {
+			const from = filterDateFrom;
+			const to = filterDateTo;
+			if (from && to) {
+				if (from === to) {
+					tokens.push({ key: 'due', value: this._formatDateTokenValue(from) });
+				} else {
+					tokens.push({ key: 'due', value: this._formatDateTokenValue(from) });
+					tokens.push({ key: 'due', value: this._formatDateTokenValue(to) });
+				}
+			} else if (from) {
+				tokens.push({ key: 'due', value: this._formatDateTokenValue(from) });
+			} else if (to) {
+				tokens.push({ key: 'due', value: this._formatDateTokenValue(to) });
+			}
+		}
+
+		if (filterCategory) {
+			tokens.push({ key: 'category', value: filterCategory });
+		}
+
+		if (sortBy && sortBy !== 'manual') {
+			tokens.push({ key: 'sort', value: sortBy });
+		}
+
+		return tokens;
+	}
+
+	/**
+	 * @param {string} isoDate
+	 * @returns {string}
+	 */
+	_formatDateTokenValue(isoDate) {
+		const match = (isoDate || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+		if (!match) return isoDate;
+		return `${match[2]}-${match[3]}-${match[1]}`;
 	}
 
 	// ── Auth store reference ──
