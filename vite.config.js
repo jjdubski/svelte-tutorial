@@ -29,9 +29,15 @@ export default defineConfig({
 				name: 'Svelte Todo',
 				short_name: 'Todo',
 				description: 'A modern Todo application built with Svelte 5',
+				id: '/',
+				start_url: '/',
+				scope: '/',
 				theme_color: '#3b82f6',
 				background_color: '#2563eb',
 				display: 'standalone',
+				display_override: ['fullscreen', 'minimal-ui', 'standalone', 'browser'],
+				categories: ['productivity'],
+				lang: 'en',
 				icons: [
 					{
 						src: 'app-icon-192.png',
@@ -49,9 +55,16 @@ export default defineConfig({
 						src: 'app-icon-512.png',
 						sizes: '512x512',
 						type: 'image/png',
+						// NOTE: Using the same source file for "any" and "maskable" is functional,
+						// but Android adaptive icons may crop edge content without safe padding.
 						purpose: 'maskable'
 					}
 				]
+			},
+			workbox: {
+				globPatterns: ['**/*.{js,css,html,svg,png,ico,json,woff2}'],
+				navigateFallback: '/',
+				navigateFallbackDenylist: [/\/api\//]
 			}
 		})
 	],

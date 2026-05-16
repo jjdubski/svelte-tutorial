@@ -8,18 +8,32 @@
 	let completedSpring = spring(0, { stiffness: 0.15, damping: 0.85 });
 	let overdueSpring = spring(0, { stiffness: 0.15, damping: 0.85 });
 
+	// Snap to the first real value on mount, then animate subsequent updates.
+	let _activeInit = false;
+	let _completedInit = false;
+	let _overdueInit = false;
+
 	$effect(() => {
-		if (!store.prefersReducedMotion) {
+		if (!_activeInit) {
+			_activeInit = true;
+			activeSpring.set(store.stats.active, { hard: true });
+		} else if (!store.prefersReducedMotion) {
 			activeSpring.set(store.stats.active);
 		}
 	});
 	$effect(() => {
-		if (!store.prefersReducedMotion) {
+		if (!_completedInit) {
+			_completedInit = true;
+			completedSpring.set(store.stats.completed, { hard: true });
+		} else if (!store.prefersReducedMotion) {
 			completedSpring.set(store.stats.completed);
 		}
 	});
 	$effect(() => {
-		if (!store.prefersReducedMotion) {
+		if (!_overdueInit) {
+			_overdueInit = true;
+			overdueSpring.set(store.stats.overdue, { hard: true });
+		} else if (!store.prefersReducedMotion) {
 			overdueSpring.set(store.stats.overdue);
 		}
 	});

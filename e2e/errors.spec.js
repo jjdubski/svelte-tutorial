@@ -22,14 +22,14 @@ test.describe('Error Pages', () => {
 		await expect(page.getByRole('link', { name: 'Back to Tasks' })).toBeVisible();
 	});
 
-	test('hides nav bar on error page', async ({ page }) => {
+	test('shows nav bar on error page for recovery', async ({ page }) => {
 		await page.goto('/nonexistent-page-xyz');
 
 		// Wait for the error page to fully render
 		await expect(page.locator('h1')).toHaveText('404');
 
-		// Nav bar should not be rendered when $page.error is set
-		await expect(page.locator('nav')).toHaveCount(0);
+		// Nav bar stays available so users can navigate away from error pages.
+		await expect(page.locator('nav')).toHaveCount(1);
 	});
 
 	test('Back to Tasks navigates to root URL', async ({ page }) => {

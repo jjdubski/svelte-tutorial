@@ -6,7 +6,6 @@
 	import TodoForm from '$lib/components/TodoForm.svelte';
 	import TodoFilters from '$lib/components/TodoFilters.svelte';
 	import TodoList from '$lib/components/TodoList.svelte';
-	import StatsBar from '$lib/components/StatsBar.svelte';
 	import TodoEditModal from '$lib/components/TodoEditModal.svelte';
 
 	const store = getTodoStore();
@@ -113,44 +112,33 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-<div
-	class="flex min-h-dvh justify-center p-4"
-	style="background: linear-gradient(145deg, var(--bg-gradient-1) 0%, var(--bg-gradient-2) 100%); transition: background 0.3s;"
->
+<TodoHeader />
+{#if store.dueDateRemindersEnabled && !store.requestedNotification && typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default'}
 	<div
-		class="w-full max-w-[1080px] rounded-2xl border p-5 sm:rounded-xl xl:max-w-[1100px] 2xl:max-w-[1300px]"
-		style="background: var(--card-bg); box-shadow: 0 8px 32px var(--shadow); border-color: var(--border); transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;"
+		class="notif-banner mb-4 flex items-center gap-3 rounded-lg border px-4 py-2.5 text-sm sm:text-base"
+		style="background: var(--input-bg); border-color: var(--border); color: var(--text-secondary);"
 	>
-		<TodoHeader />
-		{#if store.dueDateRemindersEnabled && !store.requestedNotification && typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default'}
-			<div
-				class="notif-banner mb-4 flex items-center gap-3 rounded-lg border px-4 py-2.5 text-sm sm:text-base"
-				style="background: var(--input-bg); border-color: var(--border); color: var(--text-secondary);"
-			>
-				<span class="flex-1">Enable notifications for due date reminders</span>
-				<button
-					class="glow-btn cursor-pointer rounded-md border-none px-3 py-1.5 text-xs font-semibold text-white sm:text-sm"
-					style="background: var(--btn-primary);"
-					onclick={() => store.requestNotificationPermission()}
-				>
-					Enable
-				</button>
-				<button
-					class="flex cursor-pointer items-center justify-center rounded border-none p-1 text-sm leading-none sm:text-base"
-					style="color: var(--text-muted); background: transparent;"
-					onclick={() => (store.requestedNotification = true)}
-					aria-label="Dismiss notification banner"
-				>
-					&times;
-				</button>
-			</div>
-		{/if}
-		<StatsBar />
-		<TodoForm />
-		<TodoFilters />
-		<TodoList />
+		<span class="flex-1">Enable notifications for due date reminders</span>
+		<button
+			class="glow-btn cursor-pointer rounded-md border-none px-3 py-1.5 text-xs font-semibold text-white sm:text-sm"
+			style="background: var(--btn-primary);"
+			onclick={() => store.requestNotificationPermission()}
+		>
+			Enable
+		</button>
+		<button
+			class="flex cursor-pointer items-center justify-center rounded border-none p-1 text-sm leading-none sm:text-base"
+			style="color: var(--text-muted); background: transparent;"
+			onclick={() => (store.requestedNotification = true)}
+			aria-label="Dismiss notification banner"
+		>
+			&times;
+		</button>
 	</div>
-</div>
+{/if}
+<TodoForm />
+<TodoFilters />
+<TodoList />
 
 {#if editingTodo}
 	<TodoEditModal todo={editingTodo} />

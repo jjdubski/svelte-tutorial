@@ -1,5 +1,6 @@
 <script>
 	import '../app.css';
+	import { beforeNavigate } from '$app/navigation';
 	import { fade } from 'svelte/transition';
 	import { createTodoStore } from '$lib/state/todoStore.svelte.js';
 	import { createAuthStore } from '$lib/state/authStore.svelte.js';
@@ -22,6 +23,11 @@
 	_todoStore.setAuthStore(_authStore);
 
 	let attemptedBackgroundSync = $state(false);
+
+	// All pages in the (app) group — these share the same layout wrapper
+	const appGroupPaths = ['/board', '/archived', '/stats', '/tasks', '/calendar', '/settings'];
+
+	let transitionDuration = $state(200);
 
 	async function registerBackgroundSync() {
 		if (typeof window === 'undefined') return;
@@ -73,18 +79,26 @@
 			}
 		}
 	}
+
+	beforeNavigate(({ from, to }) => {
+		const fromPath = from?.url.pathname;
+		const toPath = to?.url.pathname;
+		if (fromPath && toPath && appGroupPaths.includes(fromPath) && appGroupPaths.includes(toPath)) {
+			transitionDuration = 0; // same group — instant swap
+		} else {
+			transitionDuration = 200; // cross group — fade
+		}
+	});
 </script>
 
 <svelte:window onkeydown={handleGlobalKeydown} />
 
-{#if !$page.error}
-	<NavBar />
-{/if}
+<NavBar />
 <main id="main-content">
 	{#key $page.url.pathname}
 		<div
 			transition:fade={{
-				duration: _todoStore.prefersReducedMotion ? 0 : 200,
+				duration: _todoStore.prefersReducedMotion ? 0 : transitionDuration,
 				easing: materialEasing
 			}}
 		>

@@ -135,8 +135,8 @@
 		background: var(--bg);
 		color: var(--text);
 		transition:
-			background 0.3s,
-			color 0.3s;
+			background 0.15s,
+			color 0.15s;
 	}
 
 	/* Visible focus ring for keyboard navigation */

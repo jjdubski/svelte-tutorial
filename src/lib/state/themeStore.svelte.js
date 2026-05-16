@@ -229,6 +229,7 @@ class ThemeStore {
 	_auth = null;
 	_hasLoadedServerSettings = $state(false);
 	_isHydratingFromServer = false;
+	_applyFrame = 0;
 
 	/**
 	 * @param {import('./authStore.svelte.js').AuthStore} auth
@@ -260,7 +261,15 @@ class ThemeStore {
 			const border = toSafeHex(this.borderColor);
 			const font = this.fontFamily;
 
-			this._applyToDocument(preset, accent, bg, card, text, border, font);
+			if (typeof requestAnimationFrame === 'function') {
+				if (this._applyFrame) cancelAnimationFrame(this._applyFrame);
+				this._applyFrame = requestAnimationFrame(() => {
+					this._applyToDocument(preset, accent, bg, card, text, border, font);
+					this._applyFrame = 0;
+				});
+			} else {
+				this._applyToDocument(preset, accent, bg, card, text, border, font);
+			}
 		});
 
 		$effect(() => {

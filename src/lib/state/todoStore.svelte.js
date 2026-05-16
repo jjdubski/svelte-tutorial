@@ -142,10 +142,6 @@ class TodoStore {
 	/** @type {boolean} */
 	remindTodayTasks = $state(true);
 
-	// ── Upcoming due tasks (computed in effect) ──
-	/** @type {Todo[]} */
-	upcomingDueTasks = $state([]);
-
 	// ── Todos ──
 	/** @type {Todo[]} */
 	todos = $state([]);
@@ -335,23 +331,25 @@ class TodoStore {
 	/** @type {HTMLDivElement|null} */
 	_dragGhost = null;
 
-	// ── Derived values (updated by $effect) ──
+	// ── Derived values ──
 	/** @type {Stats} */
-	stats = $state({ active: 0, completed: 0, overdue: 0, total: 0 });
+	stats = $derived(this._computeStats(this.todos));
+	/** @type {Todo[]} */
+	upcomingDueTasks = $derived(this._computeUpcomingDue(this.todos));
 	/** @type {Todo[]} */
 	filteredTodos = $state([]);
 
-	// ── Analytics computed values (updated by $effect) ──
+	// ── Analytics computed values ──
 	/** @type {number} */
-	streak = $state(0);
+	streak = $derived(this._computeStreak([...this.todos, ...this.archivedTodos]));
 	/** @type {Record<string,number>} */
-	completionsByDay = $state({});
+	completionsByDay = $derived(this._computeCompletionsByDay([...this.todos, ...this.archivedTodos]));
 	/** @type {{high:number, medium:number, low:number}} */
-	priorityDistribution = $state({ high: 0, medium: 0, low: 0 });
+	priorityDistribution = $derived(this._computePriorityDistribution(this.todos));
 	/** @type {Record<string,number>} */
-	categoryBreakdown = $state({});
+	categoryBreakdown = $derived(this._computeCategoryBreakdown([...this.todos, ...this.archivedTodos]));
 	/** @type {Todo[]} */
-	overdueTasks = $state([]);
+	overdueTasks = $derived(this._computeOverdueTasks(this.todos));
 
 	/** @type {boolean} */
 	storageError = $state(false);
@@ -369,19 +367,12 @@ class TodoStore {
 			window.addEventListener('storage', this._handleStorageChange.bind(this));
 		}
 
-		// Effect: recompute stats, upcoming due, and save todos + archivedTodos + custom tags
+		// Effect: persist reactive data to localStorage
 		$effect(() => {
 			const t = this.todos;
 			const a = this.archivedTodos;
 			const ct = this.customTags;
 			const tc = this.tagColors;
-			this.stats = this._computeStats(t);
-			this.upcomingDueTasks = this._computeUpcomingDue(t);
-			this.streak = this._computeStreak([...t, ...a]);
-			this.completionsByDay = this._computeCompletionsByDay([...t, ...a]);
-			this.priorityDistribution = this._computePriorityDistribution(t);
-			this.categoryBreakdown = this._computeCategoryBreakdown([...t, ...a]);
-			this.overdueTasks = this._computeOverdueTasks(t);
 			storageSet('todos', t);
 			storageSet('archivedTodos', a);
 			storageSet('customTags', ct);
