@@ -2,89 +2,161 @@
 <p class="subtitle">Enhancing the existing search bar to support structured commands</p>
 
 <div class="section">
-  <h3>Proposed Syntax</h3>
-  <p>Users type <code>key:value</code> pairs alongside regular text. Regular words still fuzzy-match against title/description.</p>
+	<h3>Proposed Syntax</h3>
+	<p>
+		Users type <code>key:value</code> pairs alongside regular text. Regular words still fuzzy-match against
+		title/description.
+	</p>
 </div>
 
 <!-- The search bar mockup -->
-<div style="background:var(--card-bg);border:1px solid var(--border-color);border-radius:12px;padding:16px;margin-bottom:24px">
-  <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
-    <span>🔍</span>
-    <div style="flex:1;border:1px solid var(--border-color);border-radius:8px;padding:8px 12px;background:var(--bg-color);display:flex;flex-wrap:wrap;gap:4px">
-      <span style="background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:500">tag:work</span>
-      <span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:500">priority:high</span>
-      <span style="color:var(--text-color);font-size:14px;padding:2px 4px">meeting notes</span>
-    </div>
-  </div>
-  <div style="display:flex;gap:6px;flex-wrap:wrap;font-size:12px;color:var(--text-muted)">
-    <span style="background:var(--bg-color);padding:2px 8px;border-radius:4px;font-family:monospace">tag:name</span>
-    <span style="background:var(--bg-color);padding:2px 8px;border-radius:4px;font-family:monospace">priority:high|medium|low</span>
-    <span style="background:var(--bg-color);padding:2px 8px;border-radius:4px;font-family:monospace">is:active|done</span>
-    <span style="background:var(--bg-color);padding:2px 8px;border-radius:4px;font-family:monospace">due:today|tomorrow|overdue|YYYY-MM-DD</span>
-    <span style="background:var(--bg-color);padding:2px 8px;border-radius:4px;font-family:monospace">cat:name</span>
-    <span style="background:var(--bg-color);padding:2px 8px;border-radius:4px;font-family:monospace">sort:date|priority|alpha</span>
-  </div>
+<div
+	style="
+		background: var(--card-bg);
+		border: 1px solid var(--border-color);
+		border-radius: 12px;
+		padding: 16px;
+		margin-bottom: 24px;
+	"
+>
+	<div style="display: flex; gap: 8px; align-items: center; margin-bottom: 12px">
+		<span>🔍</span>
+		<div
+			style="
+				flex: 1;
+				border: 1px solid var(--border-color);
+				border-radius: 8px;
+				padding: 8px 12px;
+				background: var(--bg-color);
+				display: flex;
+				flex-wrap: wrap;
+				gap: 4px;
+			"
+		>
+			<span
+				style="
+					background: #dbeafe;
+					color: #1e40af;
+					padding: 2px 8px;
+					border-radius: 4px;
+					font-size: 12px;
+					font-weight: 500;
+				"
+				>tag:work</span
+			>
+			<span
+				style="
+					background: #fef3c7;
+					color: #92400e;
+					padding: 2px 8px;
+					border-radius: 4px;
+					font-size: 12px;
+					font-weight: 500;
+				"
+				>priority:high</span
+			>
+			<span style="color: var(--text-color); font-size: 14px; padding: 2px 4px">meeting notes</span>
+		</div>
+	</div>
+	<div style="display: flex; gap: 6px; flex-wrap: wrap; font-size: 12px; color: var(--text-muted)">
+		<span style="background: var(--bg-color); padding: 2px 8px; border-radius: 4px; font-family: monospace"
+			>tag:name</span
+		>
+		<span style="background: var(--bg-color); padding: 2px 8px; border-radius: 4px; font-family: monospace"
+			>priority:high|medium|low</span
+		>
+		<span style="background: var(--bg-color); padding: 2px 8px; border-radius: 4px; font-family: monospace"
+			>is:active|done</span
+		>
+		<span style="background: var(--bg-color); padding: 2px 8px; border-radius: 4px; font-family: monospace"
+			>due:today|tomorrow|overdue|YYYY-MM-DD</span
+		>
+		<span style="background: var(--bg-color); padding: 2px 8px; border-radius: 4px; font-family: monospace"
+			>cat:name</span
+		>
+		<span style="background: var(--bg-color); padding: 2px 8px; border-radius: 4px; font-family: monospace"
+			>sort:date|priority|alpha</span
+		>
+	</div>
 </div>
 
 <div class="options" data-multiselect>
-  <div class="option" data-choice="syntax-tag">
-    <div class="letter">t</div>
-    <div class="content">
-      <h3><code>tag:name</code></h3>
-      <p>Filter by tag. Multiple tag: values use AND logic (same as tag pills).</p>
-      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Example: <code>tag:work tag:urgent</code></div>
-    </div>
-  </div>
-  <div class="option" data-choice="syntax-priority">
-    <div class="letter">p</div>
-    <div class="content">
-      <h3><code>priority:high|medium|low</code></h3>
-      <p>Filter by priority level.</p>
-      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Example: <code>priority:high</code></div>
-    </div>
-  </div>
-  <div class="option" data-choice="syntax-status">
-    <div class="letter">s</div>
-    <div class="content">
-      <h3><code>is:active|done</code></h3>
-      <p>Filter by completion status. <code>is:active</code> = not done, <code>is:done</code> = completed.</p>
-      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Example: <code>is:active</code></div>
-    </div>
-  </div>
-  <div class="option" data-choice="syntax-due">
-    <div class="letter">d</div>
-    <div class="content">
-      <h3><code>due:today|tomorrow|overdue|YYYY-MM-DD</code></h3>
-      <p>Filter by due date. Supports relative keywords and absolute dates.</p>
-      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Example: <code>due:overdue</code> or <code>due:2026-05-20</code></div>
-    </div>
-  </div>
-  <div class="option" data-choice="syntax-cat">
-    <div class="letter">c</div>
-    <div class="content">
-      <h3><code>cat:name</code></h3>
-      <p>Filter by category name.</p>
-      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Example: <code>cat:Work</code></div>
-    </div>
-  </div>
-  <div class="option" data-choice="syntax-sort">
-    <div class="letter">o</div>
-    <div class="content">
-      <h3><code>sort:date|priority|alpha|category</code></h3>
-      <p>Change sort order inline.</p>
-      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Example: <code>sort:priority</code></div>
-    </div>
-  </div>
+	<div class="option" data-choice="syntax-tag">
+		<div class="letter">t</div>
+		<div class="content">
+			<h3><code>tag:name</code></h3>
+			<p>Filter by tag. Multiple tag: values use AND logic (same as tag pills).</p>
+			<div style="font-size: 12px; color: var(--text-muted); margin-top: 4px">
+				Example: <code>tag:work tag:urgent</code>
+			</div>
+		</div>
+	</div>
+	<div class="option" data-choice="syntax-priority">
+		<div class="letter">p</div>
+		<div class="content">
+			<h3><code>priority:high|medium|low</code></h3>
+			<p>Filter by priority level.</p>
+			<div style="font-size: 12px; color: var(--text-muted); margin-top: 4px">
+				Example: <code>priority:high</code>
+			</div>
+		</div>
+	</div>
+	<div class="option" data-choice="syntax-status">
+		<div class="letter">s</div>
+		<div class="content">
+			<h3><code>is:active|done</code></h3>
+			<p>Filter by completion status. <code>is:active</code> = not done, <code>is:done</code> = completed.</p>
+			<div style="font-size: 12px; color: var(--text-muted); margin-top: 4px">
+				Example: <code>is:active</code>
+			</div>
+		</div>
+	</div>
+	<div class="option" data-choice="syntax-due">
+		<div class="letter">d</div>
+		<div class="content">
+			<h3><code>due:today|tomorrow|overdue|YYYY-MM-DD</code></h3>
+			<p>Filter by due date. Supports relative keywords and absolute dates.</p>
+			<div style="font-size: 12px; color: var(--text-muted); margin-top: 4px">
+				Example: <code>due:overdue</code> or <code>due:2026-05-20</code>
+			</div>
+		</div>
+	</div>
+	<div class="option" data-choice="syntax-cat">
+		<div class="letter">c</div>
+		<div class="content">
+			<h3><code>cat:name</code></h3>
+			<p>Filter by category name.</p>
+			<div style="font-size: 12px; color: var(--text-muted); margin-top: 4px">Example: <code>cat:Work</code></div>
+		</div>
+	</div>
+	<div class="option" data-choice="syntax-sort">
+		<div class="letter">o</div>
+		<div class="content">
+			<h3><code>sort:date|priority|alpha|category</code></h3>
+			<p>Change sort order inline.</p>
+			<div style="font-size: 12px; color: var(--text-muted); margin-top: 4px">
+				Example: <code>sort:priority</code>
+			</div>
+		</div>
+	</div>
 </div>
 
-<div class="section" style="margin-top:24px">
-  <h3>Visual feedback: token chips</h3>
-  <p>Parsed key:value tokens appear as colored chips inside the search bar. Plain text stays plain. This gives the user clear feedback that their syntax was understood.</p>
+<div class="section" style="margin-top: 24px">
+	<h3>Visual feedback: token chips</h3>
+	<p>
+		Parsed key:value tokens appear as colored chips inside the search bar. Plain text stays plain. This gives the
+		user clear feedback that their syntax was understood.
+	</p>
 </div>
 
 <div class="section">
-  <h3>UI filter sync</h3>
-  <p>When a user types <code>priority:high</code>, the priority dropdown in the filter bar also updates to "High". If they then change the dropdown to "Low", the search bar text updates to reflect it. They stay in sync.</p>
+	<h3>UI filter sync</h3>
+	<p>
+		When a user types <code>priority:high</code>, the priority dropdown in the filter bar also updates to "High". If
+		they then change the dropdown to "Low", the search bar text updates to reflect it. They stay in sync.
+	</p>
 </div>
 
-<p class="subtitle" style="margin-top:24px">Click to select/deselect syntax features you want. Let me know your thoughts!</p>
+<p class="subtitle" style="margin-top: 24px">
+	Click to select/deselect syntax features you want. Let me know your thoughts!
+</p>

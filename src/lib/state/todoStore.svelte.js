@@ -129,8 +129,9 @@ class TodoStore {
 		},
 		{
 			name: 'Meeting',
-			title: 'Meeting with ',
-			description: 'Discuss ',
+			title: 'Quarterly planning sync with ',
+			description:
+				'**Goal:** align on top priorities for this sprint\n*Prep:* review blockers and bring one solution idea\nReference: [Team agenda](https://example.com/agenda)',
 			dueDate: '',
 			priority: 'medium',
 			category: 'Work',
@@ -138,8 +139,9 @@ class TodoStore {
 		},
 		{
 			name: 'Errand',
-			title: '',
-			description: 'Buy ',
+			title: 'Saturday essentials run',
+			description:
+				'- Buy pantry staples\n- Pick up household supplies\n- Drop off package returns',
 			dueDate: '',
 			priority: 'low',
 			category: 'Personal',
@@ -147,8 +149,8 @@ class TodoStore {
 		},
 		{
 			name: 'Urgent',
-			title: 'URGENT: ',
-			description: '',
+			title: 'Critical blocker: resolve before EOD',
+			description: '**Impact:** release timeline at risk\n*Next step:* identify owner and unblock immediately',
 			dueDate: '',
 			priority: 'high',
 			category: 'Work',
@@ -156,11 +158,12 @@ class TodoStore {
 		},
 		{
 			name: 'Health',
-			title: 'Workout: ',
-			description: '',
+			title: 'Idea lab: healthier weekly routine',
+			description:
+				'Brainstorm low-effort experiments to improve energy and focus:\n- 15-minute walk after lunch\n- Screen-free wind-down routine\n- Prep quick breakfasts on Sunday',
 			dueDate: '',
 			priority: 'medium',
-			category: 'Personal',
+			category: 'Ideas',
 			tags: ['health']
 		}
 	]);

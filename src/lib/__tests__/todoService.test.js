@@ -400,7 +400,7 @@ describe('todoService', () => {
 		});
 	});
 
-		describe('migrateGuestData', () => {
+	describe('migrateGuestData', () => {
 		it('merges guest todos and custom tags into existing user', async () => {
 			const mockUser = createMockUser({
 				todos: [{ id: '1', title: 'Existing', completed: false, createdAt: '2025-01-01' }],
@@ -483,7 +483,7 @@ describe('todoService', () => {
 		});
 	});
 
-		describe('importData', () => {
+	describe('importData', () => {
 		function createMockUser() {
 			const tagColors = new Map();
 			tagColors.set('urgent', '#ef4444');

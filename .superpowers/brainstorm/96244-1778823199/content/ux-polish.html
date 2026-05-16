@@ -2,54 +2,84 @@
 <p class="subtitle">Smooth edges, better interactions, mobile feel</p>
 
 <div class="options" data-multiselect>
-  <div class="option" data-choice="swipe">
-    <div class="letter">A</div>
-    <div class="content">
-      <h3>Swipe gestures on mobile</h3>
-      <p>Swipe left on a todo → complete/archive action · Swipe right → mark as high priority. Haptic feedback where available.</p>
-      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Effort: Medium · Touch event handling + animations</div>
-    </div>
-  </div>
-  <div class="option" data-choice="drag">
-    <div class="letter">B</div>
-    <div class="content">
-      <h3>Improved drag &amp; drop</h3>
-      <p>Better visual feedback during drag (ghost image, drop zone highlighting). Smoother animations on the board page. Touch drag support.</p>
-      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Effort: Medium · Drag logic touch-ups</div>
-    </div>
-  </div>
-  <div class="option" data-choice="empty">
-    <div class="letter">C</div>
-    <div class="content">
-      <h3>Richer empty states</h3>
-      <p>Illustrations or playful messages for empty task lists, no search results, empty board columns, empty calendar days.</p>
-      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Effort: Low · Copy + simple graphics</div>
-    </div>
-  </div>
-  <div class="option" data-choice="transitions">
-    <div class="letter">D</div>
-    <div class="content">
-      <h3>Page &amp; element transitions</h3>
-      <p>Smooth page transitions between routes (slide/fade). Animated list item reordering. Subtle entrance animations for new todos.</p>
-      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Effort: Medium · Svelte transition directives + route-level animations</div>
-    </div>
-  </div>
-  <div class="option" data-choice="undo">
-    <div class="letter">E</div>
-    <div class="content">
-      <h3>Toast &amp; undo consistency</h3>
-      <p>Standardize toast behavior across all pages. Ensure undo works everywhere (not just board). Add undo for complete/uncomplete actions.</p>
-      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Effort: Low-Medium · Fill gaps in existing toast system</div>
-    </div>
-  </div>
-  <div class="option" data-choice="haptic">
-    <div class="letter">F</div>
-    <div class="content">
-      <h3>Mobile haptic feedback</h3>
-      <p>Subtle vibration on key actions (complete task, archive, reorder) via the Vibration API. Respects system settings.</p>
-      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Effort: Low · One utility + sprinkle calls</div>
-    </div>
-  </div>
+	<div class="option" data-choice="swipe">
+		<div class="letter">A</div>
+		<div class="content">
+			<h3>Swipe gestures on mobile</h3>
+			<p>
+				Swipe left on a todo → complete/archive action · Swipe right → mark as high priority. Haptic feedback
+				where available.
+			</p>
+			<div style="font-size: 12px; color: var(--text-muted); margin-top: 4px">
+				Effort: Medium · Touch event handling + animations
+			</div>
+		</div>
+	</div>
+	<div class="option" data-choice="drag">
+		<div class="letter">B</div>
+		<div class="content">
+			<h3>Improved drag &amp; drop</h3>
+			<p>
+				Better visual feedback during drag (ghost image, drop zone highlighting). Smoother animations on the
+				board page. Touch drag support.
+			</p>
+			<div style="font-size: 12px; color: var(--text-muted); margin-top: 4px">
+				Effort: Medium · Drag logic touch-ups
+			</div>
+		</div>
+	</div>
+	<div class="option" data-choice="empty">
+		<div class="letter">C</div>
+		<div class="content">
+			<h3>Richer empty states</h3>
+			<p>
+				Illustrations or playful messages for empty task lists, no search results, empty board columns, empty
+				calendar days.
+			</p>
+			<div style="font-size: 12px; color: var(--text-muted); margin-top: 4px">
+				Effort: Low · Copy + simple graphics
+			</div>
+		</div>
+	</div>
+	<div class="option" data-choice="transitions">
+		<div class="letter">D</div>
+		<div class="content">
+			<h3>Page &amp; element transitions</h3>
+			<p>
+				Smooth page transitions between routes (slide/fade). Animated list item reordering. Subtle entrance
+				animations for new todos.
+			</p>
+			<div style="font-size: 12px; color: var(--text-muted); margin-top: 4px">
+				Effort: Medium · Svelte transition directives + route-level animations
+			</div>
+		</div>
+	</div>
+	<div class="option" data-choice="undo">
+		<div class="letter">E</div>
+		<div class="content">
+			<h3>Toast &amp; undo consistency</h3>
+			<p>
+				Standardize toast behavior across all pages. Ensure undo works everywhere (not just board). Add undo for
+				complete/uncomplete actions.
+			</p>
+			<div style="font-size: 12px; color: var(--text-muted); margin-top: 4px">
+				Effort: Low-Medium · Fill gaps in existing toast system
+			</div>
+		</div>
+	</div>
+	<div class="option" data-choice="haptic">
+		<div class="letter">F</div>
+		<div class="content">
+			<h3>Mobile haptic feedback</h3>
+			<p>
+				Subtle vibration on key actions (complete task, archive, reorder) via the Vibration API. Respects system
+				settings.
+			</p>
+			<div style="font-size: 12px; color: var(--text-muted); margin-top: 4px">
+				Effort: Low · One utility + sprinkle calls
+			</div>
+		</div>
+	</div>
 </div>
 
-<p class="subtitle" style="margin-top:24px">Click to select. Which polish items feel worth the effort?</p>
+<p class="subtitle" style="margin-top: 24px">Click to select. Which polish items feel worth the effort?</p>

@@ -2,58 +2,91 @@
 <p class="subtitle">Making the app feel more native — offline, notifications, install</p>
 
 <div class="section">
-  <p>Current state: Already a PWA with <code>vite-plugin-pwa</code> and auto-update registered. Basic offline support via service worker cache.</p>
+	<p>
+		Current state: Already a PWA with <code>vite-plugin-pwa</code> and auto-update registered. Basic offline support
+		via service worker cache.
+	</p>
 </div>
 
 <div class="options" data-multiselect>
-  <div class="option" data-choice="offline-full">
-    <div class="letter">A</div>
-    <div class="content">
-      <h3>Full offline support</h3>
-      <p>Work offline with todos stored in localStorage (already works for guest users). Queue changes and sync when back online. Show offline indicator banner.</p>
-      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Effort: Medium-High · Core infrastructure change</div>
-    </div>
-  </div>
-  <div class="option" data-choice="notifications">
-    <div class="letter">B</div>
-    <div class="content">
-      <h3>Push notifications</h3>
-      <p>Due date reminders, overdue task alerts. Background sync checks for upcoming tasks even when the app is closed.</p>
-      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Effort: High · Requires push service, permission prompts</div>
-    </div>
-  </div>
-  <div class="option" data-choice="install-prompt">
-    <div class="letter">C</div>
-    <div class="content">
-      <h3>Custom install prompt</h3>
-      <p>In-app "Install App" button instead of relying on the browser's default install banner. Can track dismissed/installed state.</p>
-      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Effort: Low · UI only, vite-plugin-pwa supports this</div>
-    </div>
-  </div>
-  <div class="option" data-choice="bg-sync">
-    <div class="letter">D</div>
-    <div class="content">
-      <h3>Background sync</h3>
-      <p>When coming back online, automatically sync any changes made offline (todo additions, edits, completions). No data loss.</p>
-      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Effort: Medium · Needs service worker + sync manager</div>
-    </div>
-  </div>
-  <div class="option" data-choice="splash">
-    <div class="letter">E</div>
-    <div class="content">
-      <h3>Better splash screen &amp; icons</h3>
-      <p>Custom branded splash screen on app launch. Higher-res icons for modern devices. Adaptive icons for Android.</p>
-      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Effort: Low · Asset generation</div>
-    </div>
-  </div>
-  <div class="option" data-choice="badge">
-    <div class="letter">F</div>
-    <div class="content">
-      <h3>App badge for overdue tasks</h3>
-      <p>Show a numbered badge on the app icon indicating how many tasks are overdue. Clears when tasks are completed.</p>
-      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Effort: Low-Medium · Uses Badge API</div>
-    </div>
-  </div>
+	<div class="option" data-choice="offline-full">
+		<div class="letter">A</div>
+		<div class="content">
+			<h3>Full offline support</h3>
+			<p>
+				Work offline with todos stored in localStorage (already works for guest users). Queue changes and sync
+				when back online. Show offline indicator banner.
+			</p>
+			<div style="font-size: 12px; color: var(--text-muted); margin-top: 4px">
+				Effort: Medium-High · Core infrastructure change
+			</div>
+		</div>
+	</div>
+	<div class="option" data-choice="notifications">
+		<div class="letter">B</div>
+		<div class="content">
+			<h3>Push notifications</h3>
+			<p>
+				Due date reminders, overdue task alerts. Background sync checks for upcoming tasks even when the app is
+				closed.
+			</p>
+			<div style="font-size: 12px; color: var(--text-muted); margin-top: 4px">
+				Effort: High · Requires push service, permission prompts
+			</div>
+		</div>
+	</div>
+	<div class="option" data-choice="install-prompt">
+		<div class="letter">C</div>
+		<div class="content">
+			<h3>Custom install prompt</h3>
+			<p>
+				In-app "Install App" button instead of relying on the browser's default install banner. Can track
+				dismissed/installed state.
+			</p>
+			<div style="font-size: 12px; color: var(--text-muted); margin-top: 4px">
+				Effort: Low · UI only, vite-plugin-pwa supports this
+			</div>
+		</div>
+	</div>
+	<div class="option" data-choice="bg-sync">
+		<div class="letter">D</div>
+		<div class="content">
+			<h3>Background sync</h3>
+			<p>
+				When coming back online, automatically sync any changes made offline (todo additions, edits,
+				completions). No data loss.
+			</p>
+			<div style="font-size: 12px; color: var(--text-muted); margin-top: 4px">
+				Effort: Medium · Needs service worker + sync manager
+			</div>
+		</div>
+	</div>
+	<div class="option" data-choice="splash">
+		<div class="letter">E</div>
+		<div class="content">
+			<h3>Better splash screen &amp; icons</h3>
+			<p>
+				Custom branded splash screen on app launch. Higher-res icons for modern devices. Adaptive icons for
+				Android.
+			</p>
+			<div style="font-size: 12px; color: var(--text-muted); margin-top: 4px">Effort: Low · Asset generation</div>
+		</div>
+	</div>
+	<div class="option" data-choice="badge">
+		<div class="letter">F</div>
+		<div class="content">
+			<h3>App badge for overdue tasks</h3>
+			<p>
+				Show a numbered badge on the app icon indicating how many tasks are overdue. Clears when tasks are
+				completed.
+			</p>
+			<div style="font-size: 12px; color: var(--text-muted); margin-top: 4px">
+				Effort: Low-Medium · Uses Badge API
+			</div>
+		</div>
+	</div>
 </div>
 
-<p class="subtitle" style="margin-top:24px">Click to select. Some of these are much bigger lifts than others — happy to elaborate on any.</p>
+<p class="subtitle" style="margin-top: 24px">
+	Click to select. Some of these are much bigger lifts than others — happy to elaborate on any.
+</p>

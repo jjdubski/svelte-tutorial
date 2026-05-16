@@ -33,7 +33,8 @@ function _mergeSettings(base, incoming) {
 			continue;
 		}
 		if (typeof value === 'object') {
-			const current = result[key] && typeof result[key] === 'object' && !Array.isArray(result[key]) ? result[key] : {};
+			const current =
+				result[key] && typeof result[key] === 'object' && !Array.isArray(result[key]) ? result[key] : {};
 			result[key] = _mergeSettings(current, value);
 			continue;
 		}
@@ -300,12 +301,12 @@ export async function getSettings(authUserId) {
 }
 
 /**
-	 * Bulk-import data (todos, archivedTodos, customTags, tagColors) into the user's document.
-	 * Existing items are updated by matching ID; new items are appended.
-	 * @param {string} authUserId
-	 * @param {{ todos?: Array, archivedTodos?: Array, customTags?: string[], tagColors?: Record<string,string>, settings?: Record<string, any> }} data
-	 * @returns {Promise<Record<string, any>>} The updated user document as a plain object
-	 */
+ * Bulk-import data (todos, archivedTodos, customTags, tagColors) into the user's document.
+ * Existing items are updated by matching ID; new items are appended.
+ * @param {string} authUserId
+ * @param {{ todos?: Array, archivedTodos?: Array, customTags?: string[], tagColors?: Record<string,string>, settings?: Record<string, any> }} data
+ * @returns {Promise<Record<string, any>>} The updated user document as a plain object
+ */
 export async function importData(authUserId, data) {
 	const user = await _getUser(authUserId);
 

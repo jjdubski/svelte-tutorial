@@ -5,12 +5,7 @@
 
 /* ── Theme custom properties (runtime-switchable) ── */
 :root {
-	--app-font-family:
-		'Outfit',
-		-apple-system,
-		BlinkMacSystemFont,
-		'Segoe UI',
-		sans-serif;
+	--app-font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
 	--theme-light-bg: #e8effb;
 	--theme-light-gradient-1: #e2e8f0;

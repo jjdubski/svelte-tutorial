@@ -154,7 +154,7 @@ describe('storage', () => {
 		});
 	});
 
-		describe('getGuestData', () => {
+	describe('getGuestData', () => {
 		it('returns all guest data fields', () => {
 			mockStore['todos'] = JSON.stringify([{ id: 1, title: 'Test' }]);
 			mockStore['archivedTodos'] = JSON.stringify([{ id: 2, title: 'Archived' }]);

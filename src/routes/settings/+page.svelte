@@ -91,16 +91,29 @@
 						onclick={() => selectThemePreset(preset.id)}
 					>
 						<div class="mb-2 flex items-center justify-between gap-2">
-							<span class="text-sm font-semibold" style="color: var(--text-heading);">{preset.label}</span>
+							<span class="text-sm font-semibold" style="color: var(--text-heading);">{preset.label}</span
+							>
 							{#if themeStore.themePreset === preset.id}
 								<span class="text-xs font-semibold" style="color: var(--btn-primary);">Active</span>
 							{/if}
 						</div>
 						<div class="mb-2 flex gap-1">
-							<span class="h-4 w-4 rounded-full border" style="background: {preset.light.bg}; border-color: {preset.light.border};"></span>
-							<span class="h-4 w-4 rounded-full border" style="background: {preset.light.cardBg}; border-color: {preset.light.border};"></span>
-							<span class="h-4 w-4 rounded-full border" style="background: {preset.dark.bg}; border-color: {preset.dark.border};"></span>
-							<span class="h-4 w-4 rounded-full border" style="background: {preset.dark.cardBg}; border-color: {preset.dark.border};"></span>
+							<span
+								class="h-4 w-4 rounded-full border"
+								style="background: {preset.light.bg}; border-color: {preset.light.border};"
+							></span>
+							<span
+								class="h-4 w-4 rounded-full border"
+								style="background: {preset.light.cardBg}; border-color: {preset.light.border};"
+							></span>
+							<span
+								class="h-4 w-4 rounded-full border"
+								style="background: {preset.dark.bg}; border-color: {preset.dark.border};"
+							></span>
+							<span
+								class="h-4 w-4 rounded-full border"
+								style="background: {preset.dark.cardBg}; border-color: {preset.dark.border};"
+							></span>
 						</div>
 						<p class="m-0 text-xs" style="color: var(--text-muted);">{preset.description}</p>
 					</button>
@@ -119,10 +132,22 @@
 						{/if}
 					</div>
 					<div class="mb-2 flex gap-1">
-						<span class="h-4 w-4 rounded-full border" style="background: {themeStore.bgColor}; border-color: {themeStore.borderColor};"></span>
-						<span class="h-4 w-4 rounded-full border" style="background: {themeStore.cardColor}; border-color: {themeStore.borderColor};"></span>
-						<span class="h-4 w-4 rounded-full border" style="background: {themeStore.accentColor}; border-color: {themeStore.borderColor};"></span>
-						<span class="h-4 w-4 rounded-full border" style="background: {themeStore.textColor}; border-color: {themeStore.borderColor};"></span>
+						<span
+							class="h-4 w-4 rounded-full border"
+							style="background: {themeStore.bgColor}; border-color: {themeStore.borderColor};"
+						></span>
+						<span
+							class="h-4 w-4 rounded-full border"
+							style="background: {themeStore.cardColor}; border-color: {themeStore.borderColor};"
+						></span>
+						<span
+							class="h-4 w-4 rounded-full border"
+							style="background: {themeStore.accentColor}; border-color: {themeStore.borderColor};"
+						></span>
+						<span
+							class="h-4 w-4 rounded-full border"
+							style="background: {themeStore.textColor}; border-color: {themeStore.borderColor};"
+						></span>
 					</div>
 					<p class="m-0 text-xs" style="color: var(--text-muted);">Build your own palette</p>
 				</button>
@@ -147,7 +172,10 @@
 
 			{#if themeStore.themePreset === 'custom'}
 				<div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-					<label class="rounded-xl border p-3 text-sm" style="border-color: var(--border); color: var(--text-secondary);">
+					<label
+						class="rounded-xl border p-3 text-sm"
+						style="border-color: var(--border); color: var(--text-secondary);"
+					>
 						Background
 						<input
 							type="color"
@@ -157,7 +185,10 @@
 							oninput={(e) => (themeStore.bgColor = e.currentTarget.value)}
 						/>
 					</label>
-					<label class="rounded-xl border p-3 text-sm" style="border-color: var(--border); color: var(--text-secondary);">
+					<label
+						class="rounded-xl border p-3 text-sm"
+						style="border-color: var(--border); color: var(--text-secondary);"
+					>
 						Card
 						<input
 							type="color"
@@ -167,7 +198,10 @@
 							oninput={(e) => (themeStore.cardColor = e.currentTarget.value)}
 						/>
 					</label>
-					<label class="rounded-xl border p-3 text-sm" style="border-color: var(--border); color: var(--text-secondary);">
+					<label
+						class="rounded-xl border p-3 text-sm"
+						style="border-color: var(--border); color: var(--text-secondary);"
+					>
 						Text
 						<input
 							type="color"
@@ -177,7 +211,10 @@
 							oninput={(e) => (themeStore.textColor = e.currentTarget.value)}
 						/>
 					</label>
-					<label class="rounded-xl border p-3 text-sm" style="border-color: var(--border); color: var(--text-secondary);">
+					<label
+						class="rounded-xl border p-3 text-sm"
+						style="border-color: var(--border); color: var(--text-secondary);"
+					>
 						Border
 						<input
 							type="color"
@@ -210,8 +247,12 @@
 			<div class="space-y-2">
 				<label class="settings-toggle-row" for="enable-due-date-reminders">
 					<div>
-						<div class="text-sm font-medium" style="color: var(--text-heading);">Enable due date reminders</div>
-						<div class="text-xs" style="color: var(--text-muted);">Requests browser notification permission</div>
+						<div class="text-sm font-medium" style="color: var(--text-heading);">
+							Enable due date reminders
+						</div>
+						<div class="text-xs" style="color: var(--text-muted);">
+							Requests browser notification permission
+						</div>
 					</div>
 					<input
 						id="enable-due-date-reminders"
@@ -223,8 +264,12 @@
 
 				<label class="settings-toggle-row" for="enable-overdue-reminders">
 					<div>
-						<div class="text-sm font-medium" style="color: var(--text-heading);">Remind me of overdue tasks</div>
-						<div class="text-xs" style="color: var(--text-muted);">Show notifications for tasks past due date</div>
+						<div class="text-sm font-medium" style="color: var(--text-heading);">
+							Remind me of overdue tasks
+						</div>
+						<div class="text-xs" style="color: var(--text-muted);">
+							Show notifications for tasks past due date
+						</div>
 					</div>
 					<input
 						id="enable-overdue-reminders"
@@ -237,7 +282,9 @@
 
 				<label class="settings-toggle-row" for="enable-today-reminders">
 					<div>
-						<div class="text-sm font-medium" style="color: var(--text-heading);">Remind me of today's tasks</div>
+						<div class="text-sm font-medium" style="color: var(--text-heading);">
+							Remind me of today's tasks
+						</div>
 						<div class="text-xs" style="color: var(--text-muted);">Show notifications due today</div>
 					</div>
 					<input
@@ -273,10 +320,10 @@
 								style="color: var(--text-muted); font-family: {option.id === 'system-ui'
 									? 'system-ui'
 									: option.id === 'inter'
-										? '\'Inter\', system-ui, sans-serif'
+										? "'Inter', system-ui, sans-serif"
 										: option.id === 'serif'
-											? '\'Merriweather\', serif'
-											: '\'JetBrains Mono\', ui-monospace, monospace'};"
+											? "'Merriweather', serif"
+											: "'JetBrains Mono', ui-monospace, monospace"};"
 							>
 								Aa Bb Cc 123
 							</div>

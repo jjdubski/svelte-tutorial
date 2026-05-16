@@ -43,6 +43,12 @@
 		const dateStr = format(date, 'yyyy-MM-dd');
 		return tasksByDate[dateStr] || [];
 	}
+
+	function getTaskLineColor(task) {
+		const firstTag = task.tags?.[0];
+		if (firstTag && store.tagColors[firstTag]) return store.tagColors[firstTag];
+		return '#9ca3af';
+	}
 </script>
 
 <div
@@ -112,7 +118,7 @@
 				{@const isDayToday = isToday(date)}
 
 				<div
-					class="flex aspect-square cursor-pointer flex-col gap-1 rounded-lg border p-1 sm:rounded-xl sm:p-2"
+					class="relative flex aspect-square cursor-pointer flex-col gap-1 overflow-hidden rounded-lg border p-1 sm:overflow-visible sm:rounded-xl sm:p-2"
 					style="border-color: {isDayToday
 						? 'var(--btn-primary)'
 						: 'var(--border)'}; background: var(--todo-bg);"
@@ -127,29 +133,44 @@
 					>
 						{day}
 					</span>
-					{#each tasks as task (task.id)}
+					{#if tasks.length > 0}
 						<div
-							class="flex items-center gap-1 truncate rounded px-1 py-0.5 text-[10px] sm:px-2 sm:py-1 sm:text-xs"
-							style="background: var(--input-bg); color: {task.completed
-								? 'var(--text-muted)'
-								: 'var(--text-heading)'}; text-decoration: {task.completed ? 'line-through' : 'none'};"
-							onmouseenter={(e) => {
-								tooltipTask = task;
-								tooltipTarget = e.currentTarget;
-							}}
-							onmouseleave={() => {
-								tooltipTarget = null;
-							}}
-							role="button"
-							tabindex="0"
-							aria-label={task.title}
+							class="pointer-events-none absolute right-1 bottom-1 left-1 flex max-h-6 flex-col gap-0.5 overflow-hidden sm:hidden"
 						>
-							{#if task.completed}
-								<Check size={10} class="hidden sm:block" style="color: var(--btn-save);" />
-							{/if}
-							<span class="truncate">{task.title}</span>
+							{#each tasks.slice(0, 4) as task (task.id)}
+								<div
+									class="h-0.5 w-full rounded-full"
+									style="background: {getTaskLineColor(task)};"
+								></div>
+							{/each}
 						</div>
-					{/each}
+					{/if}
+
+					<div class="hidden flex-col gap-1 sm:flex">
+						{#each tasks as task (task.id)}
+							<div
+								class="flex items-center gap-1 truncate rounded px-1 py-0.5 text-[10px] sm:px-2 sm:py-1 sm:text-xs"
+								style="background: var(--input-bg); color: {task.completed
+									? 'var(--text-muted)'
+									: 'var(--text-heading)'}; text-decoration: {task.completed ? 'line-through' : 'none'};"
+								onmouseenter={(e) => {
+									tooltipTask = task;
+									tooltipTarget = e.currentTarget;
+								}}
+								onmouseleave={() => {
+									tooltipTarget = null;
+								}}
+								role="button"
+								tabindex="0"
+								aria-label={task.title}
+							>
+								{#if task.completed}
+									<Check size={10} class="hidden sm:block" style="color: var(--btn-save);" />
+								{/if}
+								<span class="truncate">{task.title}</span>
+							</div>
+						{/each}
+					</div>
 				</div>
 			{/each}
 		</div>

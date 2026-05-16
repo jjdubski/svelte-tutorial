@@ -2,46 +2,73 @@
 <p class="subtitle">Power features for managing, moving, and organizing task data</p>
 
 <div class="options" data-multiselect>
-  <div class="option" data-choice="import-export">
-    <div class="letter">A</div>
-    <div class="content">
-      <h3>Import / Export</h3>
-      <p>Export all todos as JSON or CSV. Import from JSON/CSV (with dedup by title or ID). Useful for backup or migrating between accounts.</p>
-      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Effort: Medium · Parse logic, file handling, merge strategy</div>
-    </div>
-  </div>
-  <div class="option" data-choice="bulk-edit">
-    <div class="letter">B</div>
-    <div class="content">
-      <h3>Bulk edit</h3>
-      <p>Select multiple tasks → edit tags, priority, category, or due date in one action. A batch edit panel replaces the per-item edit modal.</p>
-      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Effort: Medium · New UI + store methods</div>
-    </div>
-  </div>
-  <div class="option" data-choice="recurring">
-    <div class="letter">C</div>
-    <div class="content">
-      <h3>Recurring tasks</h3>
-      <p>Set tasks to repeat daily, weekly, monthly, or on a custom schedule. Auto-creates the next occurrence when completed. Already partially implemented per the codebase.</p>
-      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Effort: Medium · Scheduling logic, UI for recurrence rules</div>
-    </div>
-  </div>
-  <div class="option" data-choice="smart-lists">
-    <div class="letter">D</div>
-    <div class="content">
-      <h3>Smart lists / saved views</h3>
-      <p>Save filter combinations as named views that appear in the sidebar/dropdown. "Overdue &amp; Important", "Weekend Chores", "Work This Week" — one click to apply.</p>
-      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Effort: Medium-High · Persist views, manage in settings</div>
-    </div>
-  </div>
-  <div class="option" data-choice="batch-priority">
-    <div class="letter">E</div>
-    <div class="content">
-      <h3>Priority bulk actions</h3>
-      <p>Batch archive completed tasks (one-click cleanup). Batch mark as high priority. "Mark all done" for visible tasks.</p>
-      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Effort: Low · Reuses existing batch operations</div>
-    </div>
-  </div>
+	<div class="option" data-choice="import-export">
+		<div class="letter">A</div>
+		<div class="content">
+			<h3>Import / Export</h3>
+			<p>
+				Export all todos as JSON or CSV. Import from JSON/CSV (with dedup by title or ID). Useful for backup or
+				migrating between accounts.
+			</p>
+			<div style="font-size: 12px; color: var(--text-muted); margin-top: 4px">
+				Effort: Medium · Parse logic, file handling, merge strategy
+			</div>
+		</div>
+	</div>
+	<div class="option" data-choice="bulk-edit">
+		<div class="letter">B</div>
+		<div class="content">
+			<h3>Bulk edit</h3>
+			<p>
+				Select multiple tasks → edit tags, priority, category, or due date in one action. A batch edit panel
+				replaces the per-item edit modal.
+			</p>
+			<div style="font-size: 12px; color: var(--text-muted); margin-top: 4px">
+				Effort: Medium · New UI + store methods
+			</div>
+		</div>
+	</div>
+	<div class="option" data-choice="recurring">
+		<div class="letter">C</div>
+		<div class="content">
+			<h3>Recurring tasks</h3>
+			<p>
+				Set tasks to repeat daily, weekly, monthly, or on a custom schedule. Auto-creates the next occurrence
+				when completed. Already partially implemented per the codebase.
+			</p>
+			<div style="font-size: 12px; color: var(--text-muted); margin-top: 4px">
+				Effort: Medium · Scheduling logic, UI for recurrence rules
+			</div>
+		</div>
+	</div>
+	<div class="option" data-choice="smart-lists">
+		<div class="letter">D</div>
+		<div class="content">
+			<h3>Smart lists / saved views</h3>
+			<p>
+				Save filter combinations as named views that appear in the sidebar/dropdown. "Overdue &amp; Important",
+				"Weekend Chores", "Work This Week" — one click to apply.
+			</p>
+			<div style="font-size: 12px; color: var(--text-muted); margin-top: 4px">
+				Effort: Medium-High · Persist views, manage in settings
+			</div>
+		</div>
+	</div>
+	<div class="option" data-choice="batch-priority">
+		<div class="letter">E</div>
+		<div class="content">
+			<h3>Priority bulk actions</h3>
+			<p>
+				Batch archive completed tasks (one-click cleanup). Batch mark as high priority. "Mark all done" for
+				visible tasks.
+			</p>
+			<div style="font-size: 12px; color: var(--text-muted); margin-top: 4px">
+				Effort: Low · Reuses existing batch operations
+			</div>
+		</div>
+	</div>
 </div>
 
-<p class="subtitle" style="margin-top:24px">Click to select. Last area — then we'll compile everything into a full plan.</p>
+<p class="subtitle" style="margin-top: 24px">
+	Click to select. Last area — then we'll compile everything into a full plan.
+</p>

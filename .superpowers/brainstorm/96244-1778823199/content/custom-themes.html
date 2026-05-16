@@ -2,50 +2,75 @@
 <p class="subtitle">Letting users personalize the app's look and feel</p>
 
 <div class="section">
-  <p>Current state: Dark mode toggle works system-wide via a <code>.dark</code> class on <code>&lt;html&gt;</code>. Colors use CSS variables. That's it — one light, one dark.</p>
+	<p>
+		Current state: Dark mode toggle works system-wide via a <code>.dark</code> class on <code>&lt;html&gt;</code>.
+		Colors use CSS variables. That's it — one light, one dark.
+	</p>
 </div>
 
 <div class="options" data-multiselect>
-  <div class="option" data-choice="presets">
-    <div class="letter">A</div>
-    <div class="content">
-      <h3>Preset color themes</h3>
-      <p>5-10 curated themes beyond light/dark — e.g., Forest (green), Ocean (blue), Sunset (warm), Midnight (deep dark), Lavender, etc. Each overrides the CSS variable palette.</p>
-      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Effort: Low · Define CSS variable sets + picker UI</div>
-    </div>
-  </div>
-  <div class="option" data-choice="accent">
-    <div class="letter">B</div>
-    <div class="content">
-      <h3>Accent color picker</h3>
-      <p>Let users pick their own accent color (the blue that's used for buttons, links, highlights). A simple color input or predefined swatches. Saves to localStorage/user settings.</p>
-      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Effort: Low · One CSS variable override</div>
-    </div>
-  </div>
-  <div class="option" data-choice="full-custom">
-    <div class="letter">C</div>
-    <div class="content">
-      <h3>Full custom color picker</h3>
-      <p>Users can customize background, card, text, border, button colors independently via color inputs. Saved as a custom theme preset.</p>
-      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Effort: Medium · More UI, more state, more testing</div>
-    </div>
-  </div>
-  <div class="option" data-choice="font">
-    <div class="letter">D</div>
-    <div class="content">
-      <h3>Font selection</h3>
-      <p>Pick from 3-4 system-friendly font options (e.g., Inter, System UI, Serif, Monospace). Changes the base font family.</p>
-      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Effort: Low · CSS variable swap</div>
-    </div>
-  </div>
-  <div class="option" data-choice="density">
-    <div class="letter">E</div>
-    <div class="content">
-      <h3>Layout density</h3>
-      <p>Compact / Comfortable / Spacious modes that adjust padding, margins, and font sizes in the task list.</p>
-      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Effort: Medium · Many components affected</div>
-    </div>
-  </div>
+	<div class="option" data-choice="presets">
+		<div class="letter">A</div>
+		<div class="content">
+			<h3>Preset color themes</h3>
+			<p>
+				5-10 curated themes beyond light/dark — e.g., Forest (green), Ocean (blue), Sunset (warm), Midnight
+				(deep dark), Lavender, etc. Each overrides the CSS variable palette.
+			</p>
+			<div style="font-size: 12px; color: var(--text-muted); margin-top: 4px">
+				Effort: Low · Define CSS variable sets + picker UI
+			</div>
+		</div>
+	</div>
+	<div class="option" data-choice="accent">
+		<div class="letter">B</div>
+		<div class="content">
+			<h3>Accent color picker</h3>
+			<p>
+				Let users pick their own accent color (the blue that's used for buttons, links, highlights). A simple
+				color input or predefined swatches. Saves to localStorage/user settings.
+			</p>
+			<div style="font-size: 12px; color: var(--text-muted); margin-top: 4px">
+				Effort: Low · One CSS variable override
+			</div>
+		</div>
+	</div>
+	<div class="option" data-choice="full-custom">
+		<div class="letter">C</div>
+		<div class="content">
+			<h3>Full custom color picker</h3>
+			<p>
+				Users can customize background, card, text, border, button colors independently via color inputs. Saved
+				as a custom theme preset.
+			</p>
+			<div style="font-size: 12px; color: var(--text-muted); margin-top: 4px">
+				Effort: Medium · More UI, more state, more testing
+			</div>
+		</div>
+	</div>
+	<div class="option" data-choice="font">
+		<div class="letter">D</div>
+		<div class="content">
+			<h3>Font selection</h3>
+			<p>
+				Pick from 3-4 system-friendly font options (e.g., Inter, System UI, Serif, Monospace). Changes the base
+				font family.
+			</p>
+			<div style="font-size: 12px; color: var(--text-muted); margin-top: 4px">
+				Effort: Low · CSS variable swap
+			</div>
+		</div>
+	</div>
+	<div class="option" data-choice="density">
+		<div class="letter">E</div>
+		<div class="content">
+			<h3>Layout density</h3>
+			<p>Compact / Comfortable / Spacious modes that adjust padding, margins, and font sizes in the task list.</p>
+			<div style="font-size: 12px; color: var(--text-muted); margin-top: 4px">
+				Effort: Medium · Many components affected
+			</div>
+		</div>
+	</div>
 </div>
 
-<p class="subtitle" style="margin-top:24px">Click to select. Quick wins vs deeper customization — what feels right?</p>
+<p class="subtitle" style="margin-top: 24px">Click to select. Quick wins vs deeper customization — what feels right?</p>

@@ -2,62 +2,131 @@
 <p class="subtitle">3 ways to organize all the work — new brainstormed features + existing open issues</p>
 
 <div class="options">
-  <div class="option" data-choice="approach1" onclick="toggleSelect(this)" style="cursor:pointer;border:2px solid var(--border-color);border-radius:12px;padding:1rem;margin-bottom:1rem">
-    <div class="letter">1</div>
-    <div class="content">
-      <h3>Sequential by area</h3>
-      <p class="subtitle">Pick an area, finish it, move on</p>
-      <div style="font-size:13px;margin-top:8px">
-        <div><strong>Wave 1:</strong> Existing bug fixes (#15, #17, #19)</div>
-        <div><strong>Wave 2:</strong> Template improvements (#25-#27)</div>
-        <div><strong>Wave 3:</strong> Calendar redesign (#28-#29)</div>
-        <div><strong>Wave 4:</strong> Query syntax</div>
-        <div><strong>Wave 5:</strong> Keyboard shortcuts</div>
-        <div><strong>Wave 6:</strong> PWA + icons</div>
-        <div><strong>Wave 7:</strong> Settings route + themes</div>
-        <div><strong>Wave 8:</strong> UX polish</div>
-      </div>
-      <div class="pros-cons" style="margin-top:12px">
-        <div class="pros"><h4>Pro</h4><ul><li>Simple to track progress</li><li>Each wave independently testable</li></ul></div>
-        <div class="cons"><h4>Con</h4><ul><li>Settings route (needed by themes) comes late</li><li>No momentum from quick wins</li></ul></div>
-      </div>
-    </div>
-  </div>
-  <div class="option" data-choice="approach2" onclick="toggleSelect(this)" style="cursor:pointer;border:2px solid var(--border-color);border-radius:12px;padding:1rem;margin-bottom:1rem">
-    <div class="letter">2</div>
-    <div class="content">
-      <h3>Foundation-first (recommended)</h3>
-      <p class="subtitle">Build the settings hub early, then quick wins, then heavy lifts</p>
-      <div style="font-size:13px;margin-top:8px">
-        <div><strong>Phase 1:</strong> Existing bug fixes + app icons + install prompt</div>
-        <div><strong>Phase 2:</strong> Settings route + themes + notification prefs</div>
-        <div><strong>Phase 3:</strong> Template improvements + calendar redesign</div>
-        <div><strong>Phase 4:</strong> Query syntax + keyboard shortcuts</div>
-        <div><strong>Phase 5:</strong> Transitions + drag polish + haptics + badge + background sync</div>
-      </div>
-      <div class="pros-cons" style="margin-top:12px">
-        <div class="pros"><h4>Pro</h4><ul><li>Settings available early for theme work</li><li>Quick wins build momentum</li><li>Logical dependency ordering</li></ul></div>
-        <div class="cons"><h4>Con</h4><ul><li>Templates/calendar delayed behind infrastructure</li></ul></div>
-      </div>
-    </div>
-  </div>
-  <div class="option" data-choice="approach3" onclick="toggleSelect(this)" style="cursor:pointer;border:2px solid var(--border-color);border-radius:12px;padding:1rem;margin-bottom:1rem">
-    <div class="letter">3</div>
-    <div class="content">
-      <h3>Existing issues first, then new features</h3>
-      <p class="subtitle">Clear the backlog completely before starting new work</p>
-      <div style="font-size:13px;margin-top:8px">
-        <div><strong>Batch 1:</strong> All 10 existing open issues (#15-#29)</div>
-        <div>└─ Bug fixes → Templates → Calendar → Svelte 5 refactor → Tests → Animations</div>
-        <div><strong>Batch 2:</strong> All 6 brainstormed areas</div>
-        <div>└─ Any order within the batch</div>
-      </div>
-      <div class="pros-cons" style="margin-top:12px">
-        <div class="pros"><h4>Pro</h4><ul><li>Clean break between old issues and new features</li><li>Reduces context switching</li></ul></div>
-        <div class="cons"><h4>Con</h4><ul><li>Settings/themes delayed behind 10 issues</li><li>No quick wins for momentum</li></ul></div>
-      </div>
-    </div>
-  </div>
+	<div
+		class="option"
+		data-choice="approach1"
+		onclick="toggleSelect(this)"
+		style="
+			cursor: pointer;
+			border: 2px solid var(--border-color);
+			border-radius: 12px;
+			padding: 1rem;
+			margin-bottom: 1rem;
+		"
+	>
+		<div class="letter">1</div>
+		<div class="content">
+			<h3>Sequential by area</h3>
+			<p class="subtitle">Pick an area, finish it, move on</p>
+			<div style="font-size: 13px; margin-top: 8px">
+				<div><strong>Wave 1:</strong> Existing bug fixes (#15, #17, #19)</div>
+				<div><strong>Wave 2:</strong> Template improvements (#25-#27)</div>
+				<div><strong>Wave 3:</strong> Calendar redesign (#28-#29)</div>
+				<div><strong>Wave 4:</strong> Query syntax</div>
+				<div><strong>Wave 5:</strong> Keyboard shortcuts</div>
+				<div><strong>Wave 6:</strong> PWA + icons</div>
+				<div><strong>Wave 7:</strong> Settings route + themes</div>
+				<div><strong>Wave 8:</strong> UX polish</div>
+			</div>
+			<div class="pros-cons" style="margin-top: 12px">
+				<div class="pros">
+					<h4>Pro</h4>
+					<ul>
+						<li>Simple to track progress</li>
+						<li>Each wave independently testable</li>
+					</ul>
+				</div>
+				<div class="cons">
+					<h4>Con</h4>
+					<ul>
+						<li>Settings route (needed by themes) comes late</li>
+						<li>No momentum from quick wins</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div
+		class="option"
+		data-choice="approach2"
+		onclick="toggleSelect(this)"
+		style="
+			cursor: pointer;
+			border: 2px solid var(--border-color);
+			border-radius: 12px;
+			padding: 1rem;
+			margin-bottom: 1rem;
+		"
+	>
+		<div class="letter">2</div>
+		<div class="content">
+			<h3>Foundation-first (recommended)</h3>
+			<p class="subtitle">Build the settings hub early, then quick wins, then heavy lifts</p>
+			<div style="font-size: 13px; margin-top: 8px">
+				<div><strong>Phase 1:</strong> Existing bug fixes + app icons + install prompt</div>
+				<div><strong>Phase 2:</strong> Settings route + themes + notification prefs</div>
+				<div><strong>Phase 3:</strong> Template improvements + calendar redesign</div>
+				<div><strong>Phase 4:</strong> Query syntax + keyboard shortcuts</div>
+				<div><strong>Phase 5:</strong> Transitions + drag polish + haptics + badge + background sync</div>
+			</div>
+			<div class="pros-cons" style="margin-top: 12px">
+				<div class="pros">
+					<h4>Pro</h4>
+					<ul>
+						<li>Settings available early for theme work</li>
+						<li>Quick wins build momentum</li>
+						<li>Logical dependency ordering</li>
+					</ul>
+				</div>
+				<div class="cons">
+					<h4>Con</h4>
+					<ul>
+						<li>Templates/calendar delayed behind infrastructure</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div
+		class="option"
+		data-choice="approach3"
+		onclick="toggleSelect(this)"
+		style="
+			cursor: pointer;
+			border: 2px solid var(--border-color);
+			border-radius: 12px;
+			padding: 1rem;
+			margin-bottom: 1rem;
+		"
+	>
+		<div class="letter">3</div>
+		<div class="content">
+			<h3>Existing issues first, then new features</h3>
+			<p class="subtitle">Clear the backlog completely before starting new work</p>
+			<div style="font-size: 13px; margin-top: 8px">
+				<div><strong>Batch 1:</strong> All 10 existing open issues (#15-#29)</div>
+				<div>└─ Bug fixes → Templates → Calendar → Svelte 5 refactor → Tests → Animations</div>
+				<div><strong>Batch 2:</strong> All 6 brainstormed areas</div>
+				<div>└─ Any order within the batch</div>
+			</div>
+			<div class="pros-cons" style="margin-top: 12px">
+				<div class="pros">
+					<h4>Pro</h4>
+					<ul>
+						<li>Clean break between old issues and new features</li>
+						<li>Reduces context switching</li>
+					</ul>
+				</div>
+				<div class="cons">
+					<h4>Con</h4>
+					<ul>
+						<li>Settings/themes delayed behind 10 issues</li>
+						<li>No quick wins for momentum</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
 
-<p class="subtitle" style="margin-top:24px">Which approach feels right? Or something in between?</p>
+<p class="subtitle" style="margin-top: 24px">Which approach feels right? Or something in between?</p>

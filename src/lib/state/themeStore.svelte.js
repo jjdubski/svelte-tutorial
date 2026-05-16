@@ -2,10 +2,10 @@ import { createContext } from 'svelte';
 import { storageGet, storageSet } from '$lib/scripts/storage.js';
 
 const FONT_FAMILIES = {
-	'system-ui': 'system-ui, -apple-system, BlinkMacSystemFont, \'Segoe UI\', sans-serif',
-	inter: '\'Inter\', system-ui, -apple-system, BlinkMacSystemFont, \'Segoe UI\', sans-serif',
-	serif: '\'Merriweather\', Georgia, Cambria, \'Times New Roman\', serif',
-	mono: '\'JetBrains Mono\', \'Fira Code\', ui-monospace, SFMono-Regular, Menlo, monospace'
+	'system-ui': "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+	inter: "'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+	serif: "'Merriweather', Georgia, Cambria, 'Times New Roman', serif",
+	mono: "'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace"
 };
 
 const THEME_PRESETS = {
@@ -355,31 +355,64 @@ class ThemeStore {
 		const darkBorder = preset === 'custom' ? shiftHex(border, -155) : darkTheme.border;
 
 		root.style.setProperty('--theme-light-bg', lightBg);
-		root.style.setProperty('--theme-light-gradient-1', preset === 'custom' ? shiftHex(bg, -8) : lightTheme.gradient1);
-		root.style.setProperty('--theme-light-gradient-2', preset === 'custom' ? shiftHex(bg, 14) : lightTheme.gradient2);
+		root.style.setProperty(
+			'--theme-light-gradient-1',
+			preset === 'custom' ? shiftHex(bg, -8) : lightTheme.gradient1
+		);
+		root.style.setProperty(
+			'--theme-light-gradient-2',
+			preset === 'custom' ? shiftHex(bg, 14) : lightTheme.gradient2
+		);
 		root.style.setProperty('--theme-light-card-bg', lightCardBg);
 		root.style.setProperty('--theme-light-text', lightText);
 		root.style.setProperty('--theme-light-text-heading', lightTextHeading);
-		root.style.setProperty('--theme-light-text-secondary', preset === 'custom' ? shiftHex(text, 56) : lightTheme.textSecondary);
-		root.style.setProperty('--theme-light-text-muted', preset === 'custom' ? shiftHex(text, 90) : lightTheme.textMuted);
+		root.style.setProperty(
+			'--theme-light-text-secondary',
+			preset === 'custom' ? shiftHex(text, 56) : lightTheme.textSecondary
+		);
+		root.style.setProperty(
+			'--theme-light-text-muted',
+			preset === 'custom' ? shiftHex(text, 90) : lightTheme.textMuted
+		);
 		root.style.setProperty('--theme-light-border', lightBorder);
-		root.style.setProperty('--theme-light-border-input', preset === 'custom' ? shiftHex(border, -18) : lightTheme.borderInput);
+		root.style.setProperty(
+			'--theme-light-border-input',
+			preset === 'custom' ? shiftHex(border, -18) : lightTheme.borderInput
+		);
 		root.style.setProperty('--theme-light-input-bg', preset === 'custom' ? shiftHex(bg, 18) : lightTheme.inputBg);
 		root.style.setProperty('--theme-light-todo-bg', preset === 'custom' ? shiftHex(bg, 14) : lightTheme.todoBg);
 		root.style.setProperty('--theme-light-shadow', lightTheme.shadow);
 
 		root.style.setProperty('--theme-dark-bg', darkBg);
-		root.style.setProperty('--theme-dark-gradient-1', preset === 'custom' ? shiftHex(darkBg, -8) : darkTheme.gradient1);
-		root.style.setProperty('--theme-dark-gradient-2', preset === 'custom' ? shiftHex(darkBg, 18) : darkTheme.gradient2);
+		root.style.setProperty(
+			'--theme-dark-gradient-1',
+			preset === 'custom' ? shiftHex(darkBg, -8) : darkTheme.gradient1
+		);
+		root.style.setProperty(
+			'--theme-dark-gradient-2',
+			preset === 'custom' ? shiftHex(darkBg, 18) : darkTheme.gradient2
+		);
 		root.style.setProperty('--theme-dark-card-bg', darkCardBg);
 		root.style.setProperty('--theme-dark-text', darkText);
 		root.style.setProperty('--theme-dark-text-heading', darkTextHeading);
-		root.style.setProperty('--theme-dark-text-secondary', preset === 'custom' ? shiftHex(darkText, -65) : darkTheme.textSecondary);
-		root.style.setProperty('--theme-dark-text-muted', preset === 'custom' ? shiftHex(darkText, -105) : darkTheme.textMuted);
+		root.style.setProperty(
+			'--theme-dark-text-secondary',
+			preset === 'custom' ? shiftHex(darkText, -65) : darkTheme.textSecondary
+		);
+		root.style.setProperty(
+			'--theme-dark-text-muted',
+			preset === 'custom' ? shiftHex(darkText, -105) : darkTheme.textMuted
+		);
 		root.style.setProperty('--theme-dark-border', darkBorder);
-		root.style.setProperty('--theme-dark-border-input', preset === 'custom' ? shiftHex(darkBorder, 16) : darkTheme.borderInput);
+		root.style.setProperty(
+			'--theme-dark-border-input',
+			preset === 'custom' ? shiftHex(darkBorder, 16) : darkTheme.borderInput
+		);
 		root.style.setProperty('--theme-dark-input-bg', preset === 'custom' ? shiftHex(darkBg, 14) : darkTheme.inputBg);
-		root.style.setProperty('--theme-dark-todo-bg', preset === 'custom' ? shiftHex(darkCardBg, -8) : darkTheme.todoBg);
+		root.style.setProperty(
+			'--theme-dark-todo-bg',
+			preset === 'custom' ? shiftHex(darkCardBg, -8) : darkTheme.todoBg
+		);
 		root.style.setProperty('--theme-dark-shadow', darkTheme.shadow);
 
 		root.style.setProperty('--theme-accent', accent);
