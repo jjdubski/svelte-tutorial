@@ -82,7 +82,7 @@
 	--todo-bg: var(--theme-dark-todo-bg);
 	--shadow: var(--theme-dark-shadow);
 	--btn-primary: var(--theme-accent);
-	--btn-primary-hover: var(--theme-accent-hover);
+	--btn-primary-hover: var(--theme-accent-hover-dark);
 	--btn-edit: #38bdf8;
 	--btn-delete: #f87171;
 	--btn-delete-hover: #ef4444;
@@ -170,7 +170,7 @@
 
 .glow-card:hover {
 	transform: translateY(-3px);
-	box-shadow: 0 8px 30px rgba(37, 99, 235, 0.15);
+	box-shadow: 0 8px 30px color-mix(in srgb, var(--btn-primary) 24%, transparent);
 	border-color: var(--btn-primary) !important;
 }
 
@@ -191,7 +191,7 @@
 }
 
 [data-btn='primary'].glow-btn:hover {
-	box-shadow: 0 4px 20px rgba(37, 99, 235, 0.4);
+	box-shadow: 0 4px 20px color-mix(in srgb, var(--btn-primary) 50%, transparent);
 }
 
 [data-btn='save'].glow-btn:hover {

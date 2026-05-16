@@ -90,7 +90,7 @@
 <button
 	type="button"
 	class="glow-btn fixed right-4 bottom-4 z-40 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border-0 shadow-lg"
-	style="background: rgba(37, 99, 235, 0.85); color: white; box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);"
+	style="background: color-mix(in srgb, var(--btn-primary) 85%, transparent); color: white; box-shadow: 0 4px 16px color-mix(in srgb, var(--btn-primary) 30%, transparent);"
 	data-btn="primary"
 	onclick={openHelp}
 	aria-label="Open help"

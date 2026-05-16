@@ -61,7 +61,25 @@ export default defineConfig({
 				]
 			},
 			workbox: {
-				globPatterns: ['**/*.{js,css,html,svg,png,ico,json,woff2}'],
+				// Don't precache HTML — it references versioned chunk hashes that change
+				// with every deploy. Serving stale HTML from cache causes "Failed to fetch
+				// dynamically imported module" errors when those chunks no longer exist.
+				globPatterns: ['**/*.{js,css,svg,png,ico,json,woff2}'],
+				// Use NetworkFirst for navigation so HTML always comes from the network
+				// when online (current chunk references), but still works offline via cache.
+				runtimeCaching: [
+					{
+						urlPattern: ({ request }) => request.mode === 'navigate',
+						handler: 'NetworkFirst',
+						options: {
+							cacheName: 'pages',
+							expiration: {
+								maxEntries: 20,
+								maxAgeSeconds: 24 * 60 * 60
+							}
+						}
+					}
+				],
 				navigateFallback: '/',
 				navigateFallbackDenylist: [/\/api\//]
 			}

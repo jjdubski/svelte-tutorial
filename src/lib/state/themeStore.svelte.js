@@ -12,6 +12,7 @@ const THEME_PRESETS = {
 	default: {
 		label: 'Default',
 		description: 'Balanced neutral palette',
+		accent: '#2563eb',
 		light: {
 			bg: '#e8effb',
 			gradient1: '#e2e8f0',
@@ -46,6 +47,7 @@ const THEME_PRESETS = {
 	forest: {
 		label: 'Forest',
 		description: 'Warm greens and earthy neutrals',
+		accent: '#16a34a',
 		light: {
 			bg: '#eef6ef',
 			gradient1: '#e5f1e7',
@@ -80,6 +82,7 @@ const THEME_PRESETS = {
 	ocean: {
 		label: 'Ocean',
 		description: 'Cool blues and cyan highlights',
+		accent: '#0891b2',
 		light: {
 			bg: '#eaf5ff',
 			gradient1: '#dfedfb',
@@ -114,6 +117,7 @@ const THEME_PRESETS = {
 	sunset: {
 		label: 'Sunset',
 		description: 'Warm oranges and rose tones',
+		accent: '#ea580c',
 		light: {
 			bg: '#fff2eb',
 			gradient1: '#ffe9dc',
@@ -148,6 +152,7 @@ const THEME_PRESETS = {
 	midnight: {
 		label: 'Midnight',
 		description: 'Deep dark surfaces with neon contrast',
+		accent: '#6366f1',
 		light: {
 			bg: '#dce3ff',
 			gradient1: '#d4ddfb',
@@ -426,6 +431,7 @@ class ThemeStore {
 
 		root.style.setProperty('--theme-accent', accent);
 		root.style.setProperty('--theme-accent-hover', shiftHex(accent, -22));
+		root.style.setProperty('--theme-accent-hover-dark', shiftHex(accent, 22));
 		root.style.setProperty('--app-font-family', FONT_FAMILIES[font] || FONT_FAMILIES['system-ui']);
 	}
 

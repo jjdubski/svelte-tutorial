@@ -8,7 +8,7 @@
 <a
 	href={resolve(href)}
 	class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium no-underline transition-all hover:opacity-80 sm:text-base"
-	style="color: var(--btn-primary); background: var(--input-bg);"
+	style="background: var(--btn-primary); color: white;"
 >
 	<ArrowLeft size={14} />
 	{label}

@@ -52,6 +52,14 @@
 	 */
 	function selectThemePreset(presetId) {
 		themeStore.themePreset = presetId;
+		// Each preset has a matching accent — update automatically.
+		// User can still override via the accent color picker afterward.
+		if (presetId !== 'custom') {
+			const preset = themeStore.presetThemes.find((p) => p.id === presetId);
+			if (preset?.accent) {
+				themeStore.accentColor = preset.accent;
+			}
+		}
 	}
 </script>
 
@@ -158,7 +166,16 @@
 				class="h-10 w-full cursor-pointer rounded border"
 				style="border-color: var(--border); background: var(--card-bg);"
 				value={themeStore.accentColor}
-				oninput={(e) => (themeStore.accentColor = e.currentTarget.value)}
+				oninput={(e) => {
+					const color = e.currentTarget.value.toLowerCase();
+					// Pure white/black as accent would be invisible in one mode — fall back to preset accent
+					if (color === '#ffffff' || color === '#000000') {
+						const preset = themeStore.presetThemes.find((p) => p.id === themeStore.themePreset);
+						themeStore.accentColor = preset?.accent || '#3b82f6';
+					} else {
+						themeStore.accentColor = color;
+					}
+				}}
 			/>
 		</div>
 

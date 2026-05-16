@@ -159,7 +159,7 @@
 			>
 				<button
 					type="button"
-					class="upcoming-toggle flex w-full cursor-pointer items-center gap-2 border-none bg-none p-0 text-sm font-semibold sm:text-base"
+					class="upcoming-toggle no-btn-anim flex w-full cursor-pointer items-center gap-2 border-none bg-none p-0 text-sm font-semibold sm:text-base"
 					style="color: var(--text-heading);"
 					onclick={() => (showUpcoming = !showUpcoming)}
 				>

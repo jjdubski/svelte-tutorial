@@ -271,8 +271,8 @@
 		{#if store.filterTags.length > 0}
 			<button
 				type="button"
-				class="glow-btn cursor-pointer rounded-full border-none px-2 py-1 text-xs font-medium sm:text-sm"
-				style="color: var(--text-muted);"
+				class="glow-btn flex cursor-pointer items-center gap-1 rounded-lg border px-2 py-1 text-xs font-medium sm:text-sm"
+				style="color: var(--btn-delete);"
 				data-btn="ghost"
 				onclick={() => (store.filterTags = [])}
 			>
