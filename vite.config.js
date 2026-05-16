@@ -35,7 +35,6 @@ export default defineConfig({
 				theme_color: '#3b82f6',
 				background_color: '#2563eb',
 				display: 'standalone',
-				display_override: ['fullscreen', 'minimal-ui', 'standalone', 'browser'],
 				categories: ['productivity'],
 				lang: 'en',
 				icons: [
