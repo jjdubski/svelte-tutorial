@@ -53,8 +53,10 @@
 	let totalSubtasks = $derived(todo.subtasks?.length || 0);
 </script>
 
+<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 <div
 	role="listitem"
+	tabindex="0"
 	class="glow-card todo-card flex items-start gap-2 rounded-xl border p-3"
 	class:completed={todo.completed}
 	class:dragging={store.draggedId === todo.id}
@@ -67,6 +69,17 @@
 	ondragover={(e) => store.handleDragOver(e, todo.id)}
 	ondragleave={() => store.handleDragLeave()}
 	ondrop={(e) => store.handleDrop(e, todo.id)}
+	onmouseenter={() => (store.activeTaskId = todo.id)}
+	onmouseleave={(e) => {
+		if (document.activeElement !== e.currentTarget) store.activeTaskId = null;
+	}}
+	onfocus={() => (store.activeTaskId = todo.id)}
+	onblur={(e) => {
+		// Only clear if focus didn't move inside the card
+		if (!e.currentTarget.contains(e.relatedTarget)) {
+			store.activeTaskId = null;
+		}
+	}}
 >
 	{#if store.selectMode}
 		<button

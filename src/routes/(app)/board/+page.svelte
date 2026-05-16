@@ -3,12 +3,15 @@
 	import BackButton from '$lib/components/BackButton.svelte';
 	import { handleSelectionClick, initSelection } from '$lib/utils/selection.js';
 	import SelectionBar from '$lib/components/SelectionBar.svelte';
+	import TodoEditModal from '$lib/components/TodoEditModal.svelte';
 	import { Check, Clock, Archive } from 'lucide-svelte';
 	import { localDateStr } from '$lib/utils/todoUtils.js';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { lightTap } from '$lib/utils/haptics.js';
 
 	const store = getTodoStore();
+
+	let editingTodo = $derived(store.todos.find((t) => t.id === store.editingTodoId));
 
 	// Column groupings — derived from todo state
 	let pendingTodos = $derived(store.todos.filter((t) => !t.completed && !(t.tags || []).includes('in-progress')));
@@ -143,7 +146,36 @@
 		const today = localDateStr(new Date());
 		return dateStr < today;
 	}
+
+	function handleKeydown(e) {
+		const tag = e.target?.tagName?.toLowerCase();
+		const isInput = tag === 'input' || tag === 'textarea' || tag === 'select';
+		if (isInput || e.target?.isContentEditable) return;
+
+		// e — Edit the active (hovered/focused) task
+		if (e.key === 'e' && store.activeTaskId != null) {
+			e.preventDefault();
+			store.startEdit(store.activeTaskId);
+			return;
+		}
+
+		// a — Archive selected tasks, or the active task
+		if (e.key === 'a') {
+			e.preventDefault();
+			if (store.selectedTodos.size > 0) {
+				store.archiveSelected();
+			} else if (store.activeTaskId != null) {
+				store.deleteTodo(store.activeTaskId);
+				store.activeTaskId = null;
+			}
+			return;
+		}
+
+		store.handleKeydown(e);
+	}
 </script>
+
+<svelte:window onkeydown={handleKeydown} />
 
 <div class="mb-4 flex items-center justify-between gap-2">
 	<h2 class="m-0 text-xl font-semibold sm:text-2xl" style="color: var(--text-heading);">Kanban Board</h2>
@@ -231,6 +263,16 @@
 							style="background: var(--todo-bg); border-color: var(--border);"
 							onclick={(e) => handleCardClick(e, todo)}
 							onkeydown={(e) => handleCardKeydown(e, todo)}
+							onmouseenter={() => (store.activeTaskId = todo.id)}
+							onmouseleave={(ev) => {
+								if (document.activeElement !== ev.currentTarget) store.activeTaskId = null;
+							}}
+							onfocus={() => (store.activeTaskId = todo.id)}
+							onblur={(e) => {
+								if (!e.currentTarget.contains(e.relatedTarget)) {
+									store.activeTaskId = null;
+								}
+							}}
 							ondragstart={(e) => {
 								e.dataTransfer.effectAllowed = 'move';
 								e.dataTransfer.setData('text/plain', String(todo.id));
@@ -372,6 +414,10 @@
 		lastClickedId = null;
 	}}
 />
+
+{#if editingTodo}
+	<TodoEditModal todo={editingTodo} />
+{/if}
 
 <style>
 	.board-card {

@@ -8,18 +8,28 @@
 	const store = getTodoStore();
 
 	let showDateFilter = $state(false);
+	let searchInput = $state(null);
+
+	// Auto-focus search input when triggered by keyboard shortcut
+	$effect(() => {
+		if (store.focusSearchRequested) {
+			// Just reading the value creates a dependency
+			searchInput?.focus();
+		}
+	});
 </script>
 
 <!-- Filter Bar -->
 <div class="mb-3 flex flex-wrap gap-2">
 	<div
-		class="flex min-w-[160px] flex-1 items-center gap-2 rounded-xl border px-3 py-2.5"
+		class="search-input-wrapper flex min-w-[160px] flex-1 items-center gap-2 rounded-xl border px-3 py-2.5"
 		style="background: var(--input-bg); border-color: var(--border);"
 	>
 		<Search size={16} style="color: var(--text-muted);" aria-hidden="true" />
 		<input
-			class="m-0 flex-1 rounded-sm border-none bg-transparent p-0 text-sm focus-visible:ring-2 focus-visible:ring-[var(--btn-primary)] focus-visible:outline-none focus-visible:ring-inset sm:text-base"
-			style="color: var(--text);"
+			bind:this={searchInput}
+			class="m-0 flex-1 rounded-sm border-none bg-transparent p-0 text-sm sm:text-base"
+			style="color: var(--text); outline: none;"
 			bind:value={store.filterText}
 			placeholder="Search…"
 			aria-label="Search tasks"
@@ -263,6 +273,11 @@
 {/if}
 
 <style>
+	.search-input-wrapper:focus-within {
+		border-color: var(--btn-primary) !important;
+		box-shadow: 0 0 0 1px var(--btn-primary);
+	}
+
 	button.active {
 		background: var(--btn-primary) !important;
 		color: white !important;

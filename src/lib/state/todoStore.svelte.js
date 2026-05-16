@@ -306,6 +306,9 @@ class TodoStore {
 	/** @type {number|null} */
 	editingTodoId = $state(null);
 
+	/** Tracks the last hovered/focused task for keyboard shortcuts */
+	activeTaskId = $state(null);
+
 	/**
 	 * @param {number} id
 	 */
@@ -699,11 +702,11 @@ class TodoStore {
 			result = result.filter((t) => t.priority === fp);
 		}
 
-		// Tags filter (AND logic — all selected tags must be present)
+		// Tags filter (AND logic — all selected tags must be present; case-insensitive)
 		if (ftags.length > 0) {
 			result = result.filter((t) => {
-				const todoTags = t.tags || [];
-				return ftags.every((tag) => todoTags.includes(tag));
+				const todoTags = (t.tags || []).map((tag) => tag.toLowerCase());
+				return ftags.every((tag) => todoTags.includes(tag.toLowerCase()));
 			});
 		}
 
@@ -847,9 +850,11 @@ class TodoStore {
 				if (!value) continue;
 
 				if (token.key === 'tag') {
-					const normalizedTag = value.toLowerCase();
-					if (!nextFilterTags.includes(normalizedTag)) {
-						nextFilterTags = [...nextFilterTags, normalizedTag];
+					// Match against available tags case-insensitively to preserve original case
+					const matchedTag = this.availableTags.find((t) => t.toLowerCase() === value.toLowerCase());
+					const tagToUse = matchedTag || value;
+					if (!nextFilterTags.includes(tagToUse)) {
+						nextFilterTags = [...nextFilterTags, tagToUse];
 					}
 					continue;
 				}
@@ -1816,7 +1821,18 @@ class TodoStore {
 		}, duration);
 	}
 
-	// ── Keyboard shortcut ──
+	// ── Keyboard shortcut triggers ──
+
+	/**
+	 * Increment to signal HelpButton to open the help dialog.
+	 * Using a counter ensures the effect fires even if already open.
+	 */
+	helpRequested = $state(0);
+
+	/**
+	 * Increment to signal TodoFilters to focus the search input.
+	 */
+	focusSearchRequested = $state(0);
 
 	/**
 	 * @param {KeyboardEvent} e

@@ -59,11 +59,54 @@
 	});
 
 	function handleKeydown(e) {
-		if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
-			e.preventDefault();
-			formStore.showForm = true;
-			setTimeout(() => document.getElementById('title-input')?.focus(), 50);
+		// Ignore when typing in input, textarea, or select elements
+		const tag = e.target?.tagName?.toLowerCase();
+		const isInput = tag === 'input' || tag === 'textarea' || tag === 'select';
+		const isContentEditable = e.target?.isContentEditable;
+
+		if (!isInput && !isContentEditable) {
+			// n — New task
+			if (e.key === 'n') {
+				e.preventDefault();
+				formStore.showForm = true;
+				setTimeout(() => document.getElementById('title-input')?.focus(), 50);
+				return;
+			}
+
+			// / — Focus search
+			if (e.key === '/') {
+				e.preventDefault();
+				store.focusSearchRequested++;
+				return;
+			}
+
+			// e — Edit the active (hovered/focused) task
+			if (e.key === 'e' && store.activeTaskId != null) {
+				e.preventDefault();
+				store.startEdit(store.activeTaskId);
+				return;
+			}
+
+			// a — Archive selected tasks, or the active task
+			if (e.key === 'a') {
+				e.preventDefault();
+				if (store.selectedTodos.size > 0) {
+					store.archiveSelected();
+				} else if (store.activeTaskId != null) {
+					store.deleteTodo(store.activeTaskId);
+					store.activeTaskId = null;
+				}
+				return;
+			}
 		}
+
+		// Ctrl/Cmd+F — Focus search (works even from inputs)
+		if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+			e.preventDefault();
+			store.focusSearchRequested++;
+			return;
+		}
+
 		store.handleKeydown(e);
 	}
 </script>

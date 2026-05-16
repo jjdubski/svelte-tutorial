@@ -2,9 +2,47 @@
 	import { fade, scale } from 'svelte/transition';
 	import { HelpCircle, X, Settings, Keyboard, MousePointer2 } from 'lucide-svelte';
 	import { materialEasing } from '$lib/utils/motion.js';
+	import { getTodoStore } from '$lib/state/todoStore.svelte.js';
+	import { page } from '$app/stores';
+
+	const store = getTodoStore();
 
 	let showHelp = $state(false);
 	let prefersReducedMotion = $state(false);
+
+	// Determine which page we're on for dynamic shortcut content
+	let currentPath = $derived($page.url.pathname);
+
+	/** @type {Array<{keys: string[], desc: string}>} */
+	let pageShortcuts = $derived.by(() => {
+		const path = currentPath;
+		if (path === '/tasks') {
+			return [
+				{ keys: ['/'], desc: 'Focus search' },
+				{ keys: ['n'], desc: 'New task' },
+				{ keys: ['e'], desc: 'Edit focused task' },
+				{ keys: ['a'], desc: 'Archive selected or focused task' },
+				{ keys: ['Esc'], desc: 'Close dialogs / exit select mode' },
+				{ keys: ['Ctrl', 'F'], desc: 'Focus search (from anywhere)' },
+				{ keys: ['?'], desc: 'Open this help dialog' }
+			];
+		}
+		if (path === '/board') {
+			return [
+				{ keys: ['e'], desc: 'Edit focused task' },
+				{ keys: ['a'], desc: 'Archive selected or focused task' },
+				{ keys: ['Esc'], desc: 'Close dialogs / exit select mode' },
+				{ keys: ['?'], desc: 'Open this help dialog' }
+			];
+		}
+		// Default shortcuts for all other pages (archived, calendar, stats, settings)
+		return [
+			{ keys: ['Esc'], desc: 'Close dialogs / exit select mode' },
+			{ keys: ['?'], desc: 'Open this help dialog' }
+		];
+	});
+
+	let showMultiSelect = $derived(currentPath === '/board' || currentPath.startsWith('/archived'));
 
 	function openHelp() {
 		showHelp = true;
@@ -25,6 +63,14 @@
 			closeHelp();
 		}
 	}
+
+	// Open help when triggered by keyboard shortcut from any page
+	$effect(() => {
+		if (store.helpRequested) {
+			// Reading the value creates the dependency
+			showHelp = true;
+		}
+	});
 
 	$effect(() => {
 		if (showHelp) {
@@ -82,42 +128,80 @@
 				</button>
 			</div>
 
-			<!-- Keyboard shortcuts section -->
+			<!-- Keyboard shortcuts section (page-specific) -->
 			<div class="mb-5">
 				<div class="mb-3 flex items-center gap-2">
 					<Keyboard size={16} style="color: var(--btn-primary);" />
 					<h3 class="m-0 text-sm font-semibold sm:text-base" style="color: var(--text-heading);">
 						Keyboard Shortcuts
+						<span class="ml-1.5 text-xs font-normal opacity-60" style="color: var(--text-muted);"
+							>— {currentPath === '/tasks'
+								? 'Tasks'
+								: currentPath === '/board'
+									? 'Board'
+									: 'This page'}</span
+						>
 					</h3>
 				</div>
 				<div class="rounded-xl border p-4" style="background: var(--todo-bg); border-color: var(--border);">
-					<p class="m-0 text-sm sm:text-base" style="color: var(--text-muted);">
-						Coming soon! Full keyboard shortcut support is planned for a future update (Phase 4).
-					</p>
+					{#if pageShortcuts.length > 0}
+						<ul class="m-0 space-y-2.5 text-sm sm:text-base" style="color: var(--text-secondary);">
+							{#each pageShortcuts as shortcut (shortcut.desc)}
+								<li class="flex items-center gap-3">
+									{#if shortcut.keys.length === 1}
+										<kbd
+											class="inline-flex min-w-[28px] items-center justify-center rounded-md border px-2 py-0.5 font-mono text-xs font-bold sm:text-sm"
+											style="background: var(--input-bg); border-color: var(--border); color: var(--text-heading);"
+											>{shortcut.keys[0]}</kbd
+										>
+									{:else}
+										<kbd
+											class="inline-flex min-w-[28px] items-center justify-center gap-0.5 rounded-md border px-2 py-0.5 font-mono text-xs font-bold sm:text-sm"
+											style="background: var(--input-bg); border-color: var(--border); color: var(--text-heading);"
+										>
+											{#each shortcut.keys as key, i (key)}
+												<span>{key}</span>
+												{#if i < shortcut.keys.length - 1}
+													<span class="text-xs opacity-60">+</span>
+												{/if}
+											{/each}
+										</kbd>
+									{/if}
+									<span style="color: var(--text-muted);">{shortcut.desc}</span>
+								</li>
+							{/each}
+						</ul>
+					{:else}
+						<p class="m-0 text-sm sm:text-base" style="color: var(--text-muted);">
+							No keyboard shortcuts for this page.
+						</p>
+					{/if}
 				</div>
 			</div>
 
-			<!-- Multi-select instructions -->
-			<div class="mb-5">
-				<div class="mb-3 flex items-center gap-2">
-					<MousePointer2 size={16} style="color: var(--btn-primary);" />
-					<h3 class="m-0 text-sm font-semibold sm:text-base" style="color: var(--text-heading);">
-						Multi-Select
-					</h3>
+			<!-- Multi-select instructions (board + archived only) -->
+			{#if showMultiSelect}
+				<div class="mb-5">
+					<div class="mb-3 flex items-center gap-2">
+						<MousePointer2 size={16} style="color: var(--btn-primary);" />
+						<h3 class="m-0 text-sm font-semibold sm:text-base" style="color: var(--text-heading);">
+							Multi-Select
+						</h3>
+					</div>
+					<div class="rounded-xl border p-4" style="background: var(--todo-bg); border-color: var(--border);">
+						<ul class="m-0 space-y-2 pl-5 text-sm sm:text-base" style="color: var(--text-secondary);">
+							<li>
+								<strong style="color: var(--text-heading);">Ctrl/Cmd + Click</strong>
+								<span style="color: var(--text-muted);"> — Toggle individual selection</span>
+							</li>
+							<li>
+								<strong style="color: var(--text-heading);">Shift + Click</strong>
+								<span style="color: var(--text-muted);"> — Range select</span>
+							</li>
+						</ul>
+					</div>
 				</div>
-				<div class="rounded-xl border p-4" style="background: var(--todo-bg); border-color: var(--border);">
-					<ul class="m-0 space-y-2 pl-5 text-sm sm:text-base" style="color: var(--text-secondary);">
-						<li>
-							<strong style="color: var(--text-heading);">Ctrl/Cmd + Click</strong>
-							<span style="color: var(--text-muted);"> — Toggle individual selection</span>
-						</li>
-						<li>
-							<strong style="color: var(--text-heading);">Shift + Click</strong>
-							<span style="color: var(--text-muted);"> — Range select</span>
-						</li>
-					</ul>
-				</div>
-			</div>
+			{/if}
 
 			<!-- Settings link -->
 			<div>

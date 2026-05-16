@@ -60,7 +60,22 @@
 			void registerBackgroundSync();
 		}
 	});
+
+	function handleGlobalKeydown(e) {
+		// ? — Open help dialog from any page
+		if (e.key === '?' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+			const tag = e.target?.tagName?.toLowerCase();
+			const isInput = tag === 'input' || tag === 'textarea' || tag === 'select';
+			if (!isInput && !e.target?.isContentEditable) {
+				e.preventDefault();
+				_todoStore.helpRequested++;
+				return;
+			}
+		}
+	}
 </script>
+
+<svelte:window onkeydown={handleGlobalKeydown} />
 
 {#if !$page.error}
 	<NavBar />
