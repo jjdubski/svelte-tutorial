@@ -1,9 +1,32 @@
 import { describe, it, expect } from 'vitest';
-import {
-	computeCombinedCompletionRate,
-	computeCategoryBreakdown,
-	computeCategoryPercentages
-} from '../utils/todoUtils.js';
+import { computeCategoryBreakdown } from '../utils/todoUtils.js';
+
+/**
+ * Compute completion rate percentage combining active and archived todos.
+ * @param {Array} todos - Active todos
+ * @param {Array} archivedTodos - Archived todos
+ * @returns {number} Completion rate as a rounded percentage (0-100)
+ */
+function computeCombinedCompletionRate(todos, archivedTodos) {
+	const allTodos = [...todos, ...archivedTodos];
+	const total = allTodos.length;
+	const completed = allTodos.filter((t) => t.completed).length;
+	return total > 0 ? Math.round((completed / total) * 100) : 0;
+}
+
+/**
+ * Compute percentage distribution from a category breakdown object.
+ * @param {Record<string, number>} breakdown - Category counts
+ * @returns {Record<string, number>} Category name to rounded percentage mapping
+ */
+function computeCategoryPercentages(breakdown) {
+	const total = Object.values(breakdown).reduce((sum, c) => sum + c, 0);
+	const result = {};
+	for (const [cat, count] of Object.entries(breakdown)) {
+		result[cat] = total > 0 ? Math.round((count / total) * 100) : 0;
+	}
+	return result;
+}
 
 describe('computeCombinedCompletionRate', () => {
 	it('returns 0 when both arrays are empty', () => {

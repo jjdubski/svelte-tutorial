@@ -1,5 +1,6 @@
 <script>
 	import { Download, X } from 'lucide-svelte';
+	import { storageGet, storageSet } from '$lib/scripts/storage.js';
 
 	const DISMISSAL_KEY = 'installPromptDismissedAt';
 	const RE_PROMPT_DAYS = 30;
@@ -14,16 +15,12 @@
 		}
 
 		// Check dismissal timestamp
-		try {
-			const dismissedAt = localStorage.getItem(DISMISSAL_KEY);
-			if (dismissedAt) {
-				const dismissed = new Date(dismissedAt).getTime();
-				const now = Date.now();
-				const daysSince = (now - dismissed) / (1000 * 60 * 60 * 24);
-				if (daysSince < RE_PROMPT_DAYS) return false;
-			}
-		} catch {
-			// localStorage unavailable, allow prompt
+		const dismissedAt = storageGet(DISMISSAL_KEY);
+		if (dismissedAt) {
+			const dismissed = new Date(dismissedAt).getTime();
+			const now = Date.now();
+			const daysSince = (now - dismissed) / (1000 * 60 * 60 * 24);
+			if (daysSince < RE_PROMPT_DAYS) return false;
 		}
 
 		return true;
@@ -40,11 +37,7 @@
 
 	function handleDismiss() {
 		showBanner = false;
-		try {
-			localStorage.setItem(DISMISSAL_KEY, new Date().toISOString());
-		} catch {
-			// localStorage unavailable
-		}
+		storageSet(DISMISSAL_KEY, new Date().toISOString());
 	}
 
 	$effect(() => {

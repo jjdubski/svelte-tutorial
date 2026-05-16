@@ -7,7 +7,7 @@
 	import { localDateStr } from '$lib/utils/todoUtils.js';
 	import { lightTap } from '$lib/utils/haptics.js';
 
-	/** @type {import('./state/todoStore.svelte.js').Todo} */
+	/** @type {import('../state/todoStore.svelte.js').Todo} */
 	let { todo } = $props();
 
 	const store = getTodoStore();
@@ -210,6 +210,7 @@
 							class="glow-btn flex cursor-pointer items-center justify-center rounded-md border-0 p-1"
 							style="color: var(--text-muted);"
 							aria-label="Edit task"
+							data-btn="edit"
 						>
 							<Edit2 size={16} />
 						</button>
@@ -222,6 +223,7 @@
 							class="glow-btn flex cursor-pointer items-center justify-center rounded-md border-0 p-1"
 							style="color: var(--text-muted);"
 							aria-label="Archive task"
+							data-btn="archive"
 						>
 							<Archive size={16} />
 						</button>
@@ -377,8 +379,8 @@
 		color: var(--text-secondary);
 	}
 
-	.todo-card [aria-label='Edit task']:hover,
-	.todo-card [aria-label='Archive task']:hover {
+	.todo-card [data-btn='edit']:hover,
+	.todo-card [data-btn='archive']:hover {
 		background: var(--todo-bg);
 		color: var(--text-heading) !important;
 	}

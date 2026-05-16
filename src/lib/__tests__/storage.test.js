@@ -1,13 +1,32 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import {
-	storageGet,
-	storageSet,
-	storageRemove,
-	storageAvailable,
-	isGuestMode,
-	getGuestData,
-	clearGuestData
-} from '../scripts/storage.js';
+import { storageGet, storageSet, storageRemove, getGuestData, clearGuestData } from '../scripts/storage.js';
+
+/**
+ * Check if localStorage is available and writable.
+ * @returns {boolean}
+ */
+function storageAvailable() {
+	try {
+		const key = '__storage_test__';
+		localStorage.setItem(key, '1');
+		localStorage.removeItem(key);
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+/**
+ * Check if user is in guest mode.
+ * @returns {boolean}
+ */
+function isGuestMode() {
+	try {
+		return localStorage.getItem('authMode') === 'guest';
+	} catch {
+		return false;
+	}
+}
 
 describe('storage', () => {
 	let mockStore = {};

@@ -11,9 +11,17 @@ import {
 	computeCategoryBreakdown,
 	computeOverdueTasks,
 	computeUpcomingDue,
-	getRandomTagColor,
 	getNextDueDate
 } from '../utils/todoUtils.js';
+
+/**
+ * Get a random tag color from predefined colors.
+ * @returns {string} A hex color string
+ */
+function getRandomTagColor() {
+	const colors = ['#ef4444', '#f59e0b', '#06b6d4', '#ec4899', '#84cc16', '#14b8a6', '#f97316', '#8b5cf6', '#6366f1'];
+	return colors[Math.floor(Math.random() * colors.length)];
+}
 
 describe('utils.js functions', () => {
 	describe('fuzzyMatch', () => {

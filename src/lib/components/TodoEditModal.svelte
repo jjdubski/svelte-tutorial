@@ -4,7 +4,7 @@
 	import { Tag, X } from 'lucide-svelte';
 	import { getTodoStore } from '$lib/state/todoStore.svelte.js';
 
-	/** @type {import('./state/todoStore.svelte.js').Todo} */
+	/** @type {import('../state/todoStore.svelte.js').Todo} */
 	let { todo } = $props();
 
 	const store = getTodoStore();

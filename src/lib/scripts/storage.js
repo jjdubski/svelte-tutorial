@@ -4,21 +4,6 @@
  */
 
 /**
- * Check if localStorage is available and writable.
- * @returns {boolean}
- */
-export function storageAvailable() {
-	try {
-		const key = '__storage_test__';
-		localStorage.setItem(key, '1');
-		localStorage.removeItem(key);
-		return true;
-	} catch {
-		return false;
-	}
-}
-
-/**
  * Get a parsed JSON value from localStorage.
  * @param {string} key
  * @returns {any|null}
@@ -59,18 +44,6 @@ export function storageRemove(key) {
 		localStorage.removeItem(key);
 	} catch (e) {
 		console.warn(`[storage] remove("${key}") failed:`, e);
-	}
-}
-
-/**
- * Check if user is in guest mode.
- * @returns {boolean}
- */
-export function isGuestMode() {
-	try {
-		return localStorage.getItem('authMode') === 'guest';
-	} catch {
-		return false;
 	}
 }
 

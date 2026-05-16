@@ -55,6 +55,7 @@
 	let dropTargetCardId = $state(null);
 	/** Track drop position relative to the hovered card ('before' or 'after') */
 	let dropIndicatorPos = $state(null);
+	let todosIndexMap = $state(null);
 	const { lastClickedId: initialLastClickedId } = initSelection();
 	let lastClickedId = $state(initialLastClickedId);
 
@@ -81,7 +82,7 @@
 	/**
 	 * Handle dropping a card onto a column or another card.
 	 * @param {string} columnKey
-	 * @param {number|null} targetCardId
+	 * @param {string|null} targetCardId
 	 */
 	function handleColumnDrop(columnKey, targetCardId = null) {
 		const draggedId = store.draggedId;
@@ -98,6 +99,7 @@
 
 		store.lastMovedTodos = [{ ...todo }];
 		store.lastMovedStates = [{ completed: todo.completed, tags: [...(todo.tags || [])] }];
+		todosIndexMap = null;
 
 		// 1. First, update status/tags to place it in the right column
 		if (columnKey === 'pending') {
@@ -277,11 +279,13 @@
 								e.dataTransfer.effectAllowed = 'move';
 								e.dataTransfer.setData('text/plain', String(todo.id));
 								store.draggedId = todo.id;
+								todosIndexMap = new Map(store.todos.map((t, i) => [t.id, i]));
 							}}
 							ondragend={() => {
 								store.draggedId = null;
 								dropTargetCardId = null;
 								dropIndicatorPos = null;
+								todosIndexMap = null;
 							}}
 							ondragover={(e) => {
 								e.preventDefault();
@@ -291,8 +295,8 @@
 									dropTargetCardId = todo.id;
 									dropTargetColumn = col.key;
 
-									const fromIdx = store.todos.findIndex((t) => t.id === store.draggedId);
-									const toIdx = store.todos.findIndex((t) => t.id === todo.id);
+									const fromIdx = todosIndexMap?.get(store.draggedId) ?? -1;
+									const toIdx = todosIndexMap?.get(todo.id) ?? -1;
 
 									if (fromIdx !== -1 && toIdx !== -1) {
 										dropIndicatorPos = fromIdx < toIdx ? 'after' : 'before';

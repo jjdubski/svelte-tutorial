@@ -17,22 +17,17 @@
 	import Todo from '$lib/components/Todo.svelte';
 	import SkeletonLoader from '$lib/components/SkeletonLoader.svelte';
 	import { getTodoStore } from '$lib/state/todoStore.svelte.js';
+	import { localDateStr } from '$lib/utils/todoUtils.js';
 
 	const store = getTodoStore();
 
 	let showUpcoming = $state(true);
 
-	function _localDateStr(date = new Date()) {
-		const y = date.getFullYear();
-		const m = String(date.getMonth() + 1).padStart(2, '0');
-		const d = String(date.getDate()).padStart(2, '0');
-		return `${y}-${m}-${d}`;
-	}
-	let todayStr = $derived(_localDateStr());
+	let todayStr = $derived(localDateStr());
 	let tomorrowStr = $derived.by(() => {
 		const d = new SvelteDate();
 		d.setDate(d.getDate() + 1);
-		return _localDateStr(d);
+		return localDateStr(d);
 	});
 
 	function formatUpcomingDate(dateStr) {

@@ -1,5 +1,5 @@
 import { createContext, untrack } from 'svelte';
-import { SvelteSet, SvelteDate } from 'svelte/reactivity';
+import { SvelteSet, SvelteDate, SvelteMap } from 'svelte/reactivity';
 import { storageGet, storageSet } from '$lib/scripts/storage.js';
 import {
 	localDateStr,
@@ -72,6 +72,54 @@ function _deepClone(value) {
 		return structuredClone(value);
 	}
 	return JSON.parse(JSON.stringify(value));
+}
+
+/**
+ * @param {Todo} todo
+ * @returns {number}
+ */
+function _todoUpdatedAtMs(todo) {
+	if (!todo || typeof todo !== 'object') return 0;
+	const raw = todo.updatedAt;
+	if (typeof raw !== 'string') return 0;
+	const ms = Date.parse(raw);
+	return Number.isNaN(ms) ? 0 : ms;
+}
+
+/**
+ * Merge incoming todos by ID without removing local-only entries.
+ * If both local and incoming have the same ID, prefer incoming when it has a newer `updatedAt`.
+ * @param {Todo[]} localTodos
+ * @param {Todo[]} incomingTodos
+ * @returns {Todo[]}
+ */
+function _mergeTodosById(localTodos, incomingTodos) {
+	const merged = new SvelteMap();
+
+	for (const todo of localTodos || []) {
+		if (!todo?.id) continue;
+		merged.set(todo.id, todo);
+	}
+
+	for (const incoming of incomingTodos || []) {
+		if (!incoming?.id) continue;
+		const local = merged.get(incoming.id);
+		if (!local) {
+			merged.set(incoming.id, incoming);
+			continue;
+		}
+
+		const incomingUpdatedAtMs = _todoUpdatedAtMs(incoming);
+		const localUpdatedAtMs = _todoUpdatedAtMs(local);
+		if (
+			(incomingUpdatedAtMs > 0 && localUpdatedAtMs === 0) ||
+			(incomingUpdatedAtMs > 0 && localUpdatedAtMs > 0 && incomingUpdatedAtMs > localUpdatedAtMs)
+		) {
+			merged.set(incoming.id, incoming);
+		}
+	}
+
+	return [...merged.values()];
 }
 
 const HISTORY_STACK_LIMIT = 50;
@@ -291,7 +339,7 @@ class TodoStore {
 	// ── Drag-to-assign category/tag ──
 
 	/**
-	 * @param {number} id
+	 * @param {string} id
 	 * @param {string} category
 	 */
 	assignCategory(id, category) {
@@ -303,7 +351,7 @@ class TodoStore {
 	}
 
 	/**
-	 * @param {number} id
+	 * @param {string} id
 	 * @param {string} tag
 	 */
 	assignTag(id, tag) {
@@ -320,14 +368,14 @@ class TodoStore {
 	}
 
 	// ── Edit modal state ──
-	/** @type {number|null} */
+	/** @type {string|null} */
 	editingTodoId = $state(null);
 
 	/** Tracks the last hovered/focused task for keyboard shortcuts */
 	activeTaskId = $state(null);
 
 	/**
-	 * @param {number} id
+	 * @param {string} id
 	 */
 	startEdit(id) {
 		this.editingTodoId = id;
@@ -338,9 +386,9 @@ class TodoStore {
 	}
 
 	// ── Drag and drop ──
-	/** @type {number|null} */
+	/** @type {string|null} */
 	draggedId = $state(null);
-	/** @type {number|null} */
+	/** @type {string|null} */
 	dragOverId = $state(null);
 	/** @type {'before'|'after'|null} */
 	dragIndicatorPos = $state(null);
@@ -1136,9 +1184,12 @@ class TodoStore {
 				return;
 			}
 			if (!res.ok) {
+				const text = await res.text().catch(() => '');
+				console.error(`[sync] API ${method} ${url} → ${res.status}: ${text}`);
 				this.showToast('Could not sync to cloud. Your changes are saved locally.', 'warning');
 			}
-		} catch {
+		} catch (err) {
+			console.error(`[sync] Network ${method} ${url} failed:`, err);
 			this.showToast('Could not sync to cloud. Your changes are saved locally.', 'warning');
 		}
 	}
@@ -1153,7 +1204,7 @@ class TodoStore {
 
 	/**
 	 * Sync an updated todo.
-	 * @param {number} id
+	 * @param {string} id
 	 * @param {Partial<Todo>} updates
 	 */
 	_syncUpdate(id, updates) {
@@ -1162,7 +1213,7 @@ class TodoStore {
 
 	/**
 	 * Sync a deletion (archive) of a todo.
-	 * @param {number} id
+	 * @param {string} id
 	 */
 	_syncDelete(id) {
 		this._syncToApi('DELETE', `/api/todos/${id}`);
@@ -1171,15 +1222,18 @@ class TodoStore {
 	/**
 	 * Sync a batch operation (archive/restore).
 	 * @param {string} url
-	 * @param {number[]} ids
+	 * @param {string[]} ids
 	 */
 	_syncBatch(url, ids) {
-		this._syncToApi('POST', url, { ids });
+		const chunkSize = 100;
+		for (let i = 0; i < ids.length; i += chunkSize) {
+			this._syncToApi('POST', url, { ids: ids.slice(i, i + chunkSize) });
+		}
 	}
 
 	/**
 	 * Sync a permanent deletion.
-	 * @param {number} id
+	 * @param {string} id
 	 */
 	_syncPermanentDelete(id) {
 		this._syncToApi('POST', '/api/todos/permanent-delete', { id });
@@ -1257,7 +1311,7 @@ class TodoStore {
 	}
 
 	/**
-	 * @param {number} id
+	 * @param {string} id
 	 * @param {Partial<Todo>} updates
 	 */
 	updateTodo(id, updates) {
@@ -1269,7 +1323,7 @@ class TodoStore {
 	}
 
 	/**
-	 * @param {number} id
+	 * @param {string} id
 	 */
 	deleteTodo(id) {
 		const index = this.todos.findIndex((t) => t.id === id);
@@ -1343,7 +1397,7 @@ class TodoStore {
 	}
 
 	/**
-	 * @param {number} id
+	 * @param {string} id
 	 */
 	restoreTodo(id) {
 		const index = this.archivedTodos.findIndex((t) => t.id === id);
@@ -1356,7 +1410,7 @@ class TodoStore {
 	}
 
 	/**
-	 * @param {number} id
+	 * @param {string} id
 	 */
 	permanentDeleteTodo(id) {
 		const index = this.archivedTodos.findIndex((t) => t.id === id);
@@ -1381,7 +1435,7 @@ class TodoStore {
 	}
 
 	/**
-	 * @param {number} id
+	 * @param {string} id
 	 */
 	toggleTodo(id) {
 		const todo = this.todos.find((t) => t.id === id);
@@ -1408,7 +1462,7 @@ class TodoStore {
 
 	/**
 	 * Toggle a tag on a todo (add if absent, remove if present).
-	 * @param {number} id
+	 * @param {string} id
 	 * @param {string} tag
 	 */
 	toggleTag(id, tag) {
@@ -1427,7 +1481,7 @@ class TodoStore {
 	// ── Batch operations ──
 
 	/**
-	 * @param {number} id
+	 * @param {string} id
 	 */
 	toggleSelect(id) {
 		if (this.selectedTodos.has(id)) {
@@ -1448,7 +1502,7 @@ class TodoStore {
 	// ── Archived select mode ──
 
 	/**
-	 * @param {number} id
+	 * @param {string} id
 	 */
 	toggleArchivedSelect(id) {
 		if (this.selectedArchived.has(id)) {
@@ -1598,7 +1652,7 @@ class TodoStore {
 
 	/**
 	 * @param {DragEvent} e
-	 * @param {number} id
+	 * @param {string} id
 	 */
 	handleDragStart(e, id) {
 		this.draggedId = id;
@@ -1634,7 +1688,7 @@ class TodoStore {
 
 	/**
 	 * @param {DragEvent} e
-	 * @param {number} id
+	 * @param {string} id
 	 */
 	handleDragOver(e, id) {
 		e.preventDefault();
@@ -1656,7 +1710,7 @@ class TodoStore {
 
 	/**
 	 * @param {DragEvent} e
-	 * @param {number} targetId
+	 * @param {string} targetId
 	 */
 	handleDrop(e, targetId) {
 		e.preventDefault();
@@ -1890,14 +1944,14 @@ class TodoStore {
 	 */
 	_handleStorageChange(e) {
 		if (e.key === 'todos') {
-			const todos = storageGet('todos');
-			if (todos && Array.isArray(todos)) {
-				this.todos = todos;
+			const incomingTodos = storageGet('todos');
+			if (incomingTodos && Array.isArray(incomingTodos)) {
+				this.todos = _mergeTodosById(this.todos, incomingTodos);
 			}
 		} else if (e.key === 'archivedTodos') {
-			const archived = storageGet('archivedTodos');
-			if (archived && Array.isArray(archived)) {
-				this.archivedTodos = archived;
+			const incomingArchived = storageGet('archivedTodos');
+			if (incomingArchived && Array.isArray(incomingArchived)) {
+				this.archivedTodos = _mergeTodosById(this.archivedTodos, incomingArchived);
 			}
 		} else if (e.key === 'darkMode') {
 			const dm = storageGet('darkMode');
