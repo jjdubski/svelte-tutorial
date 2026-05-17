@@ -446,13 +446,6 @@ class ThemeStore {
 </svg>`;
 	}
 
-	_generateAppIconSvg(accent) {
-		return `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-	<rect x="0" y="0" width="512" height="512" rx="96" ry="96" fill="${accent}"/>
-	<path d="M150 260l70 70 150-150" fill="none" stroke="#ffffff" stroke-width="44" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>`;
-	}
-
 	_updateFavicon(accent) {
 		const link = document.querySelector('link[rel="icon"]');
 		if (!link) return;
@@ -461,10 +454,34 @@ class ThemeStore {
 	}
 
 	_updateAppleTouchIcon(accent) {
-		const svg = this._generateAppIconSvg(accent);
-		const dataUri = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-		for (const size of ['192', '512']) {
-			const link = document.querySelector(`link[rel="apple-touch-icon"][sizes="${size}x${size}"]`);
+		const size = 512;
+		const canvas = document.createElement('canvas');
+		canvas.width = size;
+		canvas.height = size;
+		const ctx = canvas.getContext('2d');
+
+		// Draw rounded-rect background
+		const r = 96;
+		ctx.beginPath();
+		ctx.roundRect(0, 0, size, size, [r]);
+		ctx.fillStyle = accent;
+		ctx.fill();
+
+		// Draw checkmark
+		ctx.beginPath();
+		ctx.moveTo(150, 260);
+		ctx.lineTo(220, 330);
+		ctx.lineTo(370, 180);
+		ctx.strokeStyle = '#ffffff';
+		ctx.lineWidth = 44;
+		ctx.lineCap = 'round';
+		ctx.lineJoin = 'round';
+		ctx.stroke();
+
+		const dataUri = canvas.toDataURL('image/png');
+
+		for (const sizeAttr of ['192', '512']) {
+			const link = document.querySelector(`link[rel="apple-touch-icon"][sizes="${sizeAttr}x${sizeAttr}"]`);
 			if (link) link.href = dataUri;
 		}
 	}
