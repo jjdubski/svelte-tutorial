@@ -1,18 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { AuthStore } from '../state/authStore.svelte.js';
-import { storageGet, storageSet } from '../scripts/storage.js';
+import { storageGet } from '../scripts/storage.js';
 
 // Mock @auth/sveltekit/client at top level so login/logout methods work in tests
 vi.mock('@auth/sveltekit/client', () => ({
 	signIn: vi.fn(),
 	signOut: vi.fn()
-}));
-
-// Mock todoStore so dynamic import in switchToProfile doesn't cause side effects
-vi.mock('../state/todoStore.svelte.js', () => ({
-	getTodoStore: vi.fn(() => ({
-		loadFromApi: vi.fn().mockResolvedValue(undefined)
-	}))
 }));
 
 /**
@@ -227,124 +220,196 @@ describe('AuthStore', () => {
 	});
 
 	// ---------------------------------------------------------------------------
-	// Multi-profile switching — Option B (API-based)
+	// Multi-profile switching — Credentials provider based
 	// ---------------------------------------------------------------------------
 
-	describe('saveCurrentProfile', () => {
-		it('returns early when auth.user is null', async () => {
-			const auth = new AuthStore();
-			await vi.waitFor(() => expect(auth.isLoading).toBe(false));
-			auth.user = null;
-
-			auth.saveCurrentProfile();
-
-			expect(localStorage.getItem('savedProfiles')).toBeNull();
-		});
-
-		it('returns early when auth.user has no authUserId', async () => {
-			const auth = new AuthStore();
-			await vi.waitFor(() => expect(auth.isLoading).toBe(false));
-			auth.user = { email: 'test@example.com', name: 'No Auth ID' };
-
-			auth.saveCurrentProfile();
-
-			expect(localStorage.getItem('savedProfiles')).toBeNull();
-		});
-
-		it('creates a new profile entry in localStorage', async () => {
+	describe('switchToProfile', () => {
+		it('calls signIn with account-switch provider with redirect:false', async () => {
 			const auth = new AuthStore();
 			await vi.waitFor(() => expect(auth.isLoading).toBe(false));
 			auth.user = {
-				authUserId: 'google-123',
-				email: 'test@example.com',
-				name: 'Test User',
-				picture: 'https://example.com/pic.jpg'
+				authUserId: 'google-current',
+				email: 'current@example.com',
+				familyId: 'family-123'
 			};
 
-			auth.saveCurrentProfile();
+			const { signIn } = await import('@auth/sveltekit/client');
+			vi.mocked(signIn).mockResolvedValue({ ok: true });
 
-			const profiles = auth.getSavedProfilesSync();
-			expect(profiles).toHaveLength(1);
-			expect(profiles[0]).toMatchObject({
-				authUserId: 'google-123',
-				email: 'test@example.com',
-				name: 'Test User',
-				picture: 'https://example.com/pic.jpg',
-				provider: 'google'
+			await auth.switchToProfile('google-target');
+
+			expect(signIn).toHaveBeenCalledWith('account-switch', {
+				targetAuthUserId: 'google-target',
+				familyId: 'family-123',
+				redirect: false
 			});
-			expect(typeof profiles[0].lastUsed).toBe('number');
 		});
 
-		it('defaults missing provider to "google"', async () => {
+		it('re-fetches session and calls reloadTodos callback on successful switch', async () => {
 			const auth = new AuthStore();
 			await vi.waitFor(() => expect(auth.isLoading).toBe(false));
-			auth.user = { authUserId: 'google-123', email: 'test@example.com' };
+			auth.user = {
+				authUserId: 'google-current',
+				email: 'current@example.com',
+				familyId: 'family-123'
+			};
 
-			auth.saveCurrentProfile();
+			const reloadTodos = vi.fn().mockResolvedValue(undefined);
+			auth.setReloadTodos(reloadTodos);
 
-			const profiles = auth.getSavedProfilesSync();
-			expect(profiles[0].provider).toBe('google');
+			const { signIn } = await import('@auth/sveltekit/client');
+			vi.mocked(signIn).mockResolvedValue({ ok: true });
+
+			const switchedUser = {
+				authUserId: 'google-target',
+				email: 'target@example.com',
+				name: 'Target User',
+				familyId: 'family-123'
+			};
+
+			vi.mocked(fetch).mockResolvedValueOnce({
+				ok: true,
+				json: async () => ({ user: switchedUser })
+			});
+
+			await auth.switchToProfile('google-target');
+
+			// Session was re-fetched
+			expect(fetch).toHaveBeenCalledWith('/auth/session');
+			expect(auth.user).toEqual(switchedUser);
+
+			// reloadTodos callback was called
+			expect(reloadTodos).toHaveBeenCalledOnce();
 		});
 
-		it('defaults missing optional fields to empty string', async () => {
+		it('returns early when no authUserId provided', async () => {
 			const auth = new AuthStore();
 			await vi.waitFor(() => expect(auth.isLoading).toBe(false));
-			auth.user = { authUserId: 'google-123' };
+			auth.user = { authUserId: 'google-current', familyId: 'family-123' };
 
-			auth.saveCurrentProfile();
+			const { signIn } = await import('@auth/sveltekit/client');
+			vi.mocked(signIn).mockClear();
 
-			const profiles = auth.getSavedProfilesSync();
-			expect(profiles[0].email).toBe('');
-			expect(profiles[0].name).toBe('');
-			expect(profiles[0].picture).toBe('');
+			await auth.switchToProfile('');
+
+			expect(signIn).not.toHaveBeenCalled();
 		});
 
-		it('updates existing profile instead of adding duplicate', async () => {
+		it('returns early when user has no familyId', async () => {
 			const auth = new AuthStore();
 			await vi.waitFor(() => expect(auth.isLoading).toBe(false));
+			auth.user = { authUserId: 'google-current' };
 
-			auth.user = { authUserId: 'google-123', email: 'old@example.com', name: 'Old Name' };
-			auth.saveCurrentProfile();
+			const { signIn } = await import('@auth/sveltekit/client');
+			vi.mocked(signIn).mockClear();
 
-			auth.user = { authUserId: 'google-123', email: 'new@example.com', name: 'New Name' };
-			auth.saveCurrentProfile();
+			await auth.switchToProfile('google-target');
 
-			const profiles = auth.getSavedProfilesSync();
-			expect(profiles).toHaveLength(1);
-			expect(profiles[0].email).toBe('new@example.com');
-			expect(profiles[0].name).toBe('New Name');
+			expect(signIn).not.toHaveBeenCalled();
 		});
 
-		it('sets lastUsed to a reasonable timestamp', async () => {
+		it('does not update session when signIn fails', async () => {
 			const auth = new AuthStore();
 			await vi.waitFor(() => expect(auth.isLoading).toBe(false));
-			auth.user = { authUserId: 'google-123', email: 'test@example.com' };
+			auth.user = {
+				authUserId: 'google-current',
+				email: 'current@example.com',
+				familyId: 'family-123'
+			};
 
-			const before = Date.now();
-			auth.saveCurrentProfile();
-			const after = Date.now();
+			const { signIn } = await import('@auth/sveltekit/client');
+			vi.mocked(signIn).mockResolvedValue({ ok: false, error: 'Access denied' });
 
-			const profiles = auth.getSavedProfilesSync();
-			expect(profiles[0].lastUsed).toBeGreaterThanOrEqual(before);
-			expect(profiles[0].lastUsed).toBeLessThanOrEqual(after);
+			await auth.switchToProfile('google-target');
+
+			// User should remain unchanged since signIn failed
+			expect(auth.user?.authUserId).toBe('google-current');
+		});
+	});
+
+	describe('addNewProfile', () => {
+		it('sets _pendingProfileAction to "add"', async () => {
+			const auth = new AuthStore();
+			await vi.waitFor(() => expect(auth.isLoading).toBe(false));
+			auth.user = { authUserId: 'google-current', email: 'current@example.com' };
+
+			const { signIn, signOut } = await import('@auth/sveltekit/client');
+			vi.mocked(signIn).mockClear();
+			vi.mocked(signOut).mockClear();
+
+			await auth.addNewProfile();
+
+			expect(storageGet('_pendingProfileAction')).toBe('add');
 		});
 
-		it('does not affect other profiles when saving', async () => {
+		it('saves _pendingProfileFamilyId when user has familyId', async () => {
 			const auth = new AuthStore();
 			await vi.waitFor(() => expect(auth.isLoading).toBe(false));
+			auth.user = { authUserId: 'google-current', email: 'current@example.com', familyId: 'family-123' };
 
-			// Seed an existing profile via storageSet (compatible with getSavedProfilesSync)
-			storageSet('savedProfiles', [
-				{ authUserId: 'google-other', email: 'other@example.com', name: 'Other', lastUsed: 100 }
-			]);
+			const { signIn, signOut } = await import('@auth/sveltekit/client');
+			vi.mocked(signIn).mockClear();
+			vi.mocked(signOut).mockClear();
 
-			auth.user = { authUserId: 'google-123', email: 'test@example.com', name: 'Test' };
-			auth.saveCurrentProfile();
+			await auth.addNewProfile();
 
-			const profiles = auth.getSavedProfilesSync();
-			expect(profiles).toHaveLength(2);
-			expect(profiles.find((p) => p.authUserId === 'google-other')).toBeTruthy();
-			expect(profiles.find((p) => p.authUserId === 'google-123')).toBeTruthy();
+			expect(storageGet('_pendingProfileFamilyId')).toBe('family-123');
+		});
+
+		it('does not save _pendingProfileFamilyId when user has no familyId', async () => {
+			const auth = new AuthStore();
+			await vi.waitFor(() => expect(auth.isLoading).toBe(false));
+			auth.user = { authUserId: 'google-current', email: 'current@example.com' };
+
+			const { signIn, signOut } = await import('@auth/sveltekit/client');
+			vi.mocked(signIn).mockClear();
+			vi.mocked(signOut).mockClear();
+
+			await auth.addNewProfile();
+
+			expect(storageGet('_pendingProfileFamilyId')).toBeNull();
+		});
+
+		it('calls signOut then signIn without login_hint', async () => {
+			const auth = new AuthStore();
+			await vi.waitFor(() => expect(auth.isLoading).toBe(false));
+			auth.user = { authUserId: 'google-current', email: 'current@example.com' };
+
+			const { signIn, signOut } = await import('@auth/sveltekit/client');
+			vi.mocked(signIn).mockClear();
+			vi.mocked(signOut).mockClear();
+
+			const callOrder = [];
+			vi.mocked(signOut).mockImplementation(() => { callOrder.push('signOut'); });
+			vi.mocked(signIn).mockImplementation(() => { callOrder.push('signIn'); });
+
+			await auth.addNewProfile();
+
+			expect(signOut).toHaveBeenCalledWith({ redirect: false });
+			expect(signIn).toHaveBeenCalledWith('google', { callbackUrl: '/profiles' });
+			expect(callOrder).toEqual(['signOut', 'signIn']);
+		});
+	});
+
+	describe('switchToGuest', () => {
+		it('sets authMode to guest, signs out, and redirects to /tasks', async () => {
+			const auth = new AuthStore();
+			await vi.waitFor(() => expect(auth.isLoading).toBe(false));
+			auth.user = { authUserId: 'google-current', email: 'current@example.com' };
+
+			const { signOut } = await import('@auth/sveltekit/client');
+			vi.mocked(signOut).mockClear();
+
+			await auth.switchToGuest();
+
+			// authMode set to guest
+			expect(storageGet('authMode')).toBe('guest');
+
+			// signOut called
+			expect(signOut).toHaveBeenCalledWith({ redirect: false });
+
+			// Redirect
+			expect(window.location.href).toBe('/tasks');
 		});
 	});
 
@@ -441,245 +506,6 @@ describe('AuthStore', () => {
 
 			// Should not throw when API returns non-ok
 			await expect(auth.removeSavedProfile('nonexistent')).resolves.toBeUndefined();
-		});
-	});
-
-	describe('switchToProfile', () => {
-		it('calls POST /api/profiles with target authUserId', async () => {
-			const auth = new AuthStore();
-			await vi.waitFor(() => expect(auth.isLoading).toBe(false));
-			auth.user = { authUserId: 'google-current', email: 'current@example.com' };
-
-			vi.mocked(fetch).mockResolvedValueOnce({
-				ok: true,
-				json: async () => ({
-					targetAuthUserId: 'google-target',
-					profile: { authUserId: 'google-target', email: 'target@example.com', name: 'Target' }
-				})
-			});
-
-			await auth.switchToProfile('google-target');
-
-			expect(fetch).toHaveBeenCalledWith('/api/profiles', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ targetAuthUserId: 'google-target' })
-			});
-		});
-
-		it('sets activeProfile from API response', async () => {
-			const auth = new AuthStore();
-			await vi.waitFor(() => expect(auth.isLoading).toBe(false));
-			auth.user = { authUserId: 'google-current', email: 'current@example.com' };
-
-			vi.mocked(fetch).mockResolvedValueOnce({
-				ok: true,
-				json: async () => ({
-					targetAuthUserId: 'google-target',
-					profile: { authUserId: 'google-target', email: 'target@example.com', name: 'Target' }
-				})
-			});
-
-			await auth.switchToProfile('google-target');
-
-			expect(auth.activeProfile).toEqual({
-				authUserId: 'google-target',
-				email: 'target@example.com',
-				name: 'Target'
-			});
-		});
-
-		it('handles fetch failure gracefully (activeProfile unchanged)', async () => {
-			const auth = new AuthStore();
-			await vi.waitFor(() => expect(auth.isLoading).toBe(false));
-			auth.user = { authUserId: 'google-current', email: 'current@example.com' };
-
-			vi.mocked(fetch).mockRejectedValueOnce(new Error('Network error'));
-
-			// Should not throw
-			await expect(auth.switchToProfile('google-target')).resolves.toBeUndefined();
-			// activeProfile should remain unchanged (null)
-			expect(auth.activeProfile).toBeNull();
-		});
-
-		it('does not change activeProfile when API returns non-ok status', async () => {
-			const auth = new AuthStore();
-			await vi.waitFor(() => expect(auth.isLoading).toBe(false));
-			auth.user = { authUserId: 'google-current', email: 'current@example.com' };
-
-			vi.mocked(fetch).mockResolvedValueOnce({
-				ok: false,
-				status: 500,
-				json: async () => ({})
-			});
-
-			await auth.switchToProfile('google-target');
-
-			expect(auth.activeProfile).toBeNull();
-		});
-	});
-
-	describe('addNewProfile', () => {
-		it('saves current profile and sets _pendingProfileAction to "add"', async () => {
-			const auth = new AuthStore();
-			await vi.waitFor(() => expect(auth.isLoading).toBe(false));
-			auth.user = { authUserId: 'google-current', email: 'current@example.com' };
-
-			const { signIn, signOut } = await import('@auth/sveltekit/client');
-			vi.mocked(signIn).mockClear();
-			vi.mocked(signOut).mockClear();
-
-			await auth.addNewProfile();
-
-			expect(auth.getSavedProfilesSync()).toHaveLength(1);
-			expect(storageGet('_pendingProfileAction')).toBe('add');
-		});
-
-		it('calls signOut then signIn without login_hint', async () => {
-			const auth = new AuthStore();
-			await vi.waitFor(() => expect(auth.isLoading).toBe(false));
-			auth.user = { authUserId: 'google-current', email: 'current@example.com' };
-
-			const { signIn, signOut } = await import('@auth/sveltekit/client');
-			vi.mocked(signIn).mockClear();
-			vi.mocked(signOut).mockClear();
-
-			const callOrder = [];
-			vi.mocked(signOut).mockImplementation(() => { callOrder.push('signOut'); });
-			vi.mocked(signIn).mockImplementation(() => { callOrder.push('signIn'); });
-
-			await auth.addNewProfile();
-
-			expect(signOut).toHaveBeenCalledWith({ redirect: false });
-			expect(signIn).toHaveBeenCalledWith('google', { callbackUrl: '/profiles' });
-			expect(callOrder).toEqual(['signOut', 'signIn']);
-		});
-	});
-
-	describe('switchToGuest', () => {
-		it('saves profile, sets authMode to guest, signs out, and redirects to /tasks', async () => {
-			const auth = new AuthStore();
-			await vi.waitFor(() => expect(auth.isLoading).toBe(false));
-			auth.user = { authUserId: 'google-current', email: 'current@example.com' };
-
-			const { signOut } = await import('@auth/sveltekit/client');
-			vi.mocked(signOut).mockClear();
-
-			await auth.switchToGuest();
-
-			// Current profile saved
-			expect(auth.getSavedProfilesSync()).toHaveLength(1);
-			expect(auth.getSavedProfilesSync()[0].authUserId).toBe('google-current');
-
-			// authMode set to guest
-			expect(storageGet('authMode')).toBe('guest');
-
-			// signOut called
-			expect(signOut).toHaveBeenCalledWith({ redirect: false });
-
-			// Redirect
-			expect(window.location.href).toBe('/tasks');
-		});
-
-		it('does not save profile when user is null', async () => {
-			const auth = new AuthStore();
-			await vi.waitFor(() => expect(auth.isLoading).toBe(false));
-			auth.user = null;
-
-			const { signOut } = await import('@auth/sveltekit/client');
-			vi.mocked(signOut).mockClear();
-
-			await auth.switchToGuest();
-
-			// No profile should have been saved (user was null)
-			expect(auth.getSavedProfilesSync()).toEqual([]);
-
-			// Still sets guest mode and signs out
-			expect(storageGet('authMode')).toBe('guest');
-			expect(signOut).toHaveBeenCalledWith({ redirect: false });
-			expect(window.location.href).toBe('/tasks');
-		});
-
-		it('does not save profile when user has no authUserId', async () => {
-			const auth = new AuthStore();
-			await vi.waitFor(() => expect(auth.isLoading).toBe(false));
-			auth.user = { email: 'incomplete@example.com' };
-
-			const { signOut } = await import('@auth/sveltekit/client');
-			vi.mocked(signOut).mockClear();
-
-			await auth.switchToGuest();
-
-			expect(auth.getSavedProfilesSync()).toEqual([]);
-			expect(storageGet('authMode')).toBe('guest');
-			expect(signOut).toHaveBeenCalledWith({ redirect: false });
-			expect(window.location.href).toBe('/tasks');
-		});
-	});
-
-	describe('loadActiveProfile', () => {
-		it('sets activeProfile to the matching profile from API', async () => {
-			const auth = new AuthStore();
-			await vi.waitFor(() => expect(auth.isLoading).toBe(false));
-			auth.user = { authUserId: 'google-123', email: 'test@example.com' };
-
-			vi.mocked(fetch).mockResolvedValueOnce({
-				ok: true,
-				json: async () => [
-					{ authUserId: 'google-123', email: 'test@example.com', name: 'Test' },
-					{ authUserId: 'google-456', email: 'other@example.com', name: 'Other' }
-				]
-			});
-
-			await auth.loadActiveProfile();
-			expect(auth.activeProfile?.authUserId).toBe('google-123');
-			expect(auth.activeProfile?.email).toBe('test@example.com');
-		});
-
-		it('sets activeProfile to null when user has no authUserId', async () => {
-			const auth = new AuthStore();
-			await vi.waitFor(() => expect(auth.isLoading).toBe(false));
-			auth.user = null;
-
-			await auth.loadActiveProfile();
-			expect(auth.activeProfile).toBeNull();
-		});
-
-		it('sets activeProfile to null when user object lacks authUserId', async () => {
-			const auth = new AuthStore();
-			await vi.waitFor(() => expect(auth.isLoading).toBe(false));
-			auth.user = { email: 'incomplete@example.com' };
-
-			await auth.loadActiveProfile();
-			expect(auth.activeProfile).toBeNull();
-		});
-
-		it('sets activeProfile to null when no matching profile is found', async () => {
-			const auth = new AuthStore();
-			await vi.waitFor(() => expect(auth.isLoading).toBe(false));
-			auth.user = { authUserId: 'google-999', email: 'unknown@example.com' };
-
-			vi.mocked(fetch).mockResolvedValueOnce({
-				ok: true,
-				json: async () => [
-					{ authUserId: 'google-123', email: 'test@example.com', name: 'Test' }
-				]
-			});
-
-			await auth.loadActiveProfile();
-			expect(auth.activeProfile).toBeNull();
-		});
-
-		it('handles API failure gracefully and sets activeProfile to null', async () => {
-			const auth = new AuthStore();
-			await vi.waitFor(() => expect(auth.isLoading).toBe(false));
-			auth.user = { authUserId: 'google-123', email: 'test@example.com' };
-
-			vi.mocked(fetch).mockRejectedValueOnce(new Error('Network error'));
-
-			await auth.loadActiveProfile();
-			// getSavedProfiles returns [] on error, so find returns undefined → activeProfile is null
-			expect(auth.activeProfile).toBeNull();
 		});
 	});
 });

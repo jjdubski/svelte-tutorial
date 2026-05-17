@@ -3,42 +3,6 @@ import { User } from './models/User.js';
 import { ProfileFamily } from './models/ProfileFamily.js';
 
 /**
- * Resolve the effective auth user ID for API reads/writes.
- * If an active profile cookie points to a profile in the same family,
- * that profile becomes the effective identity; otherwise session identity is used.
- * @param {import('@sveltejs/kit').RequestEvent} event
- * @returns {Promise<string | null>}
- */
-export async function resolveEffectiveAuthUserId(event) {
-	const session = await event.locals.auth();
-	const sessionAuthUserId = session?.user?.authUserId || null;
-
-	if (!sessionAuthUserId) {
-		return null;
-	}
-
-	const activeProfileId = event.cookies.get('active_profile_id');
-	if (!activeProfileId || activeProfileId === sessionAuthUserId) {
-		return sessionAuthUserId;
-	}
-
-	await connectDB();
-	const sessionUser = await User.findOne({ authUserId: sessionAuthUserId }).select('familyId').lean();
-	if (!sessionUser?.familyId) {
-		return sessionAuthUserId;
-	}
-
-	const target = await User.findOne({
-		authUserId: activeProfileId,
-		familyId: sessionUser.familyId
-	})
-		.select('_id')
-		.lean();
-
-	return target ? activeProfileId : sessionAuthUserId;
-}
-
-/**
  * Fetch all profiles in the current user's family.
  * @param {string} authUserId
  * @returns {Promise<Array<{ authUserId: string, email?: string, name?: string, picture?: string, provider?: string, lastUsed?: Date }>>}
@@ -190,10 +154,7 @@ export async function linkUserToFamily(sessionAuthUserId, targetFamilyId) {
 	}
 
 	// Update user's familyId
-	await User.updateOne(
-		{ authUserId: sessionAuthUserId },
-		{ $set: { familyId: targetFamilyId } }
-	);
+	await User.updateOne({ authUserId: sessionAuthUserId }, { $set: { familyId: targetFamilyId } });
 
 	// Add/update profile in target family
 	const now = new Date();
@@ -202,17 +163,24 @@ export async function linkUserToFamily(sessionAuthUserId, targetFamilyId) {
 		{ $set: { 'profiles.$.lastUsed': now } }
 	);
 
-	if ((await ProfileFamily.countDocuments({ familyId: targetFamilyId, 'profiles.authUserId': sessionAuthUserId })) === 0) {
+	if (
+		(await ProfileFamily.countDocuments({ familyId: targetFamilyId, 'profiles.authUserId': sessionAuthUserId })) ===
+		0
+	) {
 		await ProfileFamily.updateOne(
 			{ familyId: targetFamilyId },
-			{ $addToSet: { profiles: {
-				authUserId: sessionAuthUserId,
-				email: user.email || '',
-				name: user.name || '',
-				picture: user.picture || '',
-				provider: user.provider || 'google',
-				lastUsed: now
-			}}}
+			{
+				$addToSet: {
+					profiles: {
+						authUserId: sessionAuthUserId,
+						email: user.email || '',
+						name: user.name || '',
+						picture: user.picture || '',
+						provider: user.provider || 'google',
+						lastUsed: now
+					}
+				}
+			}
 		);
 	}
 

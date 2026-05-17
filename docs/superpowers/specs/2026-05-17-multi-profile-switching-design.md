@@ -105,14 +105,14 @@ Guest users still see the "Sign in" link (no change).
 
 ### New methods
 
-| Method                               | Behavior                                                                                                                                           |
-| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `saveCurrentProfile()`               | Upserts current `auth.user` into `savedProfiles` in localStorage                                                                                   |
-| `switchToProfile(authUserId)` | Sets pending flags → looks up email from savedProfiles → `signOut({ redirect: false })` → `signIn('google', { callbackUrl: '/profiles', authorizationParams: { login_hint: email } })` |
-| `addNewProfile()`                    | Sets pending flag → `signOut({ redirect: false })` → `signIn('google', { callbackUrl: '/profiles' })`                                              |
-| `switchToGuest()`                    | Sets `authMode = 'guest'` → `signOut({ redirect: false })` → navigates to `/tasks`                                                                 |
-| `getSavedProfiles()`                 | Reads and returns `savedProfiles` from localStorage                                                                                                |
-| `removeSavedProfile(authUserId)`     | Removes entry from localStorage list                                                                                                               |
+| Method                           | Behavior                                                                                                                                                                               |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `saveCurrentProfile()`           | Upserts current `auth.user` into `savedProfiles` in localStorage                                                                                                                       |
+| `switchToProfile(authUserId)`    | Sets pending flags → looks up email from savedProfiles → `signOut({ redirect: false })` → `signIn('google', { callbackUrl: '/profiles', authorizationParams: { login_hint: email } })` |
+| `addNewProfile()`                | Sets pending flag → `signOut({ redirect: false })` → `signIn('google', { callbackUrl: '/profiles' })`                                                                                  |
+| `switchToGuest()`                | Sets `authMode = 'guest'` → `signOut({ redirect: false })` → navigates to `/tasks`                                                                                                     |
+| `getSavedProfiles()`             | Reads and returns `savedProfiles` from localStorage                                                                                                                                    |
+| `removeSavedProfile(authUserId)` | Removes entry from localStorage list                                                                                                                                                   |
 
 ## OAuth Flow: Switching Profiles
 

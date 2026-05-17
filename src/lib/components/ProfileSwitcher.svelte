@@ -59,10 +59,7 @@
 	}
 
 	$effect(() => {
-		// Access activeProfile to refresh list after profile switch
-		const _activeProfile = auth.activeProfile;
 		if (!auth.isLoading) {
-			void _activeProfile;
 			loadSavedProfiles();
 		}
 	});
@@ -187,7 +184,7 @@
 
 		<div class="mt-4 space-y-2">
 			{#each profiles as profile (profile.authUserId)}
-				{@const isActive = (auth.activeProfile?.authUserId ?? auth.user?.authUserId) === profile.authUserId}
+				{@const isActive = auth.user?.authUserId === profile.authUserId}
 				<div class="profile-row flex items-center gap-2 rounded-xl border p-2" style="background: var(--input-bg); border-color: var(--border);">
 					<button
 						type="button"

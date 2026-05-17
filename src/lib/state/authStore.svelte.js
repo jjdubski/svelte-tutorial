@@ -4,17 +4,26 @@ import { storageGet, storageSet, storageRemove } from '$lib/scripts/storage.js';
 class AuthStore {
 	/** @type {import('@auth/sveltekit').Session | null} */
 	user = $state(null);
-	/** @type {{ authUserId: string, email: string, name: string, picture: string, provider: string, lastUsed?: number | string | Date } | null} */
-	activeProfile = $state(null);
 	/** @type {boolean} */
 	isLoggedIn = $state(false);
 	/** @type {boolean} */
 	isLoading = $state(true);
 	/** @type {boolean} */
 	isGuest = $state(false);
+	/** @type {(() => Promise<void>) | null} */
+	_reloadTodos = null;
 
 	constructor() {
 		this._init();
+	}
+
+	/**
+	 * Register a callback to reload todo data after a profile switch.
+	 * Must be called from a component context (where getContext is valid).
+	 * @param {() => Promise<void>} fn
+	 */
+	setReloadTodos(fn) {
+		this._reloadTodos = fn;
 	}
 
 	_init() {
@@ -61,7 +70,6 @@ class AuthStore {
 		if (wasGuest) {
 			this.isGuest = true;
 		}
-		this.activeProfile = null;
 		this.isLoading = false;
 	}
 
@@ -79,60 +87,49 @@ class AuthStore {
 		await signOut({ callbackUrl: '/' });
 	}
 
-	saveCurrentProfile() {
-		if (!this.user?.authUserId) return;
-		const savedProfiles =
-			this.getSavedProfilesSync?.() || JSON.parse(localStorage.getItem('savedProfiles') || '[]');
-		const entry = {
-			authUserId: this.user.authUserId,
-			email: this.user.email || '',
-			name: this.user.name || '',
-			picture: this.user.picture || '',
-			provider: this.user.provider || 'google',
-			lastUsed: Date.now()
-		};
-		const idx = savedProfiles.findIndex((profile) => profile.authUserId === entry.authUserId);
-		if (idx === -1) savedProfiles.push(entry);
-		else savedProfiles[idx] = { ...savedProfiles[idx], ...entry };
-		localStorage.setItem('savedProfiles', JSON.stringify(savedProfiles));
-	}
-
-	/** @type {boolean} */
-	_switchingProfile = false;
-
+	/**
+	 * Switch to a different profile in the same family.
+	 * Uses Auth.js Credentials provider (redirect: false) to mint a new session
+	 * for the target profile without navigating to a sign-in page.
+	 * @param {string} authUserId
+	 */
 	async switchToProfile(authUserId) {
-		if (this._switchingProfile) return;
-		this._switchingProfile = true;
-		try {
-			const res = await fetch('/api/profiles', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ targetAuthUserId: authUserId })
-			});
+		if (!authUserId || !this.user?.familyId) return;
+		const { signIn } = await import('@auth/sveltekit/client');
+		const result = await signIn('account-switch', {
+			targetAuthUserId: authUserId,
+			familyId: this.user.familyId,
+			redirect: false
+		});
 
-			if (res.ok) {
-				const data = await res.json();
-				this.activeProfile = data.profile || null;
-
-				// Reload todo data to reflect the active profile's content
-				const { getTodoStore } = await import('./todoStore.svelte.js');
-				await getTodoStore().loadFromApi();
+		if (result?.ok) {
+			// Session cookie has been updated server-side — re-fetch to sync client state
+			try {
+				const res = await fetch('/auth/session');
+				if (res.ok) {
+					const data = await res.json();
+					if (data?.user) {
+						this.user = data.user;
+						this.isLoggedIn = true;
+						this.isGuest = false;
+					}
+				}
+			} catch {
+				// Session fetch failed — page reload will recover
 			}
-		} catch {
-			// fallback
-		} finally {
-			this._switchingProfile = false;
+
+			// Reload todo data to reflect the switched profile's content
+			// Uses the callback wired from +layout.svelte (component context) to avoid
+			// calling getContext() outside component initialization.
+			await this._reloadTodos?.();
 		}
 	}
 
 	async addNewProfile() {
-		this.saveCurrentProfile();
 		storageSet('_pendingProfileAction', 'add');
 
 		// Save the current user's familyId so the new account can be linked
 		// to the same family after the OAuth flow completes.
-		// This is more reliable than relying on the profile_family_id cookie
-		// surviving the cross-site OAuth redirect.
 		if (this.user?.familyId) {
 			storageSet('_pendingProfileFamilyId', this.user.familyId);
 		}
@@ -143,7 +140,6 @@ class AuthStore {
 	}
 
 	async switchToGuest() {
-		this.saveCurrentProfile();
 		storageSet('authMode', 'guest');
 
 		const { signOut } = await import('@auth/sveltekit/client');
@@ -161,27 +157,12 @@ class AuthStore {
 		}
 	}
 
-	getSavedProfilesSync() {
-		const savedProfiles = storageGet('savedProfiles');
-		return Array.isArray(savedProfiles) ? savedProfiles : [];
-	}
-
 	async removeSavedProfile(authUserId) {
 		try {
 			await fetch(`/api/profiles/${encodeURIComponent(authUserId)}`, { method: 'DELETE' });
 		} catch {
 			// ignore
 		}
-	}
-
-	async loadActiveProfile() {
-		if (!this.user?.authUserId) {
-			this.activeProfile = null;
-			return;
-		}
-
-		const profiles = await this.getSavedProfiles();
-		this.activeProfile = profiles.find((profile) => profile.authUserId === this.user?.authUserId) || null;
 	}
 
 	continueAsGuest() {

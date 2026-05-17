@@ -1,6 +1,6 @@
 import { json, error } from '@sveltejs/kit';
 import { updateDarkMode } from '$lib/server/todoService.js';
-import { resolveEffectiveAuthUserId } from '$lib/server/profileService.js';
+
 
 /**
  * PATCH /api/todos/dark-mode — Update the user's dark mode preference.
@@ -10,7 +10,8 @@ import { resolveEffectiveAuthUserId } from '$lib/server/profileService.js';
  */
 export async function PATCH(event) {
 	try {
-		const authUserId = await resolveEffectiveAuthUserId(event);
+		const session = await event.locals.auth();
+		const authUserId = session?.user?.authUserId || null;
 		if (!authUserId) {
 			return error(401, 'Unauthorized');
 		}

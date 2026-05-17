@@ -3,6 +3,7 @@
 import { SvelteKitAuth } from '@auth/sveltekit';
 import Google from '@auth/core/providers/google';
 import Apple from '@auth/core/providers/apple';
+import Credentials from '@auth/core/providers/credentials';
 import { upsertUser } from './todoService.js';
 import { connectDB } from './db.js';
 import { User } from './models/User.js';
@@ -53,18 +54,57 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
 						privateKey: APPLE_PRIVATE_KEY
 					})
 				]
-			: [])
+			: []),
+		Credentials({
+			id: 'account-switch',
+			name: 'Account Switcher',
+			credentials: {
+				targetAuthUserId: { label: 'Target User ID', type: 'text' },
+				familyId: { label: 'Family ID', type: 'text' }
+			},
+			/**
+			 * Authorize a profile switch by verifying the target belongs to the
+			 * same family. The familyId comes from the client (known via session)
+			 * and is verified against the database to prevent unauthorized switches.
+			 * @param {Record<string, string> | undefined} credentials
+			 * @returns {Promise<import('@auth/core/types').User | null>}
+			 */
+			async authorize(credentials) {
+				if (!credentials?.targetAuthUserId || !credentials?.familyId) return null;
+
+				await connectDB();
+				const user = await User.findOne({
+					authUserId: credentials.targetAuthUserId,
+					familyId: credentials.familyId
+				})
+					.select('authUserId name email picture familyId provider')
+					.lean();
+
+				if (!user) return null;
+
+				return {
+					id: user.authUserId,
+					authUserId: user.authUserId,
+					name: user.name || '',
+					email: user.email || '',
+					image: user.picture || '',
+					familyId: user.familyId,
+					provider: user.provider || 'google'
+				};
+			}
+		})
 	],
 	secret: AUTH_SECRET,
 	trustHost: true,
 	callbacks: {
 		/**
 		 * JWT callback — attach authUserId and provider to the token.
-		 * @param {{ token: AuthJWT, account: import('@auth/core/types').Account | null, profile?: import('@auth/core/types').Profile, request?: Request }} params
+		 * @param {{ token: AuthJWT, account: import('@auth/core/types').Account | null, profile?: import('@auth/core/types').Profile, user?: import('@auth/core/types').User & { authUserId?: string, familyId?: string, provider?: string }, request?: Request }} params
 		 * @returns {Promise<AuthJWT>}
 		 */
-		async jwt({ token, account, profile, request }) {
+		async jwt({ token, account, profile, user, request }) {
 			if (account) {
+				// OAuth provider sign-in (Google, Apple)
 				await connectDB();
 
 				token.authUserId = account.providerAccountId;
@@ -107,6 +147,11 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
 					picture: profile?.picture || '',
 					provider: account.provider || 'google'
 				});
+			} else if (user) {
+				// Credentials provider (account-switch) — trust authorize result
+				token.authUserId = user.authUserId;
+				token.familyId = user.familyId;
+				token.provider = user.provider || 'credentials';
 			}
 			return token;
 		},

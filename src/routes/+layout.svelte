@@ -22,6 +22,9 @@
 	const _authStore = createAuthStore();
 	createThemeStore(_authStore);
 	_todoStore.setAuthStore(_authStore);
+	// Wire up todo reload callback for profile switching (avoids calling
+	// getContext() from outside component initialization).
+	_authStore.setReloadTodos(() => _todoStore.loadFromApi());
 
 	let attemptedBackgroundSync = $state(false);
 
@@ -52,8 +55,6 @@
 		if (!_authStore.isLoading && _authStore.isLoggedIn && !_authStore.isGuest) {
 			const pendingAction = storageGet('_pendingProfileAction');
 			if (pendingAction) {
-				_authStore.saveCurrentProfile();
-
 				// If adding a new account, link the new account to the previous
 				// account's profile family (handles family linking when the
 				// profile_family_id cookie doesn't survive the OAuth redirect).
@@ -83,7 +84,6 @@
 			// Only pause auto-load when we specifically have guest data to migrate.
 			if (!wasGuest || !hasGuestData) {
 				_todoStore.loadFromApi();
-				_authStore.loadActiveProfile();
 			}
 		}
 	});

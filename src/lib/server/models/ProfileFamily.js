@@ -20,7 +20,6 @@ const profileFamilySchema = new Schema(
 	{ versionKey: false }
 );
 
-export const ProfileFamily =
-	mongoose.models.ProfileFamily || mongoose.model('ProfileFamily', profileFamilySchema);
+export const ProfileFamily = mongoose.models.ProfileFamily || mongoose.model('ProfileFamily', profileFamilySchema);
 
 export default ProfileFamily;

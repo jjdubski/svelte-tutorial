@@ -1,6 +1,6 @@
 import { json, error } from '@sveltejs/kit';
 import { updateTodo, archiveTodo } from '$lib/server/todoService.js';
-import { resolveEffectiveAuthUserId } from '$lib/server/profileService.js';
+
 
 /**
  * PUT /api/todos/[id] — Update a todo.
@@ -10,7 +10,8 @@ import { resolveEffectiveAuthUserId } from '$lib/server/profileService.js';
  */
 export async function PUT(event) {
 	try {
-		const authUserId = await resolveEffectiveAuthUserId(event);
+		const session = await event.locals.auth();
+		const authUserId = session?.user?.authUserId || null;
 		if (!authUserId) {
 			return error(401, 'Unauthorized');
 		}
@@ -40,7 +41,8 @@ export async function PUT(event) {
  */
 export async function DELETE(event) {
 	try {
-		const authUserId = await resolveEffectiveAuthUserId(event);
+		const session = await event.locals.auth();
+		const authUserId = session?.user?.authUserId || null;
 		if (!authUserId) {
 			return error(401, 'Unauthorized');
 		}

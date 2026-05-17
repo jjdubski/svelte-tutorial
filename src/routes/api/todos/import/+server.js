@@ -1,6 +1,6 @@
 import { json, error } from '@sveltejs/kit';
 import { importData } from '$lib/server/todoService.js';
-import { resolveEffectiveAuthUserId } from '$lib/server/profileService.js';
+
 
 /**
  * POST /api/todos/import — Bulk-import todos, archivedTodos, customTags, and tagColors.
@@ -11,7 +11,8 @@ import { resolveEffectiveAuthUserId } from '$lib/server/profileService.js';
  */
 export async function POST(event) {
 	try {
-		const authUserId = await resolveEffectiveAuthUserId(event);
+		const session = await event.locals.auth();
+		const authUserId = session?.user?.authUserId || null;
 		if (!authUserId) {
 			return error(401, 'Unauthorized');
 		}
