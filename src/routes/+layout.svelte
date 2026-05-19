@@ -25,6 +25,7 @@
 	// Wire up todo reload callback for profile switching (avoids calling
 	// getContext() from outside component initialization).
 	_authStore.setReloadTodos(() => _todoStore.loadFromApi());
+	_authStore.setClearLocalTodoData(() => _todoStore.clearLocalSessionData());
 
 	let attemptedBackgroundSync = $state(false);
 

@@ -214,6 +214,27 @@ describe('AuthStore', () => {
 			expect(signOut).toHaveBeenCalledWith({ callbackUrl: '/' });
 			expect(localStorage.getItem('_pendingProfileAction')).toBeNull();
 		});
+
+		it('continueAsGuest does NOT clear local session cache (guest data persists across toggles)', () => {
+			const auth = new AuthStore();
+			const clearLocalTodoData = vi.fn();
+			auth.setClearLocalTodoData(clearLocalTodoData);
+
+			auth.continueAsGuest();
+
+			expect(clearLocalTodoData).not.toHaveBeenCalled();
+			expect(storageGet('authMode')).toBe('guest');
+		});
+
+		it('logout clears local session cache before signOut', async () => {
+			const auth = new AuthStore();
+			const clearLocalTodoData = vi.fn();
+			auth.setClearLocalTodoData(clearLocalTodoData);
+
+			await auth.logout();
+
+			expect(clearLocalTodoData).toHaveBeenCalledOnce();
+		});
 	});
 
 	// ---------------------------------------------------------------------------

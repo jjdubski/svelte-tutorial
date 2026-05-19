@@ -381,6 +381,58 @@ describe('utils.js functions', () => {
 });
 
 describe('TodoStore instance methods', () => {
+	describe('clearLocalSessionData', () => {
+		/** @type {import('../state/todoStore.svelte.js').default} */
+		let store;
+
+		beforeEach(() => {
+			vi.stubGlobal('localStorage', {
+				getItem: vi.fn(() => null),
+				setItem: vi.fn(),
+				removeItem: vi.fn(),
+				clear: vi.fn(),
+				get length() {
+					return 0;
+				},
+				key: vi.fn(() => null)
+			});
+			store = new TodoStore();
+		});
+
+		afterEach(() => {
+			vi.unstubAllGlobals();
+		});
+
+		it('clears signed-in cached todos/tags and restores tag defaults', () => {
+			store.todos = [{ id: '1', title: 'Cloud task', completed: false, createdAt: '2026-01-01' }];
+			store.archivedTodos = [{ id: 'a1', title: 'Cloud archive', completed: true, createdAt: '2026-01-01' }];
+			store.availableTags = [...store.availableTags, 'project-x'];
+			store.customTags = ['project-x'];
+			store.tagColors = { ...store.tagColors, 'project-x': '#123456' };
+
+			store.clearLocalSessionData();
+
+			expect(store.todos).toEqual([]);
+			expect(store.archivedTodos).toEqual([]);
+			expect(store.customTags).toEqual([]);
+			expect(store.availableTags).toEqual(['urgent', 'meeting', 'home', 'shopping', 'health', 'in-progress']);
+			expect(store.tagColors).toEqual({
+				urgent: '#ef4444',
+				meeting: '#f59e0b',
+				home: '#06b6d4',
+				shopping: '#ec4899',
+				health: '#22c55e',
+				'in-progress': '#f97316'
+			});
+
+			// Also verifies localStorage keys are wiped immediately
+			expect(localStorage.removeItem).toHaveBeenCalledWith('todos');
+			expect(localStorage.removeItem).toHaveBeenCalledWith('archivedTodos');
+			expect(localStorage.removeItem).toHaveBeenCalledWith('customTags');
+			expect(localStorage.removeItem).toHaveBeenCalledWith('tagColors');
+		});
+	});
+
 	describe('completeSelected with recurring tasks', () => {
 		/** @type {import('../state/todoStore.svelte.js').default} */
 		let store;

@@ -28,6 +28,8 @@ class AuthStore {
 	profilesVersion = $state(0);
 	/** @type {(() => Promise<void>) | null} */
 	_reloadTodos = null;
+	/** @type {(() => void) | null} */
+	_clearLocalTodoData = null;
 
 	constructor() {
 		this._init();
@@ -40,6 +42,16 @@ class AuthStore {
 	 */
 	setReloadTodos(fn) {
 		this._reloadTodos = fn;
+	}
+
+	/**
+	 * Register a callback to clear local todo caches before entering guest mode
+	 * or signing out. This prevents stale signed-in data from being mistaken for
+	 * guest-created data.
+	 * @param {() => void} fn
+	 */
+	setClearLocalTodoData(fn) {
+		this._clearLocalTodoData = fn;
 	}
 
 	/**
@@ -108,6 +120,7 @@ class AuthStore {
 
 	async logout() {
 		storageRemove('_pendingProfileAction');
+		this._clearLocalTodoData?.();
 		// Clear cached data so the next guest session won't mistakenly treat
 		// stale auth-session data as guest-created data.
 		this.clearGuestMode();

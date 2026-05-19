@@ -1,6 +1,6 @@
 import { createContext, untrack } from 'svelte';
 import { SvelteSet, SvelteDate, SvelteMap } from 'svelte/reactivity';
-import { storageGet, storageSet } from '$lib/scripts/storage.js';
+import { storageGet, storageSet, storageRemove } from '$lib/scripts/storage.js';
 import {
 	localDateStr,
 	fuzzyMatch,
@@ -124,6 +124,17 @@ function _mergeTodosById(localTodos, incomingTodos) {
 
 const HISTORY_STACK_LIMIT = 50;
 
+const DEFAULT_AVAILABLE_TAGS = ['urgent', 'meeting', 'home', 'shopping', 'health', 'in-progress'];
+
+const DEFAULT_TAG_COLORS = {
+	urgent: '#ef4444',
+	meeting: '#f59e0b',
+	home: '#06b6d4',
+	shopping: '#ec4899',
+	health: '#22c55e',
+	'in-progress': '#f97316'
+};
+
 /**
  * @param {string} value
  * @returns {string}
@@ -232,18 +243,11 @@ class TodoStore {
 
 	// ── Tags (app-defined defaults) ──
 	/** @type {string[]} */
-	availableTags = $state(['urgent', 'meeting', 'home', 'shopping', 'health', 'in-progress']);
+	availableTags = $state([...DEFAULT_AVAILABLE_TAGS]);
 	/** @type {string[]} */
 	customTags = $state([]);
 	/** @type {Record<string,string>} */
-	tagColors = $state({
-		urgent: '#ef4444',
-		meeting: '#f59e0b',
-		home: '#06b6d4',
-		shopping: '#ec4899',
-		health: '#22c55e',
-		'in-progress': '#f97316'
-	});
+	tagColors = $state({ ...DEFAULT_TAG_COLORS });
 
 	// ── Templates ──
 	templates = $state([
@@ -1168,6 +1172,32 @@ class TodoStore {
 	 */
 	setAuthStore(auth) {
 		this._auth = auth;
+	}
+
+	/**
+	 * Clear local in-memory todo/cache data that may belong to a signed-in session,
+	 * AND wipe corresponding localStorage keys immediately.
+	 *
+	 * Used before entering guest mode (or signing out) so stale cloud-cached data
+	 * is never treated as guest-created data.
+	 *
+	 * We also clear localStorage directly here — not just in-memory state — because
+	 * the `$effect` that persists `todos` → localStorage may not have had a chance
+	 * to flush (e.g. during a synchronous redirect triggered by `continueAsGuest`).
+	 * Relying on the effect alone would leave stale cloud data in localStorage.
+	 */
+	clearLocalSessionData() {
+		this.todos = [];
+		this.archivedTodos = [];
+		this.availableTags = [...DEFAULT_AVAILABLE_TAGS];
+		this.customTags = [];
+		this.tagColors = { ...DEFAULT_TAG_COLORS };
+		// Wipe localStorage immediately so stale cloud data cannot accidentally
+		// trigger the migration dialog on next sign-in.
+		storageRemove('todos');
+		storageRemove('archivedTodos');
+		storageRemove('customTags');
+		storageRemove('tagColors');
 	}
 
 	// ── Initial data load from server ──
