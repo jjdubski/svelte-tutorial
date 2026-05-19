@@ -208,10 +208,15 @@ class AuthStore {
 
 		const { signIn } = await _getAuthClient();
 		try {
-			await signIn('google', {
-				callbackUrl: '/profiles',
-				prompt: 'select_account'
-			});
+			await signIn(
+				'google',
+				{
+					callbackUrl: '/profiles'
+				},
+				{
+					prompt: 'select_account'
+				}
+			);
 		} catch (err) {
 			storageRemove('_pendingProfileAction');
 			console.error('[authStore] addNewProfile failed', {

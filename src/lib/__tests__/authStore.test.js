@@ -353,7 +353,7 @@ describe('AuthStore', () => {
 
 			await auth.addNewProfile();
 
-			expect(signIn).toHaveBeenCalledWith('google', { callbackUrl: '/profiles', prompt: 'select_account' });
+			expect(signIn).toHaveBeenCalledWith('google', { callbackUrl: '/profiles' }, { prompt: 'select_account' });
 		});
 	});
 
