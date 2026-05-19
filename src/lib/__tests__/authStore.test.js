@@ -352,26 +352,7 @@ describe('AuthStore', () => {
 
 			await auth.addNewProfile();
 
-			expect(signIn).toHaveBeenCalledWith('google', { callbackUrl: '/profiles' });
-		});
-	});
-
-	describe('switchToGuest', () => {
-		it('sets authMode to guest, signs out, clears pending flags, and redirects', async () => {
-			const auth = new AuthStore();
-			await vi.waitFor(() => expect(auth.isLoading).toBe(false));
-			auth.user = { authUserId: 'google-current', email: 'current@example.com' };
-			localStorage.setItem('_pendingProfileAction', JSON.stringify('add'));
-
-			const { signOut } = await import('@auth/sveltekit/client');
-			vi.mocked(signOut).mockClear();
-
-			await auth.switchToGuest();
-
-			expect(storageGet('authMode')).toBe('guest');
-			expect(storageGet('_pendingProfileAction')).toBeNull();
-			expect(signOut).toHaveBeenCalledWith({ redirect: false });
-			expect(window.location.href).toBe('/tasks');
+			expect(signIn).toHaveBeenCalledWith('google', { callbackUrl: '/profiles', prompt: 'select_account' });
 		});
 	});
 

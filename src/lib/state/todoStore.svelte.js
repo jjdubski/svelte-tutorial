@@ -1903,16 +1903,154 @@ class TodoStore {
 		const dueToday = this.todos.filter((t) => !t.completed && t.dueDate === today);
 		const overdue = this.todos.filter((t) => !t.completed && t.dueDate && t.dueDate < today);
 
-		if (this.remindTodayTasks && dueToday.length > 0) {
+		// Check if we already notified for these tasks today
+		const lastNotified = storageGet('lastNotificationDate');
+		const lastNotifiedDueHash = storageGet('lastNotificationDueHash');
+		const lastNotifiedOverdueHash = storageGet('lastNotificationOverdueHash');
+
+		// Create hashes based on task IDs to detect changes
+		const dueHash = dueToday
+			.map((t) => t.id)
+			.sort()
+			.join(',');
+		const overdueHash = overdue
+			.map((t) => t.id)
+			.sort()
+			.join(',');
+
+		// Only notify if tasks changed or it's a new day
+		const shouldNotifyDue =
+			this.remindTodayTasks && dueToday.length > 0 && (lastNotified !== today || dueHash !== lastNotifiedDueHash);
+
+		const shouldNotifyOverdue =
+			this.remindOverdueTasks &&
+			overdue.length > 0 &&
+			(lastNotified !== today || overdueHash !== lastNotifiedOverdueHash);
+
+		if (shouldNotifyDue) {
 			new Notification('Tasks Due Today', {
-				body: `You have ${dueToday.length} task${dueToday.length === 1 ? '' : 's'} due today:\n${dueToday.map((t) => '• ' + t.title).join('\n')}`
+				body: `You have ${dueToday.length} task${dueToday.length === 1 ? '' : 's'} due today:\n${dueToday.map((t) => '• ' + t.title).join('\n')}`,
+				tag: 'due-today',
+				renotify: true
 			});
+			storageSet('lastNotificationDate', today);
+			storageSet('lastNotificationDueHash', dueHash);
 		}
-		if (this.remindOverdueTasks && overdue.length > 0) {
+
+		if (shouldNotifyOverdue) {
 			new Notification('Overdue Tasks', {
-				body: `You have ${overdue.length} overdue task${overdue.length === 1 ? '' : 's'}:\n${overdue.map((t) => '• ' + t.title).join('\n')}`
+				body: `You have ${overdue.length} overdue task${overdue.length === 1 ? '' : 's'}:\n${overdue.map((t) => '• ' + t.title).join('\n')}`,
+				tag: 'overdue-tasks',
+				renotify: true
 			});
+			storageSet('lastNotificationDate', today);
+			storageSet('lastNotificationOverdueHash', overdueHash);
 		}
+	}
+
+	/**
+	 * Subscribe to push notifications for background alerts.
+	 * Registers the service worker and creates a push subscription.
+	 * @returns {Promise<PushSubscription | null>}
+	 */
+	async subscribeToPush() {
+		if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return null;
+		if (!this.notificationsEnabled) return null;
+
+		try {
+			const registration = await navigator.serviceWorker.ready;
+
+			// Check for existing subscription
+			let subscription = await registration.pushManager.getSubscription();
+
+			if (!subscription) {
+				// Create new subscription
+				subscription = await registration.pushManager.subscribe({
+					userVisibleOnly: true,
+					applicationServerKey: this._urlBase64ToUint8Array(import.meta.env.VITE_VAPID_PUBLIC_KEY || '')
+				});
+
+				// Send subscription to server
+				await this._sendPushSubscription(subscription);
+			}
+
+			return subscription;
+		} catch (err) {
+			console.error('[TodoStore] Push subscription failed:', err);
+			return null;
+		}
+	}
+
+	/**
+	 * Unsubscribe from push notifications.
+	 * @returns {Promise<boolean>}
+	 */
+	async unsubscribeFromPush() {
+		if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return false;
+
+		try {
+			const registration = await navigator.serviceWorker.ready;
+			const subscription = await registration.pushManager.getSubscription();
+
+			if (subscription) {
+				// Notify server to remove subscription
+				await this._removePushSubscription(subscription);
+				return await subscription.unsubscribe();
+			}
+
+			return true;
+		} catch (err) {
+			console.error('[TodoStore] Push unsubscription failed:', err);
+			return false;
+		}
+	}
+
+	/**
+	 * Send push subscription to server for storage.
+	 * @param {PushSubscription} subscription
+	 */
+	async _sendPushSubscription(subscription) {
+		try {
+			await fetch('/api/notifications/subscribe', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ subscription }),
+				credentials: 'include'
+			});
+		} catch (err) {
+			console.error('[TodoStore] Failed to send push subscription:', err);
+		}
+	}
+
+	/**
+	 * Remove push subscription from server.
+	 * @param {PushSubscription} subscription
+	 */
+	async _removePushSubscription(subscription) {
+		try {
+			await fetch('/api/notifications/subscribe', {
+				method: 'DELETE',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ endpoint: subscription.endpoint }),
+				credentials: 'include'
+			});
+		} catch (err) {
+			console.error('[TodoStore] Failed to remove push subscription:', err);
+		}
+	}
+
+	/**
+	 * Convert VAPID public key from base64 to Uint8Array.
+	 * @param {string} base64
+	 * @returns {Uint8Array}
+	 */
+	_urlBase64ToUint8Array(base64) {
+		const base64Url = atob(base64.replace(/_/g, '/').replace(/-/g, '+'));
+		const bytes = new Uint8Array(base64Url.length);
+		for (let i = 0; i < base64Url.length; i++) {
+			bytes[i] = base64Url.charCodeAt(i);
+		}
+		return bytes;
 	}
 
 	/**
@@ -1927,6 +2065,9 @@ class TodoStore {
 		});
 		if (enabled) {
 			this.requestNotificationPermission();
+			void this.subscribeToPush();
+		} else {
+			void this.unsubscribeFromPush();
 		}
 	}
 

@@ -131,10 +131,6 @@
 		await auth.addNewProfile();
 	}
 
-	async function handleSwitchToGuest() {
-		await auth.switchToGuest();
-	}
-
 	async function handleRemoveProfile(authUserId) {
 		await auth.removeSavedProfile(authUserId);
 		await loadSavedProfiles();

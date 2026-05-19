@@ -199,7 +199,10 @@ class AuthStore {
 
 		const { signIn } = await _getAuthClient();
 		try {
-			await signIn('google', { callbackUrl: '/profiles' });
+			await signIn('google', {
+				callbackUrl: '/profiles',
+				prompt: 'select_account'
+			});
 		} catch (err) {
 			storageRemove('_pendingProfileAction');
 			console.error('[authStore] addNewProfile failed', {
@@ -207,15 +210,6 @@ class AuthStore {
 				currentAuthUserId: this.user?.authUserId || null
 			});
 		}
-	}
-
-	async switchToGuest() {
-		storageSet('authMode', 'guest');
-		storageRemove('_pendingProfileAction');
-
-		const { signOut } = await _getAuthClient();
-		await signOut({ redirect: false });
-		window.location.href = '/tasks';
 	}
 
 	async getSavedProfiles() {

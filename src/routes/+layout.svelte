@@ -35,14 +35,23 @@
 
 	async function registerBackgroundSync() {
 		if (typeof window === 'undefined') return;
-		if ('serviceWorker' in navigator && 'PeriodicSyncManager' in window) {
+		if ('serviceWorker' in navigator) {
 			try {
 				const registration = await navigator.serviceWorker.ready;
-				await registration.periodicSync.register('overdue-check', {
-					minInterval: 24 * 60 * 60 * 1000
-				});
+
+				// Register periodic sync for overdue checks
+				if ('PeriodicSyncManager' in window) {
+					await registration.periodicSync.register('overdue-check', {
+						minInterval: 24 * 60 * 60 * 1000
+					});
+				}
+
+				// Subscribe to push notifications if enabled
+				if (_todoStore.notificationsEnabled) {
+					await _todoStore.subscribeToPush();
+				}
 			} catch {
-				// PeriodicSync not supported or permission denied
+				// Background sync or push not supported or permission denied
 			}
 		}
 	}

@@ -24,13 +24,14 @@ export default defineConfig({
 		sveltekit(),
 		VitePWA({
 			registerType: 'autoUpdate',
+			injectRegister: 'auto',
 			// Serve manifest + SW in dev mode (otherwise /manifest.webmanifest returns 404)
 			devOptions: { enabled: true },
 			includeAssets: ['app-icon.svg', 'app-icon-192.png', 'app-icon-512.png', 'favicon.svg'],
 			manifest: {
 				name: 'Svelte Todo',
 				short_name: 'Todo',
-				description: 'A modern Todo application built with Svelte 5',
+				description: 'A modern todo application built with Svelte 5',
 				id: '/',
 				start_url: '/',
 				scope: '/',
@@ -83,7 +84,9 @@ export default defineConfig({
 					}
 				],
 				navigateFallback: '/',
-				navigateFallbackDenylist: [/\/api\//]
+				navigateFallbackDenylist: [/\/api\//],
+				skipWaiting: true,
+				clientsClaim: true
 			}
 		})
 	],
