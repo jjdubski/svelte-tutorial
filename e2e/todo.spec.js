@@ -172,7 +172,8 @@ test.describe('Todo App', () => {
 			await page.waitForTimeout(1000); // let JS init
 			await page.locator('text=Continue as Guest').click();
 			await page.waitForURL(/\/tasks/);
-			await expect(page.locator('#title-input')).toBeVisible({ timeout: 10000 });
+			// Use first() to avoid strict mode violation during page transition
+			await expect(page.locator('#title-input').first()).toBeVisible({ timeout: 10000 });
 		});
 
 		test('Tasks page accessible via /tasks in guest mode', async ({ page }) => {
